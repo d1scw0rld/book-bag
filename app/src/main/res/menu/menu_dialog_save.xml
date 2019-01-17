@@ -1,0 +1,18 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:app="http://schemas.android.com/apk/res-auto"
+   xmlns:tools="http://schemas.android.com/tools" >
+
+   <item
+      android:id="@+id/action_new_folder"
+      android:icon="@drawable/ic_action_create_new_folder_dark"
+      android:title="@string/btn_new_fld"
+      app:showAsAction="always|collapseActionView"/>
+
+   <item
+      android:id="@+id/action_select_type"
+      android:title="@string/btn_fl_tp"
+      app:actionViewClass="android.support.v7.widget.AppCompatSpinner"
+      style="@style/Widget.AppCompat.Spinner"
+      app:showAsAction="always"/>
+
+</menu>

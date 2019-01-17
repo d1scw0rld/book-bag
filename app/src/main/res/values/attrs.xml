@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+   <attr name="title" format="string" />
+   <attr name="titleColor" format="color" />
+   <attr name="titleTextSize" format="dimension" />
+   <attr name="titleLineSize" format="dimension" />
+
+   <declare-styleable name="Title">
+      <attr name="text" format="string"/>
+      <attr name="color" format="color"/>
+      <attr name="textSize" format="dimension"/>
+      <attr name="lineSize" format="dimension"/>
+   </declare-styleable>
+
+   <declare-styleable name="FieldAutoCompleteTextView">
+      <attr name="title" />
+      <attr name="titleColor" />
+      <attr name="titleTextSize" />
+      <attr name="titleLineSize" />
+      <attr name="android:text" />
+      <attr name="android:hint" />
+   </declare-styleable>
+   
+   <declare-styleable name="FieldEditTextUpdatableClearable">
+      <attr name="title" />
+      <attr name="titleColor" />
+      <attr name="titleTextSize" />
+      <attr name="titleLineSize" />
+      <attr name="android:text" />
+      <attr name="android:inputType" />
+      <attr name="android:contentDescription" />
+      <attr name="android:hint" />
+   </declare-styleable>
+
+   <declare-styleable name="FieldSpinner">
+      <attr name="title" />
+      <attr name="titleColor" />
+      <attr name="titleTextSize" />
+      <attr name="titleLineSize" />
+      <attr name="android:contentDescription" />
+   </declare-styleable>
+
+   <declare-styleable name="FieldMultiSpinner">
+      <attr name="title" />
+      <attr name="titleColor" />
+      <attr name="titleTextSize" />
+      <attr name="titleLineSize" />
+      <attr name="android:contentDescription" />
+      <attr name="android:hint" />
+   </declare-styleable>
+   
+   <declare-styleable name="FieldMultiText">
+      <attr name="title" />
+      <attr name="titleColor" />
+      <attr name="titleTextSize" />
+      <attr name="titleLineSize" />
+      <attr name="android:contentDescription" />
+      <attr name="android:hint" />
+   </declare-styleable>
+   
+   <declare-styleable name="FieldMoney">
+      <attr name="title" />
+      <attr name="titleColor" />
+      <attr name="titleTextSize" />
+      <attr name="titleLineSize" />
+      <attr name="android:contentDescription" />
+      <attr name="android:hint" />
+   </declare-styleable>
+   
+   <declare-styleable name="FieldDate">
+      <attr name="title" />
+      <attr name="titleColor" />
+      <attr name="titleTextSize" />
+      <attr name="titleLineSize" />
+      <attr name="android:contentDescription" />
+      <attr name="android:hint" />
+   </declare-styleable>
+
+   <declare-styleable name="FieldRating">
+      <attr name="title" />
+      <attr name="titleColor" />
+      <attr name="titleTextSize" />
+      <attr name="titleLineSize" />
+      <attr name="android:contentDescription" />
+      <attr name="android:numStars" />
+      <attr name="android:rating" />
+      <attr name="android:stepSize" />
+      <attr name="android:isIndicator" />
+   </declare-styleable>
+
+   <declare-styleable name="FieldCheckBox">
+      <attr name="title" />
+      <attr name="titleColor" />
+      <attr name="titleTextSize" />
+      <attr name="titleLineSize" />
+      <attr name="android:checked" />
+   </declare-styleable>
+   
+   
+</resources>

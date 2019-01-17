@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+   <!-- <color name="colorPrimary">#3F51B5</color> -->
+   <!-- <color name="colorPrimaryDark">#303F9F</color> -->
+   <!-- <color name="colorAccent">#FF4081</color> -->
+   <!-- <color name="colorBlue">#0099cc</color> -->
+   <!-- <color name="colorHint">#808080</color> -->
+   <!-- From innidroid -->
+   <!-- <color name="lightGray">#e0e0e0</color> -->
+
+<!--    <color name="primary">#3F51B5</color> -->
+<!--    <color name="primary_dark">#303F9F</color> -->
+<!--    <color name="primary_light">#C5CAE9</color> -->
+<!--    <color name="accent">#FF4081</color> -->
+<!--    <color name="primary_text">#212121</color> -->
+<!--    <color name="secondary_text">#757575</color> -->
+<!--    <color name="icons">#FFFFFF</color> -->
+<!--    <color name="divider">#BDBDBD</color> -->
+  <color name="primary">#8BC34A</color>
+  <color name="primary_dark">#689F38</color>
+  <color name="primary_light">#DCEDC8</color>
+  <color name="accent">#FF9800</color>
+  <color name="primary_text">#212121</color>
+  <color name="secondary_text">#757575</color>
+  <color name="icons">#212121</color>
+  <color name="divider">#BDBDBD</color>
+
+   <color name="row">#F2F2F2</color>
+   <color name="text">#8A000000</color>
+  
+</resources>

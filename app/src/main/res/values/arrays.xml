@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+   
+   <string-array name="languages">
+      <item>@string/lng_bg</item>
+      <item>@string/lng_en</item>
+      <item>@string/lng_fr</item>
+      <item>@string/lng_de</item>
+      <item>@string/lng_it</item>
+      <item>@string/lng_ru</item>
+      <item>@string/lng_sp</item>
+   </string-array>
+   
+   <string-array name="status">
+      <item>@string/sts_avb</item>
+      <item>@string/sts_wnt</item>
+      <item>@string/sts_ln</item>
+   </string-array>
+   
+   <string-array name="formats">
+      <item>@string/fmt_hrd_cpy</item>
+      <item>@string/fmt_fb2</item>
+      <item>@string/fmt_epub</item>
+   </string-array>
+   
+   <string-array name="conditions">
+      <item>@string/cnd_nw</item>
+      <item>@string/cnd_fn</item>
+      <item>@string/cnd_vr_gd</item>
+      <item>@string/cnd_gd</item>
+      <item>@string/cnd_fr</item>
+      <item>@string/cnd_pr</item>
+      <item>@string/cnd_bnd_cp</item>
+      <item>@string/cnd_rd_cp</item>
+   </string-array>
+   
+   <string-array name="currencies">
+      <item>@string/crn_bgn</item>
+      <item>@string/crn_eur</item>
+      <item>@string/crn_gbp</item>
+      <item>@string/crn_rbl</item>
+      <item>@string/crn_usd</item>
+   </string-array>
+   
+   <string-array name="genres">
+      <item>@string/gnr_art</item>
+      <item>@string/gnr_bio</item>
+      <item>@string/gnr_bsn</item>
+      <item>@string/gnr_chk_lt</item>
+      <item>@string/gnr_chl</item>
+      <item>@string/gnr_cls</item>
+      <item>@string/gnr_cmc</item>
+      <item>@string/gnr_cnt</item>
+      <item>@string/gnr_ckb</item>
+      <item>@string/gnr_crm</item>
+      <item>@string/gnr_fr_tl</item>
+      <item>@string/gnr_fnt</item>
+      <item>@string/gnr_fct</item>
+      <item>@string/gnr_flk</item>
+      <item>@string/gnr_hst_fct</item>
+      <item>@string/gnr_hst</item>
+      <item>@string/gnr_hrr</item>
+      <item>@string/gnr_hmr</item>
+      <item>@string/gnr_jrn</item>
+      <item>@string/gnr_lgn</item>
+      <item>@string/gnr_mgc</item>
+      <item>@string/gnr_mng</item>
+      <item>@string/gnr_mmr</item>
+      <item>@string/gnr_mst</item>
+      <item>@string/gnr_mth</item>
+      <item>@string/gnr_prn</item>
+      <item>@string/gnr_phl</item>
+      <item>@string/gnr_pct_bk</item>
+      <item>@string/gnr_ptr</item>
+      <item>@string/gnr_psc</item>
+      <item>@string/gnr_rlc_fct</item>
+      <item>@string/gnr_rfr_bk</item>
+      <item>@string/gnr_rlg</item>
+      <item>@string/gnr_rmn</item>
+      <item>@string/gnr_scn</item>
+      <item>@string/gnr_scn_fct</item>
+      <item>@string/gnr_slf_hlp</item>
+      <item>@string/gnr_spr</item>
+      <item>@string/gnr_spt</item>
+      <item>@string/gnr_ssp</item>
+      <item>@string/gnr_trv</item>
+      <item>@string/gnr_wst</item>
+      <item>@string/gnr_yng_adt</item>
+   </string-array>
+   
+   <integer-array name="type_id">
+      <item>4</item>
+      <item>7</item>
+      <item>9</item>
+      <item>11</item>
+      <item>13</item>
+   </integer-array>
+
+   <array name="type_arrays">
+      <item>@array/languages</item>
+      <item>@array/status</item>
+      <item>@array/formats</item>
+      <item>@array/conditions</item>
+      <item>@array/currencies</item>
+   </array>
+
+   <!-- <array name="field_types"> -->
+   <!-- <item>@array/type_id</item> -->
+   <!-- <item>@array/type_arrays</item> -->
+   <!-- </array> -->
+   <integer-array name="field_genre">
+      <item name="id">3</item>
+      <item name="values">@array/genres</item>
+   </integer-array>
+   
+   <integer-array name="field_language">
+      <item name="id">4</item>
+      <item name="values">@array/languages</item>
+   </integer-array>
+   
+   <integer-array name="field_status">
+      <item name="id">7</item>
+      <item name="values">@array/status</item>
+   </integer-array>
+   
+   <integer-array name="field_format">
+      <item name="id">9</item>
+      <item name="values">@array/formats</item>
+   </integer-array>
+   
+   <integer-array name="field_condition">
+      <item name="id">11</item>
+      <item name="values">@array/conditions</item>
+   </integer-array>
+   
+   <integer-array name="field_currency">
+      <item name="id">12</item>
+      <item name="values">@array/currencies</item>
+   </integer-array>
+
+   <array name="fields_values">
+      <item>@array/field_genre</item>
+      <item>@array/field_language</item>
+      <item>@array/field_status</item>
+      <item>@array/field_format</item>
+      <item>@array/field_condition</item>
+      <item>@array/field_currency</item>
+   </array>
+
+</resources>

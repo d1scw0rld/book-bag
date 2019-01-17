@@ -1,0 +1,24 @@
+<ScrollView 
+   xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:tools="http://schemas.android.com/tools"
+   android:layout_width="match_parent"
+   android:layout_height="match_parent" >
+
+   <LinearLayout
+      android:id="@+id/ll_categories"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_margin="@dimen/standard_text_size"
+      android:orientation="vertical" >
+
+<!--       <TextView -->
+<!--          android:id="@+id/book_detail" -->
+<!--          style="?android:attr/textAppearanceLarge" -->
+<!--          android:layout_width="match_parent" -->
+<!--          android:layout_height="match_parent" -->
+<!--          android:padding="16dp" -->
+<!--          android:textIsSelectable="true" -->
+<!--          tools:context="org.d1scw0rld.bookbag.BookDetailFragment" /> -->
+   </LinearLayout>
+
+</ScrollView>

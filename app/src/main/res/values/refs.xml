@@ -1,0 +1,16 @@
+<resources>
+
+   <item name="ic_book_accent" type="drawable">@drawable/ic_action_import_contacts_accent</item>
+   <item name="ic_book_light" type="drawable">@drawable/ic_action_import_contacts_accent</item>
+   <item name="ic_book_dark" type="drawable">@drawable/ic_action_import_contacts_dark</item>
+<!--    <item name="ic_header" type="drawable">@drawable/ic_action_collections_bookmark_accent</item> -->
+   <item name="ic_header" type="drawable">@drawable/ic_books</item>
+   <item name="ic_book" type="drawable">@drawable/ic_book_accent</item>
+   <item name="ic_action_clear" type="drawable">@drawable/ic_action_clear_accent</item>
+<!--    <item name="ic_folder" type="drawable">@drawable/ic_action_folder_open_accent</item> -->
+<!--    <item name="ic_file" type="drawable">@drawable/ic_action_insert_drive_file_accent</item> -->
+   <item name="ic_folder" type="drawable">@drawable/ic_folder</item>
+   <item name="ic_folder_open" type="drawable">@drawable/ic_folder_open</item>
+   <item name="ic_file" type="drawable">@drawable/ic_file</item>
+
+</resources>

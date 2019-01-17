@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:custom="http://schemas.android.com/apk/res/org.d1scw0rld.bookbag"
+   android:id="@+id/ll_parent"
+   android:layout_width="match_parent"
+   android:layout_height="wrap_content"
+   android:layout_marginBottom="@dimen/fld_mrg_btm"
+   android:orientation="vertical" >
+
+   <org.d1scw0rld.bookbag.fields.Title
+      android:id="@+id/title"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      custom:text="@string/et_title"
+      custom:color="@color/primary" />
+
+   <org.d1scw0rld.bookbag.fields.AutoCompleteTextViewX
+      android:id="@+id/autoCompleteTextView"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginLeft="-4dp"
+      android:layout_marginRight="-4dp"
+      android:ems="10" />
+
+</LinearLayout>

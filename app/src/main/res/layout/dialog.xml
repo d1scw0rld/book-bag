@@ -1,0 +1,90 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:app="http://schemas.android.com/apk/res-auto"
+   android:id="@+id/saveFileDialog"
+   android:layout_width="fill_parent"
+   android:layout_height="fill_parent"
+   android:orientation="vertical" >
+
+   <android.support.v7.widget.Toolbar
+      android:id="@+id/dlg_toolbar"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_alignParentTop="true"
+      android:background="?attr/colorPrimary"
+      android:minHeight="?attr/actionBarSize"
+      android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+      app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+
+   <ListView
+      android:id="@+id/fileList"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:layout_above="@+id/fileLinearLayout2"
+      android:layout_below="@id/dlg_toolbar"
+      android:padding="10dp" />
+
+   <LinearLayout
+      android:id="@+id/fileLinearLayout2"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:layout_alignParentBottom="true"
+      android:orientation="vertical"
+      android:padding="10dp" >
+
+      <TextView
+         android:id="@+id/fileTextView1"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:text="@string/lbl_ent_fl_nm"
+         android:textAppearance="?android:attr/textAppearanceMedium" />
+
+      <EditText
+         android:id="@+id/fileName"
+         android:layout_width="fill_parent"
+         android:layout_height="wrap_content"
+         android:contentDescription="@string/lbl_ent_fl_nm"
+         android:inputType="text" >
+
+         <requestFocus />
+      </EditText>
+
+      <Spinner
+         android:id="@+id/fileFilter"
+         android:layout_width="fill_parent"
+         android:layout_height="wrap_content" />
+
+      <LinearLayout
+         android:id="@+id/fileLinearLayout3"
+         android:layout_width="fill_parent"
+         android:layout_height="wrap_content"
+         android:orientation="horizontal" >
+
+         <Button
+            android:id="@+id/fileCancel"
+            style="?android:attr/buttonStyle"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="10dp"
+            android:text="@android:string/cancel" />
+
+         <Button
+            android:id="@+id/newFolder"
+            style="?android:attr/buttonStyle"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/btn_crt_nw_fld" />
+
+         <Button
+            android:id="@+id/fileSaveLoad"
+            style="?android:attr/buttonStyle"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="10dp"
+            android:text="@string/save" />
+      </LinearLayout>
+   </LinearLayout>
+
+</RelativeLayout>

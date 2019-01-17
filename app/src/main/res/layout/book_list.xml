@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+   android:layout_width="match_parent"
+   android:layout_height="wrap_content"
+   android:clipToPadding="false"
+   android:orientation="vertical" >
+
+   <RelativeLayout
+      android:id="@+id/ll_fields"
+      android:layout_width="match_parent"
+      android:layout_height="?attr/actionBarSize"
+      android:layout_marginTop="-2dp"
+      android:elevation="4dp"
+      android:outlineProvider="bounds"
+      android:paddingTop="2dp" >
+
+      <TextView
+         android:id="@+id/tv_books_order"
+         android:layout_width="match_parent"
+         android:layout_height="match_parent"
+         android:layout_alignParentLeft="true"
+         android:layout_gravity="center_horizontal"
+         android:background="@color/background_material_light"
+         android:gravity="center_vertical"
+         android:paddingLeft="16dp"
+         android:text="153" />
+      
+      <TextView
+         android:id="@+id/tv_books_count"
+         android:layout_width="wrap_content"
+         android:layout_height="match_parent"
+         android:layout_alignParentRight="true"
+         android:layout_gravity="center_horizontal"
+         android:background="@color/background_material_light"
+         android:gravity="center_vertical"
+         android:paddingLeft="16dp"
+         android:paddingRight="16dp"
+         android:text="153" />
+
+   </RelativeLayout>
+
+   <android.support.v7.widget.RecyclerView
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:tools="http://schemas.android.com/tools"
+      android:id="@+id/book_list"
+      android:name="org.d1scw0rld.bookbag.BookListFragment"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      app:layoutManager="LinearLayoutManager"
+      tools:context="org.d1scw0rld.bookbag.BookListActivity"
+      tools:listitem="@layout/book_list_content" />
+
+</LinearLayout>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+   <plurals name="books">
+      <item quantity="zero">@string/book_0</item>
+      <item quantity="one">@string/book</item>
+      <item quantity="other">@string/books</item>
+   </plurals>
+
+</resources>
