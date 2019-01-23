@@ -6,13 +6,11 @@ package org.d1scw0rld.bookbag.dto;
 
 public class FieldType
 {
-   public int iID = 0;
-   public String sName;
-   public boolean isVisible = false;
-   public byte iType = 0;
-   public int iInputType = 0;
-   public String sDigit = "";
-//   public boolean isMultiline = false;
+   public  int     iID;
+   public  String  sName;
+   public  boolean isVisible  = false;
+   public  byte    iType;
+   public  int     iInputType = 0;
 
    public final static byte TYPE_TEXT = 1,
                             TYPE_TEXT_AUTOCOMPLETE = 2,
@@ -29,7 +27,6 @@ public class FieldType
    {
       this.iID = iID;
       this.sName = sName;
-//      this(iID, sName);
       this.isVisible = isVisible;
       this.iType = iType;
    }
@@ -38,7 +35,6 @@ public class FieldType
    {
       this.iID = iID;
       this.sName = sName;      
-//      this(iID, sName);
       this.iType = iType;
    }
 
@@ -48,10 +44,10 @@ public class FieldType
       return this;
    }
    
-   public void setDigit(String sDigit)
-   {
-      this.sDigit = sDigit;
-   }
+//   public void setDigit(String sDigit)
+//   {
+//      String sDigit1 = sDigit;
+//   }
    
    public FieldType setInputType(int iInputType)
    {

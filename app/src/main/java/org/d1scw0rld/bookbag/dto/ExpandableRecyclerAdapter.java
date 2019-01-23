@@ -13,40 +13,29 @@ import java.util.List;
 
 public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdapter.ListItem> extends RecyclerView.Adapter<ExpandableRecyclerAdapter<T>.ViewHolder>
 {
-   protected Context mContext;
-   protected List<T> allItems = new ArrayList<>();
-   protected List<T> visibleItems = new ArrayList<>();
+   Context mContext;
+   List<T> allItems = new ArrayList<>();
+   List<T> visibleItems = new ArrayList<>();
    private List<Integer> indexList = new ArrayList<>();
    private SparseIntArray expandMap = new SparseIntArray();
    private int mode;
    
-//   private boolean isAllExpanded = false;
+   static final int TYPE_HEADER = 1000,
+                    TYPE_ITEM = 1001;
 
-   protected static final int TYPE_HEADER = 1000, 
-                              TYPE_ITEM = 1001;
+   private static final int MODE_ACCORDION = 1;
 
-//   private static final int ARROW_ROTATION_DURATION = 150;
-
-   public static final int MODE_NORMAL = 0;
-   public static final int MODE_ACCORDION = 1;
-
-   public ExpandableRecyclerAdapter(Context context)
+   ExpandableRecyclerAdapter(Context context)
    {
       mContext = context;
-      
    }
 
-   public static class ListItem
+   static class ListItem
    {
-      public int ItemType;
-      public String sText;
+      int ItemType;
+      String sText;
 
-      public ListItem(int itemType)
-      {
-         ItemType = itemType;
-      }
-      
-      public ListItem(int itemType, String sName)
+      ListItem(int itemType, String sName)
       {
          ItemType = itemType;
          this.sText = sName;
@@ -71,9 +60,9 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
       return LayoutInflater.from(mContext).inflate(resourceID, viewGroup, false);
    }
 
-   public class ViewHolder extends RecyclerView.ViewHolder
+   class ViewHolder extends RecyclerView.ViewHolder
    {
-      public ViewHolder(View view)
+      ViewHolder(View view)
       {
          super(view);
       }
@@ -81,14 +70,9 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
 
    public class HeaderViewHolder extends ViewHolder
    {
-//      ImageView arrow;
-
-//      public HeaderViewHolder(View view, final ImageView arrow)
-      public HeaderViewHolder(View view)
+      HeaderViewHolder(View view)
       {
          super(view);
-
-//         this.arrow = arrow;
 
          view.setOnClickListener(new View.OnClickListener()
          {
@@ -100,17 +84,15 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
          });
       }
 
-      protected void handleClick()
+      void handleClick()
       {
          if(toggleExpandedItems(getLayoutPosition(), false))
          {
-//            openArrow(arrow);
             setExpanded(true);
             onExpansionToggled(false);
          }
          else
          {
-//            closeArrow(arrow);
             setExpanded(false);
             onExpansionToggled(true);
          }
@@ -118,7 +100,6 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
 
       public void bind(int position)
       {
-//         arrow.setRotation(isExpanded(position) ? 90 : 0);
          setExpanded(isExpanded(position));
       }
       
@@ -150,7 +131,7 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
       }      
    }
 
-   public boolean toggleExpandedItems(int position, boolean notify)
+   private boolean toggleExpandedItems(int position, boolean notify)
    {
       if(isExpanded(position))
       {
@@ -170,7 +151,7 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
       }
    }
 
-   public void expandItems(int position, boolean notify)
+   private void expandItems(int position, boolean notify)
    {
       int count = 0;
       int index = indexList.get(position);
@@ -195,7 +176,7 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
       }
    }
 
-   public void collapseItems(int position, boolean notify)
+   private void collapseItems(int position, boolean notify)
    {
       int count = 0;
       int index = indexList.get(position);
@@ -219,23 +200,23 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
       }
    }
 
-   public class StaticViewHolder extends ViewHolder
-   {
-      public StaticViewHolder(View view)
-      {
-         super(view);
-      }
-   }
+//   public class StaticViewHolder extends ViewHolder
+//   {
+//      public StaticViewHolder(View view)
+//      {
+//         super(view);
+//      }
+//   }
+//
+//   public class ItemViewHolder extends ViewHolder
+//   {
+//      public ItemViewHolder(View view)
+//      {
+//         super(view);
+//      }
+//   }
 
-   public class ItemViewHolder extends ViewHolder
-   {
-      public ItemViewHolder(View view)
-      {
-         super(view);
-      }
-   }
-
-   protected boolean isExpanded(int position)
+   private boolean isExpanded(int position)
    {
       int allItemsPosition = indexList.get(position);
       return expandMap.get(allItemsPosition, -1) >= 0;
@@ -247,7 +228,7 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
       return visibleItems.get(position).ItemType;
    }
 
-   public void setItems(List<T> items)
+   void setItems(List<T> items)
    {
       allItems = items;
       List<T> visibleItems = new ArrayList<>();
@@ -267,16 +248,16 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
       notifyDataSetChanged();
    }
 
-   protected void notifyItemInserted(int allItemsPosition, int visiblePosition)
-   {
-      incrementIndexList(allItemsPosition, visiblePosition, 1);
-      incrementExpandMapAfter(allItemsPosition, 1);
-
-      if(visiblePosition >= 0)
-      {
-         notifyItemInserted(visiblePosition);
-      }
-   }
+//   protected void notifyItemInserted(int allItemsPosition, int visiblePosition)
+//   {
+//      incrementIndexList(allItemsPosition, visiblePosition, 1);
+//      incrementExpandMapAfter(allItemsPosition, 1);
+//
+//      if(visiblePosition >= 0)
+//      {
+//         notifyItemInserted(visiblePosition);
+//      }
+//   }
 
    protected void removeItemAt(int visiblePosition)
    {
@@ -334,7 +315,7 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
       collapseAllExcept(-1);
    }
 
-   public void collapseAllExcept(int position)
+   private void collapseAllExcept(int position)
    {
       for(int i = visibleItems.size() - 1; i >= 0; i--)
       {
@@ -365,18 +346,6 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
       }
    }
 
-//   @SuppressLint("NewApi")
-//   public static void openArrow(View view)
-//   {
-//      view.animate().setDuration(ARROW_ROTATION_DURATION).rotation(90);
-//   }
-//
-//   @SuppressLint("NewApi")
-//   public static void closeArrow(View view)
-//   {
-//      view.animate().setDuration(ARROW_ROTATION_DURATION).rotation(0);
-//   }
-
    public int getMode()
    {
       return mode;
@@ -386,16 +355,4 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
    {
       this.mode = mode;
    }
-   
-
-//   public boolean isAllExpanded()
-//   {
-//      return isAllExpanded;
-//   }
-//   
-//
-//   public void setAllExpanded(boolean isAllExpanded)
-//   {
-//      this.isAllExpanded = isAllExpanded;
-//   }
 }

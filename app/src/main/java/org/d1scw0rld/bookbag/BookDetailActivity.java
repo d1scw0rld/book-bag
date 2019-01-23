@@ -30,10 +30,10 @@ public class BookDetailActivity extends AppCompatActivity
       
       iBookID = getIntent().getLongExtra(BookDetailFragment.ARG_ITEM_ID, 0);
       
-      Toolbar toolbar = (Toolbar) findViewById(R.id.detail_toolbar);
+      Toolbar toolbar = findViewById(R.id.detail_toolbar);
       setSupportActionBar(toolbar);
 
-      FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+      FloatingActionButton fab = findViewById(R.id.fab);
       fab.setOnClickListener(new View.OnClickListener()
       {
          @Override
@@ -136,8 +136,6 @@ public class BookDetailActivity extends AppCompatActivity
    private void loadFragment(long iBookID)
    {
       Bundle arguments = new Bundle();
-//    arguments.putString(BookDetailFragment.ARG_ITEM_ID, getIntent().getStringExtra(BookDetailFragment.ARG_ITEM_ID));
-//    arguments.putLong(BookDetailFragment.ARG_ITEM_ID, getIntent().getLongExtra(BookDetailFragment.ARG_ITEM_ID, 0));
       arguments.putLong(BookDetailFragment.ARG_ITEM_ID, iBookID);
       BookDetailFragment fragment = new BookDetailFragment();
       fragment.setArguments(arguments);

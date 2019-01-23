@@ -6,6 +6,7 @@ import java.util.Collections;
 
 import org.d1scw0rld.bookbag.R;
 
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -101,6 +102,7 @@ public class FileSelectorDialog extends DialogFragment
       return frag;
    }
 
+   @NonNull
    @Override
    public Dialog onCreateDialog(Bundle savedInstanceState)
    {
@@ -112,11 +114,11 @@ public class FileSelectorDialog extends DialogFragment
       v = View.inflate(mContext, R.layout.dialog_file, null);
       builder.setView(v);
 
-      etFileName = (EditText) v.findViewById(R.id.fileName);
+      etFileName = v.findViewById(R.id.fileName);
       if(sCurrentFile != null)
          etFileName.setText(sCurrentFile);
       
-      toolbar = (Toolbar) v.findViewById(R.id.dlg_toolbar);
+      toolbar = v.findViewById(R.id.dlg_toolbar);
       toolbar.setTitle(mCurrentLocation.getName());
       toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener()
       {
@@ -218,18 +220,18 @@ public class FileSelectorDialog extends DialogFragment
     *           - array of filters, the elements of the array will be used as
     *           elements of the spinner
     */
-   private void prepareFilterSpinner(String[] fitlesFilter)
+   private void prepareFilterSpinner(String[] aFilesFilter)
    {
 //       mFilterSpinner = (Spinner) v.findViewById(R.id.fileFilter);
-      mFilterSpinner = (Spinner) toolbar.findViewById(R.id.action_select_type);
-      if(fitlesFilter == null || fitlesFilter.length == 0)
+      mFilterSpinner = toolbar.findViewById(R.id.action_select_type);
+      if(aFilesFilter == null || aFilesFilter.length == 0)
       {
-         fitlesFilter = new String[] { FileUtils.FILTER_ALLOW_ALL };
+         aFilesFilter = new String[] { FileUtils.FILTER_ALLOW_ALL };
          mFilterSpinner.setEnabled(false);
       }
-      ArrayAdapter<String> adapter = new ArrayAdapter<String>(mContext,
-                                                              R.layout.layout_drop_title,
-                                                              fitlesFilter);
+      ArrayAdapter<String> adapter = new ArrayAdapter<>(mContext,
+                                                        R.layout.layout_drop_title,
+                                                        aFilesFilter);
       adapter.setDropDownViewResource(R.layout.layout_drop_list);
 
 
@@ -263,7 +265,7 @@ public class FileSelectorDialog extends DialogFragment
     */
    private void prepareFilesList()
    {
-      mFileListView = (ListView) v.findViewById(R.id.fileList);
+      mFileListView = v.findViewById(R.id.fileList);
    
       mFileListView.setOnItemClickListener(new OnItemClickListener()
       {
@@ -388,12 +390,6 @@ public class FileSelectorDialog extends DialogFragment
          etFileName.setText(itemText);
    }
 
-   /**
-    * Set button name and click handler for Save or Load button.
-    * 
-    * @param operation
-    *           Performed file operation.
-    */
    public File getCurrentLocation()
    {
       return mCurrentLocation;
@@ -410,7 +406,7 @@ public class FileSelectorDialog extends DialogFragment
     */
    private void makeList(final File location, final String fitlesFilter)
    {
-      final ArrayList<FileData> fileList = new ArrayList<FileData>();
+      final ArrayList<FileData> fileList = new ArrayList<>();
       final String parentLocation = location.getParent();
       if(parentLocation != null)
       {
@@ -420,14 +416,13 @@ public class FileSelectorDialog extends DialogFragment
       File listFiles[] = location.listFiles();
       if(listFiles != null)
       {
-         ArrayList<FileData> fileDataList = new ArrayList<FileData>();
-         for(int index = 0; index < listFiles.length; index++)
+         ArrayList<FileData> fileDataList = new ArrayList<>();
+         for(File tempFile : listFiles)
          {
-            File tempFile = listFiles[index];
             if(FileUtils.accept(tempFile, fitlesFilter))
             {
                int type = tempFile.isDirectory() ? FileData.FOLDER : FileData.FILE;
-               fileDataList.add(new FileData(listFiles[index].getName(),
+               fileDataList.add(new FileData(tempFile.getName(),
                                              type));
             }
          }

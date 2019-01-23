@@ -26,11 +26,9 @@ public class FieldDate extends LinearLayout implements OnDateSetListener
    private Button btnSpinner;
    private Date date = new Date(0);
    private String hint = "";
-   private String contentDescription = "";
    private OnUpdateListener onUpdateListener = null;
    DatePickerDialog datePickerDialog ;
-   Context c;
-   
+
    public FieldDate(Context context)
    {
       super(context);
@@ -50,7 +48,7 @@ public class FieldDate extends LinearLayout implements OnDateSetListener
       int titleValueColor = a.getColor(R.styleable.FieldDate_titleColor, 0);
       int titleTextSize = a.getDimensionPixelOffset(R.styleable.FieldDate_titleTextSize, 0);
       int titleLineSize = a.getDimensionPixelOffset(R.styleable.FieldDate_titleLineSize, 0);
-      contentDescription = a.getString(R.styleable.FieldDate_android_contentDescription);
+      String contentDescription = a.getString(R.styleable.FieldDate_android_contentDescription);
       hint = a.getString(R.styleable.FieldDate_android_hint);
 
       a.recycle();
@@ -73,18 +71,8 @@ public class FieldDate extends LinearLayout implements OnDateSetListener
 
       final Activity activity = (Activity) context;
       
-      oTitle = (Title)this.findViewById(R.id.title);
-      btnSpinner = (Button) this.findViewById(R.id.action_select_type);
-      
-//      btnSpinner.setOnClickListener(new OnClickListener() 
-//      {
-//         @Override
-//         public void onClick(View v) 
-//         {
-//            DialogFragment newFragment = new DatePickerFragment();
-//            newFragment.show(activity.getFragmentManager(), "datePicker");
-//         }
-//      });
+      oTitle = this.findViewById(R.id.title);
+      btnSpinner = this.findViewById(R.id.action_select_type);
       
       btnSpinner.setOnClickListener(new OnClickListener()
       {
@@ -108,13 +96,10 @@ public class FieldDate extends LinearLayout implements OnDateSetListener
             datePickerDialog.setThemeDark(false);
 
             datePickerDialog.showYearPickerFirst(false);
-//            datePickerDialog.setStyle(R.style.AppCompatAlertDialogStyle, R.style.AppTheme);
-            
+
             datePickerDialog.setAccentColor(ContextCompat.getColor(activity, R.color.primary));
             datePickerDialog.setCancelColor(ContextCompat.getColor(activity, R.color.accent));
             datePickerDialog.setOkColor(ContextCompat.getColor(activity, R.color.accent));
-
-//            datePickerDialog.setAccentColor(Color.parseColor("#009688"));
 
             datePickerDialog.setTitle("Select Date From DatePickerDialog");
 
@@ -186,78 +171,6 @@ public class FieldDate extends LinearLayout implements OnDateSetListener
       setButtonText(btnSpinner, date);
    }
 
-//   private class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener
-//   {
-//      
-//      @Override
-//      public Dialog onCreateDialog(Bundle savedInstanceState)
-//      {
-//         if(date.toInt() == 0)
-//         {
-//            // Use the current date as the default date in the picker
-//            final Calendar c = Calendar.getInstance();
-//            date = new Date(c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.MONTH) + 1, c.get(Calendar.YEAR));
-//         }
-//
-//         // Create a new instance of DatePickerDialog and return it
-//         return new DatePickerDialog(getActivity(), this, date.iYear, date.iMonth - 1, date.iDay);
-//      }
-//
-//      @Override
-//      public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth)
-//      {
-//         date = new Date(dayOfMonth, monthOfYear + 1, year);
-//         setButtonText(btnSpinner, date);
-//         if(onUpdateListener != null)
-//         {
-//            onUpdateListener.onUpdate(FieldDate.this);
-//         }
-//      }
-//   }
-
-//   private class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener
-//   {
-//      
-//      @Override
-//      public Dialog onCreateDialog(Bundle savedInstanceState)
-//      {
-//         if(date.toInt() == 0)
-//         {
-//            // Use the current date as the default date in the picker
-//            final Calendar c = Calendar.getInstance();
-//            date = new Date(c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.MONTH) + 1, c.get(Calendar.YEAR));
-//         }
-//
-//         // Create a new instance of DatePickerDialog and return it
-////         return new DatePickerDialog(getActivity(), this, date.iYear, date.iMonth - 1, date.iDay);
-//         
-//         datePickerDialog = DatePickerDialog.newInstance(DatePickerFragment.this, date.iYear, date.iMonth - 1, date.iDay);
-//
-//         datePickerDialog.setThemeDark(false);
-//
-//         datePickerDialog.showYearPickerFirst(false);
-//
-//         datePickerDialog.setAccentColor(Color.parseColor("#009688"));
-//
-//         datePickerDialog.setTitle("Select Date From DatePickerDialog");
-//
-//         datePickerDialog.show(getFragmentManager(), "DatePickerDialog");
-//         
-//         return datePickerDialog.getDialog(); 
-//      }
-//
-//      @Override
-//      public void onDateSet(DatePickerDialog view,
-//                            int year,
-//                            int monthOfYear,
-//                            int dayOfMonth)
-//      {
-//         // TODO Auto-generated method stub
-//         
-//      }
-//   }
-   
-   
    public void setUpdateListener(OnUpdateListener onUpdateListener)
    {
       this.onUpdateListener = onUpdateListener;

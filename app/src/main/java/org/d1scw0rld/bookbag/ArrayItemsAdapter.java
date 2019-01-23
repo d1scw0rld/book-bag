@@ -3,6 +3,7 @@ package org.d1scw0rld.bookbag;
 import java.util.ArrayList;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v4.os.ConfigurationCompat;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,27 +13,23 @@ import android.widget.TextView;
 
 import org.d1scw0rld.bookbag.fields.FieldMultiText.Item;
 
-public class ArrayItemsAdapter extends ArrayAdapter<Item> 
+public class ArrayItemsAdapter extends ArrayAdapter<Item>
 {
 //   private final String MY_DEBUG_TAG = "ArrayFieldsAdapter";
-//   private ArrayList<? extends Item> items;
    private Context context;
    private ArrayList<Item> items;
    private ArrayList<Item> suggestions;
-//   private int viewResourceId;
 
-   public ArrayItemsAdapter(Context context, int viewResourceId, ArrayList<Item> alDictionaryFields) 
+   ArrayItemsAdapter(Context context, int viewResourceId, ArrayList<Item> alDictionaryFields)
    {
        super(context, viewResourceId, alDictionaryFields);
-//       this.items = alDictionaryFields1;
-//       this.itemsAll = (ArrayList<Item>) alDictionaryFields.clone();
        this.context = context;
        this.items = alDictionaryFields;
-       this.suggestions = new ArrayList<Item>();
-//       this.viewResourceId = viewResourceId;
+       this.suggestions = new ArrayList<>();
    }
 
-   public View getView(int position, View convertView, ViewGroup parent) 
+   @NonNull
+   public View getView(int position, View convertView, @NonNull ViewGroup parent)
    {
       TextView view = (TextView) super.getView(position, convertView, parent);
       // Replace text with my own
@@ -41,19 +38,19 @@ public class ArrayItemsAdapter extends ArrayAdapter<Item>
       
    }
 
+   @NonNull
    @Override
    public Filter getFilter() 
    {
        return nameFilter;
    }
 
-   Filter nameFilter = new Filter() 
+   private Filter nameFilter = new Filter()
    {
       @Override
       public String convertResultToString(Object resultValue) 
       {
-         String str = ((Item)(resultValue)).getValue(); 
-         return str;
+         return ((Item)(resultValue)).getValue();
       }
       
       @Override

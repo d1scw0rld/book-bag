@@ -2,6 +2,7 @@ package org.d1scw0rld.bookbag;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.os.ConfigurationCompat;
 import android.support.v7.app.ActionBar;
@@ -60,20 +61,16 @@ public class EditBookActivity extends AppCompatActivity
                               IS_COPY = "is_copy";
 
    private Book oBook;
-   
-   private LinearLayout llFields;
-   
+
    private DBAdapter oDbAdapter = null;
    
    private PopupMenu pmHiddenFields = null;
-   
-   private Button btnAddField = null;
-   
+
    private FieldEditTextUpdatableClearable fBookTitle = null;
    
    private View vPrevious = null;
    
-   HashMap<MenuItem, View> hmHiddenFileds = new HashMap<MenuItem, View>();
+   HashMap<MenuItem, View> hmHiddenFileds = new HashMap<>();
 
    @Override
    protected void onCreate(Bundle savedInstanceState)
@@ -87,11 +84,13 @@ public class EditBookActivity extends AppCompatActivity
     // Show the custom action bar view and hide the normal Home icon and title.
       
       final ActionBar actionBar = getSupportActionBar();
+      assert actionBar != null;
+
       actionBar.setDisplayShowHomeEnabled(false);
       actionBar.setDisplayShowTitleEnabled(false);
       actionBar.setDisplayShowCustomEnabled(true);
       actionBar.setCustomView(R.layout.actionbar_custom_view_done);
-      
+
       ((Toolbar)actionBar.getCustomView().getParent()).setContentInsetsAbsolute(0, 0);
       actionBar.getCustomView().findViewById(R.id.actionbar_done).setOnClickListener(new View.OnClickListener()
       {
@@ -103,7 +102,6 @@ public class EditBookActivity extends AppCompatActivity
             if(oBook.csTitle.value.trim().isEmpty())
             {
                fBookTitle.setError(getResources().getString(R.string.err_emp_ttl));
-               return;
             }
             else
             {
@@ -135,8 +133,8 @@ public class EditBookActivity extends AppCompatActivity
       }
       else
          oBook = new Book();
-      
-      btnAddField = (Button) findViewById(R.id.btn_add_field);
+
+      Button btnAddField = findViewById(R.id.btn_add_field);
       btnAddField.setOnClickListener(new View.OnClickListener()
       {
          
@@ -162,8 +160,8 @@ public class EditBookActivity extends AppCompatActivity
             return false;
          }
       });
-      
-      llFields = (LinearLayout) findViewById(R.id.ll_fields);
+
+      LinearLayout llFields = findViewById(R.id.ll_fields);
       
       for(FieldType oFieldType: DBAdapter.FIELD_TYPES)
       {
@@ -272,55 +270,40 @@ public class EditBookActivity extends AppCompatActivity
          oDbAdapter.insertBook(oBook);
    }
    
-   private <T> void addFieldText(LinearLayout rootView, FieldType oFieldType)
+   private void addFieldText(LinearLayout rootView, FieldType oFieldType)
    {
       switch(oFieldType.iID)
       {
          case DBAdapter.FLD_TITLE:
-//            oField.setTag(oBook.csTitle);
-//            cValue = (Changeable<T>) oBook.csTitle;
             addFieldText(rootView, oFieldType, oBook.csTitle);
          break;
          
          
          case DBAdapter.FLD_DESCRIPTION:
-//            oField.setTag(oBook.csDescription);
-//            cValue = oBook.csDescription;
             addFieldText(rootView, oFieldType, oBook.csDescription);
          break;
 
          case DBAdapter.FLD_VOLUME:
-//            oField.setTag(oBook.ciVolume);
-//            cValue = oBook.ciVolume;
             addFieldText(rootView, oFieldType, oBook.ciVolume);
          break;
 
          case DBAdapter.FLD_PAGES:
-//            oField.setTag(oBook.ciPages);
-//            cValue = oBook.ciPages;
             addFieldText(rootView, oFieldType, oBook.ciPages);
          break;
          
          case DBAdapter.FLD_EDITION:
-//            oField.setTag(oBook.ciEdition);
-//            cValue = oBook.ciEdition;
             addFieldText(rootView, oFieldType, oBook.ciEdition);
          break;
 
          case DBAdapter.FLD_ISBN:
-//            oField.setTag(oBook.csISBN);
-//            cValue = oBook.csISBN;
             addFieldText(rootView, oFieldType, oBook.csISBN);
          break;
          
          case DBAdapter.FLD_WEB:
-//            oField.setTag(oBook.csWeb);
-//            cValue = oBook.csWeb;
             addFieldText(rootView, oFieldType, oBook.csWeb);
          break;
          
          default:
-            return;
       }
    }
 
@@ -338,8 +321,6 @@ public class EditBookActivity extends AppCompatActivity
          fBookTitle = oField;
          vPrevious = oField.findViewById(R.id.editTextX);
       }
-//      if(oFieldType.isMultiline)
-//         oField.setMultiline();
       oField.setUpdateListener(new EditTextX.OnUpdateListener()
       {
          @Override
@@ -470,8 +451,9 @@ public class EditBookActivity extends AppCompatActivity
 
       ArrayAdapter<String> oArrayAdapter = new ArrayAdapter<String> (this, R.layout.spinner_item)
       {
+         @NonNull
          @Override
-         public View getView(int position, View convertView, ViewGroup parent) 
+         public View getView(int position, View convertView, @NonNull ViewGroup parent)
          {
             View v = super.getView(position, convertView, parent);
             v.setPadding(0, v.getPaddingTop(), v.getPaddingRight(), v.getPaddingBottom()); // Removing leading pad
@@ -482,9 +464,9 @@ public class EditBookActivity extends AppCompatActivity
          }       
 
          @Override
-         public View getDropDownView(int position, View convertView, ViewGroup parent) 
+         public View getDropDownView(int position, View convertView, @NonNull ViewGroup parent)
          {
-            View v = null;
+            View v;
             if (position == 0) 
             {
                TextView tv = new TextView(getContext());
@@ -548,9 +530,7 @@ public class EditBookActivity extends AppCompatActivity
 
       // Set adapter
       final ArrayList<Field> alFieldsValues = oDbAdapter.getFieldValues(oFieldType.iID, true);
-      final ArrayList<FieldMultiText.Item> alItemsValues = new ArrayList<FieldMultiText.Item>();
-      for(FieldMultiText.Item field: alFieldsValues)
-         alItemsValues.add(field);
+      final ArrayList<FieldMultiText.Item> alItemsValues = new ArrayList<FieldMultiText.Item>(alFieldsValues);
 
       final ArrayItemsAdapter oArrayAdapter = new ArrayItemsAdapter(this, android.R.layout.select_dialog_item, alItemsValues);
       
@@ -560,7 +540,7 @@ public class EditBookActivity extends AppCompatActivity
          @Override
          public void onFieldRemove(View view)
          {
-            oBook.alFields.remove((Field) view.getTag());
+            oBook.alFields.remove(view.getTag());
          }
          
          @Override
@@ -609,7 +589,7 @@ public class EditBookActivity extends AppCompatActivity
       
       rootView.addView(oFieldMultiText);
       
-      if(!oFieldType.isVisible && !hasFieldsOfType(oFieldType.iID))
+      if(!oFieldType.isVisible && hasNotFieldsOfType(oFieldType.iID))
          hideField(oFieldMultiText, oFieldType.sName);
    }
    
@@ -660,7 +640,7 @@ public class EditBookActivity extends AppCompatActivity
       
       rootView.addView(oFieldMultiSpinner);
       
-      if(!oFieldType.isVisible && !hasFieldsOfType(oFieldType.iID))
+      if(!oFieldType.isVisible && hasNotFieldsOfType(oFieldType.iID))
          hideField(oFieldMultiSpinner, tsNames.length > 1 ? tsNames[1] : oFieldType.sName);
       
    }
@@ -693,12 +673,12 @@ public class EditBookActivity extends AppCompatActivity
 
       final ArrayList<Field> alCurrencies = oDbAdapter.getFieldValues(DBAdapter.FLD_CURRENCY);
       int iSelected = 0;
-      ArrayAdapter<String> oArrayAdapter = new ArrayAdapter<String> (this, R.layout.spinner_item);
+      ArrayAdapter<String> oArrayAdapter = new ArrayAdapter<>(this, R.layout.spinner_item);
       for(int i = 0; i < alCurrencies.size(); i++)
       {
 //         tCurrencies[i] = alCurrencies.get(i).sValue;
          oArrayAdapter.add(alCurrencies.get(i).sValue);
-         if(oPrice != null && oPrice.iCurrencyID == alCurrencies.get(i).iID)
+         if(oPrice.iCurrencyID == alCurrencies.get(i).iID)
             iSelected = i;
       }
       
@@ -757,7 +737,7 @@ public class EditBookActivity extends AppCompatActivity
    {
       Date date;
       
-      FieldDate oFieldDate = null;
+      FieldDate oFieldDate;
       
       switch(oFieldType.iID)
       {
@@ -823,7 +803,7 @@ public class EditBookActivity extends AppCompatActivity
          oBook.alFields.add(oField);
       else
       {
-         Float fValue = Float.parseFloat(oField.sValue);
+         float fValue = Float.parseFloat(oField.sValue);
          oFieldRating.setRating(fValue);
       }
       oFieldRating.setTag(oField);
@@ -883,7 +863,7 @@ public class EditBookActivity extends AppCompatActivity
       else
       {
          boolean bValue = Boolean.parseBoolean(oField.sValue);
-         oFieldCheckBox.setChecked(bValue);;
+         oFieldCheckBox.setChecked(bValue);
       }
       oFieldCheckBox.setTag(oField);
 
@@ -921,21 +901,18 @@ public class EditBookActivity extends AppCompatActivity
    public class ArrayFieldsAdapter extends ArrayAdapter<Field> 
    {
 //      private final String MY_DEBUG_TAG = "ArrayFieldsAdapter";
-//      private ArrayList<Field> items;
       private ArrayList<Field> items;
       private ArrayList<Field> suggestions;
-//      private int viewResourceId;
 
-      public ArrayFieldsAdapter(Context context, int viewResourceId, ArrayList<Field> items) 
+      ArrayFieldsAdapter(Context context, int viewResourceId, ArrayList<Field> items)
       {
          super(context, viewResourceId, items);
          this.items = items;
-//          this.itemsAll = (ArrayList<Field>) items.clone();
-         this.suggestions = new ArrayList<Field>();
-//          this.viewResourceId = viewResourceId;
+         this.suggestions = new ArrayList<>();
       }
 
-      public View getView(int position, View convertView, ViewGroup parent) 
+      @NonNull
+      public View getView(int position, View convertView, @NonNull ViewGroup parent)
       {
          TextView view = (TextView) super.getView(position, convertView, parent);
          // Replace text with my own
@@ -944,6 +921,7 @@ public class EditBookActivity extends AppCompatActivity
          
       }
 
+      @NonNull
       @Override
       public Filter getFilter() 
       {
@@ -955,8 +933,7 @@ public class EditBookActivity extends AppCompatActivity
          @Override
          public String convertResultToString(Object resultValue) 
          {
-            String str = ((Field)(resultValue)).sValue; 
-            return str;
+            return ((Field)(resultValue)).sValue;
          }
          
          @Override
@@ -1011,9 +988,9 @@ public class EditBookActivity extends AppCompatActivity
       hmHiddenFileds.put(pmHiddenFields.getMenu().getItem(pmHiddenFields.getMenu().size()-1), view);
    }
    
-   private boolean hasFieldsOfType(int iTypeID)
+   private boolean hasNotFieldsOfType(int iTypeID)
    {
-      boolean hasFieldsOfType = false; 
+      boolean hasFieldsOfType = false;
       for(Field field: oBook.alFields)
       {
          if(field.iTypeID == iTypeID)
@@ -1022,6 +999,6 @@ public class EditBookActivity extends AppCompatActivity
             break;
          }
       }
-      return hasFieldsOfType;
+      return !hasFieldsOfType;
    }
 }

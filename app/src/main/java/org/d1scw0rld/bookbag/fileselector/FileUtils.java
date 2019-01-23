@@ -6,11 +6,11 @@ import java.util.Locale;
 /**
  * A set of tools for file operations
  */
-public class FileUtils
+class FileUtils
 {
 
    /** Filter which accepts every file */
-   public static final String FILTER_ALLOW_ALL = "*.*";
+   static final String FILTER_ALLOW_ALL = "*.*";
 
    /**
     * This method checks that the file is accepted by the filter
@@ -21,7 +21,7 @@ public class FileUtils
     *           - criterion - the file type(for example ".jpg")
     * @return true - if file meets the criterion - false otherwise.
     */
-   public static boolean accept(final File file, final String filter)
+   static boolean accept(final File file, final String filter)
    {
       if(filter.compareTo(FILTER_ALLOW_ALL) == 0)
       {

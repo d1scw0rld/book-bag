@@ -1,8 +1,7 @@
 package org.d1scw0rld.bookbag.dto;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
-import android.os.Build;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -15,11 +14,11 @@ import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.d1scw0rld.bookbag.R;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
-import org.d1scw0rld.bookbag.R;
 
 public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookListItem>
 {
@@ -40,7 +39,7 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
       super(context);
 
       setItems(generateItems(alParentsResults));
-      alListItemsNotFiltered = new ArrayList<BookListItem>(allItems);
+      alListItemsNotFiltered = new ArrayList<>(allItems);
 //      alListItemsNotFiltered.addAll(allItems);
    }
 
@@ -62,8 +61,6 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
             items.add(new BookListItem(result.id, result.content));
       }
 
-//      alListItemsNotFiltered = new ArrayList<BookListItem>();
-//      alListItemsNotFiltered.addAll(items);
       return items;
    }
 
@@ -71,12 +68,12 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
    {
       public long id = -1;
       
-      public BookListItem(String group)
+      BookListItem(String group)
       {
          super(TYPE_HEADER, group);
       }
 
-      public BookListItem(long id, String item)
+      BookListItem(long id, String item)
       {
          super(TYPE_ITEM, item);
 
@@ -90,13 +87,13 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
 
       private ImageView arrow;
 
-      public HeaderViewHolder(View view)
+      HeaderViewHolder(View view)
       {
 //         super(view, (ImageView) view.findViewById(R.id.item_arrow));
          super(view);
          
-         arrow = (ImageView) view.findViewById(R.id.iv_arrow);
-         name = (TextView) view.findViewById(R.id.tv_header);
+         arrow = view.findViewById(R.id.iv_arrow);
+         name = view.findViewById(R.id.tv_header);
       }
 
       public void bind(int position)
@@ -104,31 +101,21 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
          super.bind(position);
 
          name.setText(visibleItems.get(position).sText);
-//         arrow.setRotation(isExpanded(position) ? ROTATED_POSITION : INITIAL_POSITION);
-//         onExpansionToggled(!isExpanded(position));
-//         if(isExpanded(position))
-//         {
-////            arrow.setRotation(ROTATED_POSITION);
-//            
-////            arrow.setRotation(45);
-//            onExpansionToggled(isExpanded(position));
-//         }
       }
       
-      @SuppressLint("NewApi")
       @Override
       public void setExpanded(boolean expanded)
       {
          super.setExpanded(expanded);
-         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-            arrow.setRotation(expanded ? ROTATED_POSITION : INITIAL_POSITION);
+//         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+         arrow.setRotation(expanded ? ROTATED_POSITION : INITIAL_POSITION);
       }      
       
       @Override
       public void onExpansionToggled(boolean expanded)
       {
-         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-         {
+//         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+//         {
             RotateAnimation rotateAnimation;
             if(expanded)
             { 
@@ -157,7 +144,7 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
             rotateAnimation.setFillAfter(true);
             arrow.startAnimation(rotateAnimation);
          }
-      }
+//      }
    }
 
    public class ItemViewHolder extends ExpandableRecyclerAdapter<BookListItem>.ViewHolder
@@ -166,15 +153,15 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
       
       TextView name;
 
-      public ItemViewHolder(View view)
+      ItemViewHolder(View view)
       {
          super(view);
 
-         name = (TextView) view.findViewById(R.id.tv_item);
+         name = view.findViewById(R.id.tv_item);
          this.view = view;
       }
 
-      public void bind(int position)
+      void bind(int position)
       {
          String sText = visibleItems.get(position).sText;
          Spannable spContent = new SpannableString(sText);
@@ -195,8 +182,9 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
       }
    }
 
+   @NonNull
    @Override
-   public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
+   public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
    {
       switch (viewType)
       {
@@ -209,7 +197,7 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
    }
 
    @Override
-   public void onBindViewHolder(ExpandableRecyclerAdapter<BookListItem>.ViewHolder holder,
+   public void onBindViewHolder(@NonNull ExpandableRecyclerAdapter<BookListItem>.ViewHolder holder,
                                 int position)
    {
       switch (getItemViewType(position))
@@ -232,7 +220,7 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
       iAllChildrendCount = 0;
 
       charText = charText.toLowerCase(Locale.getDefault());
-      ArrayList<BookListItem> alBookListItemsTmp = new ArrayList<BooksAdapter.BookListItem>();
+      ArrayList<BookListItem> alBookListItemsTmp = new ArrayList<>();
       sFilter = charText;
       visibleItems.clear();
       if(charText.length() == 0)
@@ -310,10 +298,8 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
          super.removeItemAt(visiblePosition-1);
    }
    
-   public boolean isExpandAll()
-   {
-      return visibleItems.size() == allItems.size();
-   }
-   
-   
+//   public boolean isExpandAll()
+//   {
+//      return visibleItems.size() == allItems.size();
+//   }
 }

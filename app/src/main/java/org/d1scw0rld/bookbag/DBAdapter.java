@@ -29,8 +29,7 @@ import org.d1scw0rld.bookbag.dto.Result;
 
 public class DBAdapter
 {
-	public static final String DATABASE_NAME = "book_bag.db",
-	                           DB_PATH = "//data//org.d1scw0rld.bookbag//databases//";
+	static final String DATABASE_NAME = "book_bag.db";
 
 	private static final String TAG = "DB";
 	
@@ -118,51 +117,51 @@ public class DBAdapter
 	
 	public final static char separator = DecimalFormatSymbols.getInstance().getDecimalSeparator();
 
-   public final static int FLD_AUTHOR = 1,
-                           FLD_SERIE = 2,
-                           FLD_GENRE = 3,
-                           FLD_LANGUAGE = 4,
-                           FLD_PUBLISHER = 5,
-                           FLD_PUBLICATION_LOCATION = 6,
-                           FLD_STATUS = 7,
-                           FLD_RATING = 8,
-                           FLD_FORMAT = 9,
-                           FLD_LOCATION = 10,
-                           FLD_CONDITION = 11,
-                           FLD_CURRENCY = 12,
-                           FLD_READ = 13,
-                           FLD_LOANED_TO = 14,
-                           FLD_TITLE = 99,
-                           FLD_DESCRIPTION = 100,
-                           FLD_VOLUME = 101,
-                           FLD_PUBLICATION_DATE = 102,
-                           FLD_PAGES = 103,
-                           FLD_PRICE = 104,
-                           FLD_VALUE = 105,
-                           FLD_DUE_DATE = 106,
-                           FLD_READ_DATE = 107,
-                           FLD_EDITION = 108,
-                           FLD_ISBN = 109,
-                           FLD_WEB = 110,
-                           FLD_PRICE_CURRENCY = 111,
-                           FLD_VALUE_CURRENCY = 112;                           
+   final static int FLD_AUTHOR = 1,
+                    FLD_SERIE = 2,
+                    FLD_GENRE = 3,
+                    FLD_LANGUAGE = 4,
+                    FLD_PUBLISHER = 5,
+                    FLD_PUBLICATION_LOCATION = 6,
+                    FLD_STATUS = 7,
+                    FLD_RATING = 8,
+                    FLD_FORMAT = 9,
+                    FLD_LOCATION = 10,
+                    FLD_CONDITION = 11,
+                    FLD_CURRENCY = 12,
+                    FLD_READ = 13,
+                    FLD_LOANED_TO = 14,
+                    FLD_TITLE = 99,
+                    FLD_DESCRIPTION = 100,
+                    FLD_VOLUME = 101,
+                    FLD_PUBLICATION_DATE = 102,
+                    FLD_PAGES = 103,
+                    FLD_PRICE = 104,
+                    FLD_VALUE = 105,
+                    FLD_DUE_DATE = 106,
+                    FLD_READ_DATE = 107,
+                    FLD_EDITION = 108,
+                    FLD_ISBN = 109,
+                    FLD_WEB = 110;
+//                            FLD_PRICE_CURRENCY = 111,
+//                            FLD_VALUE_CURRENCY = 112;
 
-   public final static int SRT_TTL = 1,
-                           SRT_AUT = 2,
-                           SRT_WNT_PBL_AUT = 3,
-                           SRT_WNT_PBL_TTL = 4,
-                           SRT_RD_AUT = 5,
-                           SRT_NOT_RD_AUT = 6,
-                           SRT_NOT_RD_TTL = 7,
-                           SRT_RD_TTL = 8,
-                           SRT_PBL_AUT = 9,
-                           SRT_PBL_TTL = 10,
-                           SRT_LND_TTL = 11,
-                           SRT_LND_BRW = 12;
+   final static int SRT_TTL = 1,
+                    SRT_AUT = 2,
+                    SRT_WNT_PBL_AUT = 3,
+                    SRT_WNT_PBL_TTL = 4,
+                    SRT_RD_AUT = 5,
+                    SRT_NOT_RD_AUT = 6,
+                    SRT_NOT_RD_TTL = 7,
+                    SRT_RD_TTL = 8,
+                    SRT_PBL_AUT = 9,
+                    SRT_PBL_TTL = 10,
+                    SRT_LND_TTL = 11,
+                    SRT_LND_BRW = 12;
 
-   public final static ArrayList<FieldType> FIELD_TYPES = new ArrayList<FieldType>();
+   final static ArrayList<FieldType> FIELD_TYPES = new ArrayList<>();
    
-	public DBAdapter(Context _context)
+	DBAdapter(Context _context)
 	{
 		this.context = _context;
 		dbHelper = new DBOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -195,7 +194,7 @@ public class DBAdapter
 		FIELD_TYPES.add(new FieldType(FLD_WEB, r.getString(R.string.fld_web), FieldType.TYPE_TEXT));
 	}
 
-	public void open() throws SQLiteException
+	void open() throws SQLiteException
 	{
 		try
 		{
@@ -207,51 +206,50 @@ public class DBAdapter
 		}
 	}
 
-	public void close()
+	void close()
 	{
 		db.close();
 	}
 
-   public ArrayList<Result> getBooksOrderedBy(String query)
+//   public ArrayList<Result> getBooksOrderedBy(String query)
+//   {
+//      if(Debug.ON)
+//      {
+//         return null;
+//      }
+//      else
+//      {
+//         ArrayList<Result> alResults = new ArrayList<Result>();
+//
+//         Cursor cursor = db.rawQuery(query, null);
+//         Result result;
+//
+//         if(cursor.moveToFirst())
+//         {
+//            do
+//            {
+//
+//               result = new Result();
+//               result.id = Integer.parseInt(cursor.getString(0));
+//               result.content = cursor.getString(1);
+//               alResults.add(result);
+//            } while (cursor.moveToNext());
+//         }
+//         cursor.close();
+//
+//         return alResults;
+//      }
+//   }
+
+   private ArrayList<ParentResult> getBooksOrderedBy1(String query)
    {
       if(Debug.ON)
       {
-//         return DummyContent.BOOKS;
          return null;
       }
       else
       {
-         ArrayList<Result> alResults = new ArrayList<Result>();
-   
-         Cursor cursor = db.rawQuery(query, null);
-         Result result;
-   
-         if(cursor.moveToFirst())
-         {
-            do
-            {
-
-               result = new Result();
-               result.id = Integer.parseInt(cursor.getString(0));
-               result.content = cursor.getString(1);
-               alResults.add(result);
-            } while (cursor.moveToNext());
-         }
-         cursor.close();
-   
-         return alResults;
-      }      
-   }
-
-   public ArrayList<ParentResult> getBooksOrderedBy1(String query)
-   {
-      if(Debug.ON)
-      {
-         return null;
-      }
-      else
-      {
-         ArrayList<ParentResult> alParrentResults = new ArrayList<ParentResult>();
+         ArrayList<ParentResult> alParrentResults = new ArrayList<>();
    
          Cursor cursor = db.rawQuery(query, null);
          
@@ -259,7 +257,7 @@ public class DBAdapter
          {
             Result result;
             String sParrent = cursor.getString(0);
-            List<Result> alChildResults = new ArrayList<Result>();
+            List<Result> alChildResults = new ArrayList<>();
             ParentResult oParrentResult = new ParentResult(sParrent, alChildResults);
 
             do
@@ -271,12 +269,9 @@ public class DBAdapter
                if(!sParrent.equalsIgnoreCase(oParrentResult.getName()))
                {
                   alParrentResults.add(oParrentResult);
-                  alChildResults = new ArrayList<Result>();
+                  alChildResults = new ArrayList<>();
                   oParrentResult = new ParentResult(sParrent, alChildResults);
-//                  alParrentResults.add(oParrentResult);
-//                  sParrentTmp = sParrent;
                }
-//               oParrentResult.addChildResult(result);
                alChildResults.add(result);
             } while (cursor.moveToNext());
             alParrentResults.add(oParrentResult);
@@ -444,9 +439,9 @@ public class DBAdapter
                                           + " ORDER BY parent, child";
    
 
-   public ArrayList<ParentResult> getBooks(int iOrder)
+   ArrayList<ParentResult> getBooks(int iOrder)
    {
-      String query = "";
+      String query;
       switch(iOrder)
       {
          case SRT_TTL: 
@@ -501,12 +496,10 @@ public class DBAdapter
             return null;
       }
 
-      ArrayList<ParentResult> alParrentResults = getBooksOrderedBy1(query);
-      
-      return alParrentResults;
+      return getBooksOrderedBy1(query);
    }
 
-   public void insertBook(Book oBook)
+   void insertBook(Book oBook)
    {
       db.beginTransaction();
       try
@@ -555,32 +548,19 @@ public class DBAdapter
       shrink();
    }
 
-   public ArrayList<Field> getFieldValues(int iTypeID)
+   ArrayList<Field> getFieldValues(int iTypeID)
    {
       return getFieldValues(iTypeID, false);
    }
    
-   public ArrayList<Field> getFieldValues(int iTypeID, boolean isOrdered)
+   ArrayList<Field> getFieldValues(int iTypeID, boolean isOrdered)
    {
 
       ArrayList<Field> alFieldValues = new ArrayList<>();
 
-      // SELECT f.id, bf.type_id, f.name
-      // FROM book_fields as bf LEFT JOIN fields AS f ON bf.field_id = f.id
-      // WHERE bf.type_id =1
-      // ORDER BY f.name
-
-      // String sql = "SELECT f." + KEY_ID + ", bf." + KEY_TP_ID + ", f." +
-      // KEY_NM
-      // + " FROM " + TABLE_BOOK_FIELDS + " as bf LEFT JOIN " + TABLE_FIELDS +
-      // " AS f ON bf." + KEY_FLD_ID + " = f." + KEY_ID
-      // + " WHERE bf." + KEY_TP_ID + " = " + iTypeID
-      // + " ORDER BY f." + KEY_NM;
-
       String sql = "SELECT f." + KEY_ID + ", f." + KEY_TP_ID + ", f." + KEY_NM
                    + " FROM " + TABLE_FIELDS + " as f "
                    + " WHERE f." + KEY_TP_ID + " = " + iTypeID;
-      // + " ORDER BY f." + KEY_NM;
 
       if(isOrdered)
          sql += " ORDER BY f." + KEY_NM;
@@ -588,7 +568,6 @@ public class DBAdapter
       Cursor cursor = db.rawQuery(sql, null);
 
       Field oField;
-      // ArrayList<Field> alFields = new ArrayList<>();
       if(cursor.moveToFirst())
       {
          do
@@ -600,11 +579,12 @@ public class DBAdapter
             alFieldValues.add(oField);
          } while(cursor.moveToNext());
       }
+      cursor.close();
 
       return alFieldValues;
    }
 
-   public Book getBook(long iBookID)
+   Book getBook(long iBookID)
    {
       Book oBook = null;
 
@@ -642,7 +622,6 @@ public class DBAdapter
       cursor = db.rawQuery(sql, null);
 
       Field oField;
-      // ArrayList<Field> alFields = new ArrayList<>();
       if(cursor.moveToFirst())
       {
          do
@@ -651,15 +630,16 @@ public class DBAdapter
                                Integer.parseInt(cursor.getString(ID_KEY_TP_ID)),
                                cursor.getString(ID_KEY_NM));
 
+            assert oBook != null;
             oBook.alFields.add(oField);
          } while(cursor.moveToNext());
       }
-      // oBook.alFields = alFields;
+      cursor.close();
 
       return oBook;
    }
 
-   public boolean deleteBook(long iBookID)
+   boolean deleteBook(long iBookID)
    {
       boolean result = true;
 
@@ -685,7 +665,7 @@ public class DBAdapter
       return result;
    }
 
-   public boolean updateBook(Book oBook)
+   boolean updateBook(Book oBook)
    {
       ContentValues oValues;
       boolean result = true;
@@ -744,7 +724,7 @@ public class DBAdapter
       return result;
    }
 
-   public void shrink()
+   private void shrink()
    {
       db.execSQL("VACUUM");
    }
@@ -753,7 +733,7 @@ public class DBAdapter
 	{
       private Context context;
 		
-      public DBOpenHelper(Context context, String name, CursorFactory factory, int version)
+      DBOpenHelper(Context context, String name, CursorFactory factory, int version)
 		{
 			super(context, name, factory, version);
 			this.context = context;
@@ -835,7 +815,7 @@ public class DBAdapter
     * Copies the database file at the specified location over the current
     * internal application database.
     * */
-   public boolean importDatabase(String dbPath) 
+   boolean importDatabase(String dbPath)
    {
 
       // Close the SQLiteOpenHelper so it will commit the created empty
@@ -863,7 +843,7 @@ public class DBAdapter
       return false;
    }
    
-   public boolean exportDatabase(String dbPath)
+   boolean exportDatabase(String dbPath)
    {
 
       // Close the SQLiteOpenHelper so it will commit the created empty

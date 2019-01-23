@@ -1,5 +1,7 @@
 package org.d1scw0rld.bookbag.dto;
 
+import android.support.annotation.NonNull;
+
 import org.d1scw0rld.bookbag.fields.FieldMultiText.Item;
 
 /**
@@ -36,6 +38,7 @@ public class Field implements Item
       sValue = f.sValue;
    }
 
+   @NonNull
    @Override
    public String toString()
    {
@@ -55,13 +58,4 @@ public class Field implements Item
       Field f = (Field) o;
       return iID == f.iID && iTypeID == f.iTypeID && sValue.equalsIgnoreCase(f.sValue); 
    }
-   
-   
-
-
-//   @Override
-//   public void copy(Object o)
-//   {
-//      copy((Field) o);
-//   }
 }

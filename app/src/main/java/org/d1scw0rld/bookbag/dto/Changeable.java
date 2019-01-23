@@ -1,17 +1,17 @@
 package org.d1scw0rld.bookbag.dto;
 
-public class Changeable<T> 
-{
-   public T value = null;
+import android.support.annotation.NonNull;
 
-//   public Changeable() 
-//   {
-//   }
-   public Changeable(T value) 
+public class Changeable<T>
+{
+   public T value;
+
+   Changeable(T value)
    {
       this.value = value;
    }
 
+   @NonNull
    public String toString() 
    {
       return value.toString();
@@ -22,10 +22,10 @@ public class Changeable<T>
       return value.getClass();
    }
    
-   public void set(T value)
-   {
-      this.value = value;
-   }
+//   public void set(T value)
+//   {
+//      this.value = value;
+//   }
 
    public boolean equals(Object other) 
    {

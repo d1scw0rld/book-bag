@@ -1,17 +1,21 @@
 package org.d1scw0rld.bookbag.dto;
 
+import android.support.annotation.NonNull;
+
+import java.util.Locale;
+
 public class Date
 {
    public int iDay, 
               iMonth, 
               iYear; 
 
-   public Date()
-   {
-      iDay = 1;
-      iMonth = 1;
-      iYear = 1900;
-   }
+//   public Date()
+//   {
+//      iDay = 1;
+//      iMonth = 1;
+//      iYear = 1900;
+//   }
    
    public Date(int iDay,
                 int iMonth,
@@ -28,27 +32,28 @@ public class Date
       fromInt(iDate);
    }
    
-   public Date(Date oDate)
-   {
-      this(oDate.iDay, oDate.iMonth, oDate.iYear);
-   }  
+//   public Date(Date oDate)
+//   {
+//      this(oDate.iDay, oDate.iMonth, oDate.iYear);
+//   }
    
    public int toInt()
    {
       return iYear*10000 + iMonth*100 + iDay;
    }
    
-   public void fromInt(int iDate)
+   private void fromInt(int iDate)
    {
       iDay = iDate % 100;
       iMonth = (iDate / 100) % 100;
       iYear = iDate / 10000;
    }
-   
+
+   @NonNull
    @Override
    public String toString()
    {
-      return String.format("%02d", iDay) + "/" + String.format("%02d", iMonth) + "/" + iYear;
+      return String.format(Locale.getDefault(), "%02d", iDay) + "/" + String.format(Locale.getDefault(), "%02d", iMonth) + "/" + iYear;
    }
    
    @Override
@@ -58,9 +63,7 @@ public class Date
 
       if(iDay != ((Date)o).iDay) return false;
       if(iMonth != ((Date)o).iMonth) return false;
-      if(iYear != ((Date)o).iYear) return false;
-      
-      return true;
+      return iYear == ((Date) o).iYear;
    }      
 
 }

@@ -1,6 +1,7 @@
 package org.d1scw0rld.bookbag;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.view.LayoutInflater;
@@ -25,27 +26,19 @@ public class SettingsActivity extends AppCompatActivity
                                ViewGroup container,
                                Bundle savedInstanceState)
       {
-         // TODO Auto-generated method stub
-         View view = super.onCreateView(inflater, container, savedInstanceState);
-//         view.setBackgroundColor(ContextCompat.getColor(getContext(), R.drawable.background_selector_accent));
-         return view;
+         return super.onCreateView(inflater, container, savedInstanceState);
       }
 
       @Override
       public void onCreatePreferences(Bundle savedInstanceState, String rootKey)
       {
-//         super.onCreate(savedInstanceState);
          addPreferencesFromResource(R.xml.preference_screen);
-//         getActivity().getListView().setSelector(R.drawable.background_selector_accent);
       }
 
       @Override
-      public void onViewCreated(View view, Bundle savedInstanceState)
+      public void onViewCreated(@NonNull View view, Bundle savedInstanceState)
       {
          super.onViewCreated(view, savedInstanceState);
-//         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-//         getListView().setSelector(R.drawable.background_selector_accent);
-//         }
       }
       
       

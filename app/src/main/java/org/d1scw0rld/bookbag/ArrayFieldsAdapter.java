@@ -3,6 +3,7 @@ package org.d1scw0rld.bookbag;
 import java.util.ArrayList;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v4.os.ConfigurationCompat;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,27 +13,23 @@ import android.widget.TextView;
 
 import org.d1scw0rld.bookbag.dto.Field;
 
-public class ArrayFieldsAdapter extends ArrayAdapter<Field> 
+public class ArrayFieldsAdapter extends ArrayAdapter<Field>
 {
 //   private final String MY_DEBUG_TAG = "ArrayFieldsAdapter";
-//   private ArrayList<Field> items;
    private ArrayList<Field> items;
    private ArrayList<Field> suggestions;
    private Context context;
-//   private int viewResourceId;
 
    public ArrayFieldsAdapter(Context context, int viewResourceId, ArrayList<Field> items) 
    {
        super(context, viewResourceId, items);
-//       this.items = items;
-//       this.itemsAll = (ArrayList<Field>) items.clone();
        this.context = context;
        this.items = items;
-       this.suggestions = new ArrayList<Field>();
-//       this.viewResourceId = viewResourceId;
+       this.suggestions = new ArrayList<>();
    }
 
-   public View getView(int position, View convertView, ViewGroup parent) 
+   @NonNull
+   public View getView(int position, View convertView, @NonNull ViewGroup parent)
    {
       TextView view = (TextView) super.getView(position, convertView, parent);
       // Replace text with my own
@@ -40,35 +37,20 @@ public class ArrayFieldsAdapter extends ArrayAdapter<Field>
       return view;         
       
    }
-//       View v = convertView;
-//       if (v == null) {
-//           LayoutInflater vi = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-//           v = vi.inflate(viewResourceId, null);
-//       }
-//       Field oField = items.get(position);
-//       if (oField != null) {
-//           TextView customerNameLabel = (TextView) v.findViewById(R.id.customerNameLabel);
-//           if (customerNameLabel != null) {
-////             Log.i(MY_DEBUG_TAG, "getView Customer Name:"+customer.getName());
-//               customerNameLabel.setText(oField.sValue);
-//           }
-//       }
-//       return v;
-//   }
 
+   @NonNull
    @Override
    public Filter getFilter() 
    {
        return nameFilter;
    }
 
-   Filter nameFilter = new Filter() 
+   private Filter nameFilter = new Filter()
    {
       @Override
       public String convertResultToString(Object resultValue) 
       {
-         String str = ((Field)(resultValue)).sValue; 
-         return str;
+         return ((Field)(resultValue)).sValue;
       }
       
       @Override

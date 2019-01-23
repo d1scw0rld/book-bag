@@ -15,6 +15,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
@@ -30,7 +31,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.d1scw0rld.bookbag.dto.BooksAdapter;
-import org.d1scw0rld.bookbag.dto.DividerItemDecoration;
+//import org.d1scw0rld.bookbag.dto.DividerItemDecoration;
 import org.d1scw0rld.bookbag.dto.FileUtils;
 import org.d1scw0rld.bookbag.fileselector.FileOperation;
 import org.d1scw0rld.bookbag.fileselector.FileSelectorDialog;
@@ -221,9 +222,6 @@ public class BookListActivity extends AppCompatActivity
                oDbAdapter.deleteBook(sel_id);
                oBooksAdapter.removeAt(iClickedItemNdx);
                tvBooksCount.setText(getResources().getQuantityString(R.plurals.books, oBooksAdapter.getAllChildrenCount(), oBooksAdapter.getAllChildrenCount()));
-//               tvBooksCount.setText(String.valueOf(oBooksAdapter.getAllChildrenCount())
-//                                    + " "
-//                                    + getString(R.string.lbl_books));
 
                mode.finish(); // Action picked, so close the CAB
                return true;
@@ -291,8 +289,8 @@ public class BookListActivity extends AppCompatActivity
 
       loadPreferences();
       
-      tvBooksOrder = (TextView) findViewById(R.id.tv_books_order);
-      tvBooksCount = (TextView) findViewById(R.id.tv_books_count);
+      tvBooksOrder = findViewById(R.id.tv_books_order);
+      tvBooksCount = findViewById(R.id.tv_books_count);
 
       FileUtils.verifyStoragePermissions(this);
       
@@ -300,11 +298,11 @@ public class BookListActivity extends AppCompatActivity
 
       new File(Environment.getExternalStorageDirectory() + File.separator + sExportFolder + File.separator).mkdirs();
       
-      Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+      Toolbar toolbar = findViewById(R.id.toolbar);
       setSupportActionBar(toolbar);
       toolbar.setTitle(getTitle());
 
-      FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+      FloatingActionButton fab = findViewById(R.id.fab);
       fab.setOnClickListener(new View.OnClickListener()
       {
          @Override
@@ -316,9 +314,10 @@ public class BookListActivity extends AppCompatActivity
          }
       });
       
-      recyclerView = (RecyclerView) findViewById(R.id.book_list);
+      recyclerView = findViewById(R.id.book_list);
       assert recyclerView != null;
-      recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST));
+//      recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST));
+      recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
       recyclerView.setItemAnimator(new DefaultItemAnimator());
       recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -389,7 +388,6 @@ public class BookListActivity extends AppCompatActivity
             oBooksAdapter.expandAll();
             oBooksAdapter.filter(arg0);
             tvBooksCount.setText(getResources().getQuantityString(R.plurals.books, oBooksAdapter.getAllChildrenCount(), oBooksAdapter.getAllChildrenCount()));
-//            tvBooksCount.setText(String.valueOf(oBooksAdapter.getAllChildrenCount()) + " " + getString(R.string.lbl_books));
             return true;
          }
       });
@@ -479,11 +477,8 @@ public class BookListActivity extends AppCompatActivity
    protected void onActivityResult(int requestCode, int resultCode, Intent data)
    {
       super.onActivityResult(requestCode, resultCode, data);
-      
-      if(resultCode == RESULT_OK)
-         bUpdate = true;
-      else
-         bUpdate = false;
+
+      bUpdate = resultCode == RESULT_OK;
    }
 
    private void setupRecyclerView(@NonNull RecyclerView recyclerView, int iOrderID)
@@ -499,9 +494,6 @@ public class BookListActivity extends AppCompatActivity
          {
             tvBooksOrder.setText(oOrderItem.sTitle);
             tvBooksCount.setText(getResources().getQuantityString(R.plurals.books, oBooksAdapter.getAllChildrenCount(), oBooksAdapter.getAllChildrenCount()));
-//            tvBooksCount.setText(String.valueOf(oBooksAdapter.getAllChildrenCount())
-//                                 + " " 
-//                                 + getString(R.string.lbl_books));
          }
    }
    
@@ -518,15 +510,15 @@ public class BookListActivity extends AppCompatActivity
       
       editor.putInt(PREF_ORDER_ID, iOrderID);
       
-      editor.commit();      
+      editor.apply();
    }
 
    private class OrderItem 
    {
-      public int iID;
-      public String sTitle;
+      int iID;
+      String sTitle;
       
-      public OrderItem(int iID, String sTitle)
+      OrderItem(int iID, String sTitle)
       {
          this.iID = iID;
          this.sTitle = sTitle;

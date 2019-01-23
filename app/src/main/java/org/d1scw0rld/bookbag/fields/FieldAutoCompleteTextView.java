@@ -22,7 +22,6 @@ public class FieldAutoCompleteTextView extends LinearLayout
    
    private Title oTitle;
    private AutoCompleteTextViewX oAutoCompleteTextViewX;
-//   private OnUpdateListener onUpdateListener;
 
    public FieldAutoCompleteTextView(Context context)
    {
@@ -101,76 +100,25 @@ public class FieldAutoCompleteTextView extends LinearLayout
       LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       inflater.inflate(R.layout.field_auto_complete_text_view, this, true);
       
-      oTitle = (Title)this.findViewById(R.id.title);
-      oAutoCompleteTextViewX = (AutoCompleteTextViewX) this.findViewById(R.id.autoCompleteTextView);
+      oTitle = this.findViewById(R.id.title);
+      oAutoCompleteTextViewX = this.findViewById(R.id.autoCompleteTextView);
       oAutoCompleteTextViewX.setThreshold(1);
-      
-//      oAutoCompleteTextViewX.setOnUpdateListener(new AutoCompleteTextViewX.OnUpdateListener()
-//      {
-//         @Override
-//         public void onUpdate(EditText et)
-//         {
-////            ((Field)oFieldAutoCompleteTextView.getTag()).sValue = et.getText().toString();
-//            onUpdateListener.onUpdate(et);
-//         }
-//      });
-   }   
+   }
    
    public void vInit(Context context, Field oField, final ArrayList<Field> alFieldValues)
    {
       LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       inflater.inflate(R.layout.field_auto_complete_text_view, this, true);
       
-      oTitle = (Title)this.findViewById(R.id.title);
-      oAutoCompleteTextViewX = (AutoCompleteTextViewX) this.findViewById(R.id.autoCompleteTextView);
+      oTitle = this.findViewById(R.id.title);
+      oAutoCompleteTextViewX = this.findViewById(R.id.autoCompleteTextView);
       oAutoCompleteTextViewX.setThreshold(1);
       
       if(oField != null && !oField.sValue.isEmpty())
          oAutoCompleteTextViewX.setText(oField.sValue);
-//      oFieldAutoCompleteTextView.setTag(f);
 
-//      int iSelected;
-//      final String tFieldValues[] = new String[alFieldValues.size()];
-//      for(int i = 0; i < alFieldValues.size(); i++)
-//      {
-//         tFieldValues[i] = alFieldValues.get(i).sValue;
-////         if(oField != null && oField.iID == alFieldValues.get(i).iID)
-////            iSelected = i;
-//      }
-
-//    ArrayAdapter<String> oArrayAdapter = new ArrayAdapter<String> (this, android.R.layout.select_dialog_item, tFieldValues);
       ArrayFieldsAdapter oArrayAdapter = new ArrayFieldsAdapter(context, android.R.layout.select_dialog_item, alFieldValues);
       oAutoCompleteTextViewX.setAdapter(oArrayAdapter);
-//      oAutoCompleteTextViewX.setOnItemClickListener(new OnItemClickListener()
-//      {
-//         @Override
-//         public void onItemClick(AdapterView<?> adapter, View view, int position, long rowId)
-//         {
-////            Field fldSelected = (Field)adapter.getItemAtPosition(position);
-////            ((Field)oFieldAutoCompleteTextView.getTag()).copy(fldSelected);
-//            onUpdateListener.onUpdate(FieldAutoCompleteTextView.this, position);
-////            String selection = (String) adapter.getItemAtPosition(position);
-//////            int pos = -1;
-////            for (int i = 0, pos = -1; i < tAuthors.length && pos == -1; i++) 
-////            {
-////               if (tFieldValues[i].equals(selection)) 
-////               {
-////                  pos = i;
-////                  ((Field)oFieldAutoCompleteTextView.getTag()).copy(alFields.get(pos));
-////               }
-////            }
-//         }
-//      });
-      
-//      oAutoCompleteTextViewX.setOnUpdateListener(new AutoCompleteTextViewX.OnUpdateListener()
-//      {
-//         @Override
-//         public void onUpdate(EditText et)
-//         {
-////            ((Field)oFieldAutoCompleteTextView.getTag()).sValue = et.getText().toString();
-//            onUpdateListener.onUpdate(et);
-//         }
-//      });
    }
    
    public void setTitle(String title)
@@ -205,7 +153,7 @@ public class FieldAutoCompleteTextView extends LinearLayout
 
    public void setText(int resid)
    {
-      oAutoCompleteTextViewX.setText(resid);;
+      oAutoCompleteTextViewX.setText(resid);
    }
    
    public Editable getText()
@@ -220,7 +168,7 @@ public class FieldAutoCompleteTextView extends LinearLayout
 
    public void setHint(int resid)
    {
-      oAutoCompleteTextViewX.setHint(resid);;
+      oAutoCompleteTextViewX.setHint(resid);
    }
    
    public void setThreshold(int threshold)
