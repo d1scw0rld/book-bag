@@ -209,10 +209,10 @@ public class BookListActivity extends AppCompatActivity
                return true;
 
             case R.id.action_duplicate:
-               Intent ntDubplicateBook = new Intent(getApplicationContext(), EditBookActivity.class);
-               ntDubplicateBook.putExtra(EditBookActivity.BOOK_ID, sel_id);
-               ntDubplicateBook.putExtra(EditBookActivity.IS_COPY, true);
-               startActivityForResult(ntDubplicateBook, SHOW_EDIT_BOOK_COPY);
+               Intent ntDuplicateBook = new Intent(getApplicationContext(), EditBookActivity.class);
+               ntDuplicateBook.putExtra(EditBookActivity.BOOK_ID, sel_id);
+               ntDuplicateBook.putExtra(EditBookActivity.IS_COPY, true);
+               startActivityForResult(ntDuplicateBook, SHOW_EDIT_BOOK_COPY);
                
                mode.finish();
                return true;

@@ -24,7 +24,7 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
 {
    private static final float INITIAL_POSITION = 0f,
                               ROTATED_POSITION = 180f;
-   private int iAllChildrendCount;
+   private int iAllChildrenCount;
    
    private String sFilter = "";
    
@@ -51,12 +51,12 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
 
    private List<BookListItem> generateItems(ArrayList<ParentResult> alParentsResults)
    {
-      iAllChildrendCount = 0;
+      iAllChildrenCount = 0;
       List<BookListItem> items = new ArrayList<>();
       for(ParentResult oParentResult : alParentsResults)
       {
          items.add(new BookListItem(oParentResult.getName()));
-         iAllChildrendCount += oParentResult.getChildList().size(); 
+         iAllChildrenCount += oParentResult.getChildList().size();
          for(Result result : oParentResult.getChildList())
             items.add(new BookListItem(result.id, result.content));
       }
@@ -89,7 +89,6 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
 
       HeaderViewHolder(View view)
       {
-//         super(view, (ImageView) view.findViewById(R.id.item_arrow));
          super(view);
          
          arrow = view.findViewById(R.id.iv_arrow);
@@ -217,7 +216,7 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
 
    public void filter(String charText)
    {
-      iAllChildrendCount = 0;
+      iAllChildrenCount = 0;
 
       charText = charText.toLowerCase(Locale.getDefault());
       ArrayList<BookListItem> alBookListItemsTmp = new ArrayList<>();
@@ -228,7 +227,7 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
          setItems(alListItemsNotFiltered);
          for(ListItem oListItem : alListItemsNotFiltered)
             if(oListItem.ItemType == TYPE_ITEM)
-               iAllChildrendCount++;
+               iAllChildrenCount++;
       } 
       else
       {
@@ -245,15 +244,8 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
                   && alBookListItemsTmp.get(alBookListItemsTmp.size()-1).ItemType == TYPE_HEADER)
                   alBookListItemsTmp.remove(alBookListItemsTmp.size()-1);
                if(oBookListItem.ItemType == TYPE_ITEM)
-                  iAllChildrendCount++;
+                  iAllChildrenCount++;
                alBookListItemsTmp.add(oBookListItem);
-//               visibleItems.add(oBookListItem);
-
-               
-//               if(oBookListItem.ItemType == TYPE_HEADER && allItems.get(visibleItems.size()-1).ItemType == TYPE_HEADER)
-//                  allItems.remove(visibleItems.size()-1);
-//               allItems.add(oBookListItem);
-//               visibleItems.add(oBookListItem);
             }
          }
          if(alBookListItemsTmp.size() > 0 
@@ -264,13 +256,12 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
       
       expandAll();
       
-//      expandAll();
-//      notifyDataSetChanged();   
+//      notifyDataSetChanged();
    }
 
    public int getAllChildrenCount()
    {
-      return iAllChildrendCount;
+      return iAllChildrenCount;
    }
 
    public void setClickListener(OnClickListener onClickListener)
@@ -286,7 +277,7 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
    public void removeAt(int iClickedItemNdx)
    {
       removeItemAt(iClickedItemNdx);
-      iAllChildrendCount--;
+      iAllChildrenCount--;
    }
 
    @Override

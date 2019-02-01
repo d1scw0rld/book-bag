@@ -28,9 +28,8 @@ public class FieldMultiSpinner extends LinearLayout
    private Title              oTitle;
    private Button             btnSpinner;
    private String             hint               = "";
-   private String             contentDescription = "";
    private Context            context;
-   private ArrayList<Item>    alItems            = new ArrayList<FieldMultiSpinner.Item>(); 
+   private ArrayList<Item>    alItems            = new ArrayList<>();
    private OnUpdateListener   onUpdateListener   = null;
 
    public FieldMultiSpinner(Context context)
@@ -44,7 +43,6 @@ public class FieldMultiSpinner extends LinearLayout
    {
       super(context, attrs);
 
-      // vInit(context, alFields, oFieldType);
       vInit(context);
 
       TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.FieldMultiSpinner, 0, 0);
@@ -53,7 +51,7 @@ public class FieldMultiSpinner extends LinearLayout
       int titleValueColor = a.getColor(R.styleable.FieldMultiSpinner_titleColor, 0);
       int titleTextSize = a.getDimensionPixelOffset(R.styleable.FieldMultiSpinner_titleTextSize, 0);
       int titleLineSize = a.getDimensionPixelOffset(R.styleable.FieldMultiSpinner_titleLineSize, 0);
-      contentDescription = a.getString(R.styleable.FieldMultiSpinner_android_contentDescription);
+      String contentDescription = a.getString(R.styleable.FieldMultiSpinner_android_contentDescription);
       hint = a.getString(R.styleable.FieldMultiSpinner_android_hint);
 
       a.recycle();
@@ -76,8 +74,8 @@ public class FieldMultiSpinner extends LinearLayout
       LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       inflater.inflate(R.layout.field_multi_spinner, this, true);
 
-      oTitle = (Title) this.findViewById(R.id.title);
-      btnSpinner = (Button) this.findViewById(R.id.action_select_type);
+      oTitle = findViewById(R.id.title);
+      btnSpinner = findViewById(R.id.action_select_type);
       
       setButtonText(btnSpinner, alItems);
       btnSpinner.setOnClickListener(new OnClickListener()
@@ -85,7 +83,6 @@ public class FieldMultiSpinner extends LinearLayout
          @Override
          public void onClick(View v)
          {
-//            displayPopupWindow(v, alValues, alSelectedNdx);
             displayPopupWindow(v, alItems);
          }
       });
@@ -93,14 +90,15 @@ public class FieldMultiSpinner extends LinearLayout
 
    private void setButtonText(Button oButton, ArrayList<Item> alItems)
    {
-      String sButtonText = "";
+      StringBuilder sButtonText = new StringBuilder();
       for(Item item : alItems)
          if(item.isSelected())
-            sButtonText += (sButtonText.isEmpty() ? "" : ", ") + item.getTitle();
+            sButtonText.append((sButtonText.length() == 0) ? "" : ", ")
+                       .append(item.getTitle());
 
-      if(!sButtonText.isEmpty())
+      if(sButtonText.length() > 0)
       {
-         oButton.setText(sButtonText);
+         oButton.setText(sButtonText.toString());
          oButton.setTextColor(Color.BLACK);
       } else
       {
@@ -295,6 +293,6 @@ public class FieldMultiSpinner extends LinearLayout
    
    public interface OnUpdateListener
    {
-      public void onUpdate(Item item);
+      void onUpdate(Item item);
    }
 }

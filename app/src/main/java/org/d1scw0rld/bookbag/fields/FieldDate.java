@@ -71,8 +71,8 @@ public class FieldDate extends LinearLayout implements OnDateSetListener
 
       final Activity activity = (Activity) context;
       
-      oTitle = this.findViewById(R.id.title);
-      btnSpinner = this.findViewById(R.id.action_select_type);
+      oTitle = findViewById(R.id.title);
+      btnSpinner = findViewById(R.id.action_select_type);
       
       btnSpinner.setOnClickListener(new OnClickListener()
       {

@@ -110,8 +110,8 @@ public class FieldAutoCompleteTextView extends LinearLayout
       LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       inflater.inflate(R.layout.field_auto_complete_text_view, this, true);
       
-      oTitle = this.findViewById(R.id.title);
-      oAutoCompleteTextViewX = this.findViewById(R.id.autoCompleteTextView);
+      oTitle = findViewById(R.id.title);
+      oAutoCompleteTextViewX = findViewById(R.id.autoCompleteTextView);
       oAutoCompleteTextViewX.setThreshold(1);
       
       if(oField != null && !oField.sValue.isEmpty())

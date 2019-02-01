@@ -22,12 +22,7 @@ public class FieldMoney extends LinearLayout
    private Title oTitle;
    private Spinner oSpinner;
    private EditTextX oEditTextX;
-//   private Price oPrice = new Price();
-//   private ArrayList<Field> alCurrencies;
-//   private OnUpdateListener onUpdateListener;
-//   private int iSelected = 0;
-   
-  
+
    public FieldMoney(Context context)
    {
       super(context);
@@ -69,63 +64,10 @@ public class FieldMoney extends LinearLayout
       LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       inflater.inflate(R.layout.field_money, this, true);
       
-      oTitle = (Title)this.findViewById(R.id.title);
-      oSpinner = (Spinner) this.findViewById(R.id.action_select_type);
-      oEditTextX = (EditTextX) this.findViewById(R.id.editTextX);
+      oTitle = findViewById(R.id.title);
+      oSpinner = findViewById(R.id.action_select_type);
+      oEditTextX = findViewById(R.id.editTextX);
       oEditTextX.setFilters(new InputFilter[] {new DecimalDigitsInputFilter()});
-//      oEditTextX.setOnUpdateListener(new EditTextX.OnUpdateListener()
-//      {
-//         @Override
-//         public void onUpdate(EditText et)
-//         {
-//            String sValue = et.getText().toString();
-//            sValue = sValue.replace(" ", "");
-//            sValue = sValue.replace("-,", "-0,");
-//            int iValue;
-//            if(sValue.isEmpty() || sValue.matches("-|,|-,"))
-//               iValue = 0;
-//            else
-//            {
-//               String [] tsValue = sValue.split("\\" + DBAdapter.separator);
-////               String [] tsValue = sValue.split("\\.");
-//                
-//               iValue = (tsValue[0].isEmpty() ? 0 : Integer.valueOf(tsValue[0])*100) + (tsValue.length == 2 ? (sValue.contains("-") ? -1 : 1) * (tsValue[1].length() == 1 ? 10 : 1) * Integer.valueOf(tsValue[1]) : 0);
-//            }
-//            oPrice.iValue = iValue;
-//            onUpdateListener.onUpdate(FieldMoney.this);
-//         }
-//      });
-//
-//      setValue(oPrice.iValue);
-//      
-//      String tCurrencies[] = new String[this.alCurrencies.size()];
-//      for(int i = 0; i < alCurrencies.size(); i++)
-//      {
-//         tCurrencies[i] = alCurrencies.get(i).sValue;
-//         if(oPrice != null && oPrice.iCurrencyID == alCurrencies.get(i).iID)
-//            iSelected = i;
-//      }
-//      
-//      ArrayAdapter<String> oArrayAdapter = new ArrayAdapter<String> (context, R.layout.spinner_item, tCurrencies);
-//      oSpinner.setAdapter(oArrayAdapter);
-//      oSpinner.setSelection(iSelected);
-//
-//      oSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
-//      {
-//         @Override
-//         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id)
-//         {
-//            oPrice.iCurrencyID = FieldMoney.this.alCurrencies.get(pos).iID;
-//            onUpdateListener.onUpdate(FieldMoney.this);
-//         }
-//
-//         @Override
-//         public void onNothingSelected(AdapterView<?> parent)
-//         {
-//            // TODO Auto-generated method stub
-//            
-//         }
-//      });      
    }
    
    public void setTitle(String title)
@@ -200,18 +142,11 @@ public class FieldMoney extends LinearLayout
       public void onUpdate(FieldMoney oFieldMoney);
    }
    
-//   public void setUpdateListener(OnUpdateListener onUpdateListener)
-//   {
-////      oEditTextX.setOnUpdateListener(onUpdateListener);
-//      this.onUpdateListener = onUpdateListener;
-//      
-//   }
-   
-   private class DecimalDigitsInputFilter implements InputFilter 
+   private class DecimalDigitsInputFilter implements InputFilter
    {
       Pattern mPattern;
 
-      public DecimalDigitsInputFilter() 
+      DecimalDigitsInputFilter()
       {
 //          mPattern = Pattern.compile("([-1-9]{1}[0-9]{0,2}([0-9]{3})*(\\.[0-9]{0,2})?|[1-9]{1}[0-9]{0,}(\\.[0-9]{0,2})?|0(\\.[0-9]{0,2})?|(\\.[0-9]{1,2})?) \u20ac");
 //          mPattern = Pattern.compile("((([\\-1-9]?\\d{0,3}))|([\\-1-9]?\\d{0,3}(\\.\\d?)?)|([\\-1-9]?\\d{0,3}(\\.\\d{0,2})?))");

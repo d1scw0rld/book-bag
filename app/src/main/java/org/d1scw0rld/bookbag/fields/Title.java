@@ -17,7 +17,6 @@ public class Title extends LinearLayout
    public Title(Context context)
    {
       this(context, null);
-//      super(context);
    }
 
    public Title(Context context, AttributeSet attrs)
@@ -28,7 +27,7 @@ public class Title extends LinearLayout
          TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.Title, 0, 0);
          String titleText = a.getString(R.styleable.Title_text);
          
-         int valueColor = a.getColor(R.styleable.Title_color, android.R.color.black);
+         int valueColor = a.getColor(R.styleable.Title_color, getResources().getColor(android.R.color.black));
          int textSize = a.getDimensionPixelOffset(R.styleable.Title_textSize, 0);
          int lineSize = a.getDimensionPixelOffset(R.styleable.Title_lineSize, 0);
          
@@ -39,33 +38,23 @@ public class Title extends LinearLayout
 
          LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
          inflater.inflate(R.layout.title, this, true);
-//         addView(inflater.inflate(R.layout.title, this));
-         
-         
-         title = (TextView)this.findViewById(R.id.tv_title);
-         line = (LinearLayout)this.findViewById(R.id.ll_line);
-//         TextView title1 = (TextView) getChildAt(0);
+
+         title = findViewById(R.id.tv_title);
+         line = findViewById(R.id.ll_line);
          title.setText(titleText);
          title.setTextColor(valueColor);
          if(textSize > 0)
             title.setTextSize(textSize);
-//         int a  = title.getTextSize();
-         
+
          line.setBackgroundColor(valueColor);
          android.view.ViewGroup.LayoutParams params = line.getLayoutParams();
-      // Changes the height and width to the specified *pixels*
+         // Changes the height and width to the specified *pixels*
          if(lineSize > 0)
          {
             params.height = lineSize;
             params.width = LayoutParams.MATCH_PARENT;
             line.setLayoutParams(params);
          }
-            
-
-
-         // mValue = getChildAt(1);
-         // mValue.setBackgroundColor(valueColor);
-         // mImage = (ImageView) getChildAt(2);
       }
    }
    
@@ -87,11 +76,8 @@ public class Title extends LinearLayout
    
    public void setColor(int valueColor)
    {
-//      if(valueColor > 0 )
-//      {
-         title.setTextColor(valueColor);
-         line.setBackgroundColor(valueColor);
-//      }
+      title.setTextColor(valueColor);
+      line.setBackgroundColor(valueColor);
    }
    
    public void setLineSize(int lineSize)

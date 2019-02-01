@@ -55,8 +55,8 @@ public class FieldSpinner extends LinearLayout
       LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       inflater.inflate(R.layout.field_spinner, this, true);
       
-      oTitle = (Title)this.findViewById(R.id.title);
-      oSpinner = (Spinner) this.findViewById(R.id.action_select_type);
+      oTitle = findViewById(R.id.title);
+      oSpinner = findViewById(R.id.action_select_type);
    }
    
    public void setTitle(String title)

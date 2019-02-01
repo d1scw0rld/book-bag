@@ -202,7 +202,6 @@ public class AutoCompleteTextViewX extends android.support.v7.widget.AppCompatAu
               } 
               else 
               {
-//                  setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_action_cancel, 0);
                   setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_clear_search_api_holo_light, 0);
               }
           }

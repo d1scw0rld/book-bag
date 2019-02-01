@@ -21,10 +21,8 @@ public class FieldRating extends LinearLayout
    
    private float fRating,
                  fStepSize;
-   
-   private String contentDescription = "";
-   
-   private AppCompatRatingBar oRatingBar; 
+
+   private AppCompatRatingBar oRatingBar;
    
    public FieldRating(Context context)
    {
@@ -45,7 +43,7 @@ public class FieldRating extends LinearLayout
       int titleValueColor = a.getColor(R.styleable.FieldRating_titleColor, 0);
       int titleTextSize = a.getDimensionPixelOffset(R.styleable.FieldRating_titleTextSize, 0);
       int titleLineSize = a.getDimensionPixelOffset(R.styleable.FieldRating_titleLineSize, 0);
-      contentDescription = a.getString(R.styleable.FieldRating_android_contentDescription);
+      String contentDescription = a.getString(R.styleable.FieldRating_android_contentDescription);
       setNumStars(a.getInteger(R.styleable.FieldRating_android_numStars, 5));
       setRating(a.getFloat(R.styleable.FieldRating_android_rating, 0.0f));
       setStepSize(a.getFloat(R.styleable.FieldRating_android_stepSize, 0.5f));
@@ -72,8 +70,8 @@ public class FieldRating extends LinearLayout
       LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       inflater.inflate(R.layout.field_rating, this, true);
       
-      oTitle = (Title)this.findViewById(R.id.title);
-      oRatingBar = (AppCompatRatingBar) findViewById(R.id.rating_bar);
+      oTitle = findViewById(R.id.title);
+      oRatingBar = findViewById(R.id.rating_bar);
    }
 
    public void setTitle(String title)

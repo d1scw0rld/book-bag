@@ -241,7 +241,7 @@ public class DBAdapter
 //      }
 //   }
 
-   private ArrayList<ParentResult> getBooksOrderedBy1(String query)
+   private ArrayList<ParentResult> getBooksOrderedBy(String query)
    {
       if(Debug.ON)
       {
@@ -496,7 +496,7 @@ public class DBAdapter
             return null;
       }
 
-      return getBooksOrderedBy1(query);
+      return getBooksOrderedBy(query);
    }
 
    void insertBook(Book oBook)

@@ -200,22 +200,6 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
       }
    }
 
-//   public class StaticViewHolder extends ViewHolder
-//   {
-//      public StaticViewHolder(View view)
-//      {
-//         super(view);
-//      }
-//   }
-//
-//   public class ItemViewHolder extends ViewHolder
-//   {
-//      public ItemViewHolder(View view)
-//      {
-//         super(view);
-//      }
-//   }
-
    private boolean isExpanded(int position)
    {
       int allItemsPosition = indexList.get(position);
@@ -247,17 +231,6 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
       this.visibleItems = visibleItems;
       notifyDataSetChanged();
    }
-
-//   protected void notifyItemInserted(int allItemsPosition, int visiblePosition)
-//   {
-//      incrementIndexList(allItemsPosition, visiblePosition, 1);
-//      incrementExpandMapAfter(allItemsPosition, 1);
-//
-//      if(visiblePosition >= 0)
-//      {
-//         notifyItemInserted(visiblePosition);
-//      }
-//   }
 
    protected void removeItemAt(int visiblePosition)
    {

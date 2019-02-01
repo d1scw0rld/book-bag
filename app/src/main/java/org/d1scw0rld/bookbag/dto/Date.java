@@ -10,12 +10,12 @@ public class Date
               iMonth, 
               iYear; 
 
-//   public Date()
-//   {
-//      iDay = 1;
-//      iMonth = 1;
-//      iYear = 1900;
-//   }
+   public Date()
+   {
+      iDay = 1;
+      iMonth = 1;
+      iYear = 1900;
+   }
    
    public Date(int iDay,
                 int iMonth,
@@ -32,10 +32,10 @@ public class Date
       fromInt(iDate);
    }
    
-//   public Date(Date oDate)
-//   {
-//      this(oDate.iDay, oDate.iMonth, oDate.iYear);
-//   }
+   public Date(Date oDate)
+   {
+      this(oDate.iDay, oDate.iMonth, oDate.iYear);
+   }
    
    public int toInt()
    {

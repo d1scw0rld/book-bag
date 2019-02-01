@@ -66,8 +66,8 @@ public class FieldEditTextUpdatableClearable extends LinearLayout
       LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       inflater.inflate(R.layout.field_edit_text_updatable_clearable, this, true);
       
-      oTitle = (Title)this.findViewById(R.id.title);
-      oEditTextX = (EditTextX) this.findViewById(R.id.editTextX);
+      oTitle = findViewById(R.id.title);
+      oEditTextX = findViewById(R.id.editTextX);
    }
    
    public void setTitle(String title)

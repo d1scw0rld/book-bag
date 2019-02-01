@@ -55,7 +55,7 @@ public class FieldCheckBox extends LinearLayout
       LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       inflater.inflate(R.layout.field_check_box, this, true);
       
-      oTitle = this.findViewById(R.id.title);
+      oTitle = findViewById(R.id.title);
       oCheckBox = findViewById(R.id.check_box);
    }
 

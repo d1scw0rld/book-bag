@@ -1,3 +1,5 @@
+import java.util.regex.Pattern
+
 apply plugin: 'com.android.application'
 
 android {
@@ -18,6 +20,23 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            applicationVariants.all { variant ->
+                variant.outputs.each { output ->
+                    println("new filename" +outputFileName )
+                    def projectName = 'BookBag'
+                    def newName = output.outputFile.name
+                    newName = newName.replace("app-", projectName + '-')
+                    def manifestFile = file("src/main/AndroidManifest.xml")
+                    def patternVersionNumber = Pattern.compile("versionName=\"(\\d+)\\.(\\d+)\\.(\\d+)\"")
+                    def manifestText = manifestFile.getText()
+                    def matcherVersionNumber = patternVersionNumber.matcher(manifestText)
+                    matcherVersionNumber.find()
+
+                    newName = newName.replace("-release", '-' + matcherVersionNumber.group(1) + '.' + matcherVersionNumber.group(2) + '.' + matcherVersionNumber.group(3))
+                    output.outputFileName = new File("", newName)
+                }
+            }
+
         }
     }
 }
@@ -25,6 +44,6 @@ android {
 dependencies {
     implementation 'com.android.support:support-v4:28.0.0'
     implementation 'com.android.support:design:28.0.0'
-    implementation 'com.android.support:preference-v7:28.0.0'
+    implementation 'com.android.support:preference-v14:27.1.1' // Keep this lower version, because of ugly preferences screen look
     implementation 'com.wdullaer:materialdatetimepicker:3.6.4'
 }

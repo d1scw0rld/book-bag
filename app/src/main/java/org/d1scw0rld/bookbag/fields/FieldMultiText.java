@@ -29,8 +29,6 @@ public class FieldMultiText extends LinearLayout
       
       void onFieldUpdated(View view, String value);
 
-//      void onItemSelect(ArrayAdapter<?> adapter, View view, int position);
-
       void onItemSelect(View view, Item selection);
    }
 
@@ -78,26 +76,23 @@ public class FieldMultiText extends LinearLayout
    void vInit(Context context)
    {
       oInflater = LayoutInflater.from(context);
-//      LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-//      inflater.inflate(R.layout.field_multi_text, this, true);
-
       oInflater.inflate(R.layout.field_multi_text, this, true);
 
       
-      oTitle = (Title)this.findViewById(R.id.title);
+      oTitle = findViewById(R.id.title);
       
-      llFields = (LinearLayout) findViewById(R.id.ll_fields);
+      llFields = findViewById(R.id.ll_fields);
       findViewById(R.id.ib_add_field).setOnClickListener(new View.OnClickListener()
       {
          @Override
          public void onClick(View v)
          {
-            addNewField(llFields);
+            addNewField();
          }
       });
    }
    
-   private View addRow(LinearLayout llRows)
+   private View addRow()
    {
       final View vRow = oInflater.inflate(R.layout.row_field, null);
       vRow.findViewById(R.id.ib_remove_field).setOnClickListener(new View.OnClickListener()
@@ -109,7 +104,7 @@ public class FieldMultiText extends LinearLayout
             removeField(vParent);
          }
       });
-      final AutoCompleteTextViewX etValue = (AutoCompleteTextViewX)vRow.findViewById(R.id.et_value);
+      final AutoCompleteTextViewX etValue = vRow.findViewById(R.id.et_value);
       etValue.setHint(hint);
       etValue.setContentDescription(contentDescription);
       etValue.setAdapter(adapter);
@@ -132,7 +127,6 @@ public class FieldMultiText extends LinearLayout
          @Override
          public void onUpdate(EditText et)
          {
-//            onAddRemoveFieldListener.onFieldUpdated(et);
             onAddRemoveFieldListener.onFieldUpdated(vRow, et.getText().toString().trim());
          }
       });
@@ -147,22 +141,20 @@ public class FieldMultiText extends LinearLayout
       return vRow;
    }
    
-   private void addNewField(LinearLayout llFields)
+   private void addNewField()
    {
-//      onAddRemoveFieldListener.onAddNewField(addRow(llFields).findViewById(R.id.et_value));
-      onAddRemoveFieldListener.onAddNewField(addRow(llFields));
+      onAddRemoveFieldListener.onAddNewField(addRow());
    }
 
    private void addField(LinearLayout llFields, Item item)
    {
-      final View vRow = addRow(llFields);
+      final View vRow = addRow();
       
-      EditText etValue = (EditText)vRow.findViewById(R.id.et_value);
+      EditText etValue = vRow.findViewById(R.id.et_value);
       if(llFields.getChildCount() == 1)
          etValue.setId(R.id.et_author_1);
 
       etValue.setText(item.getValue());
-//      etValue.setTag(item);
       vRow.setTag(item);
    }
    
@@ -216,9 +208,6 @@ public class FieldMultiText extends LinearLayout
    public interface Item 
    {
       String getValue();
-//      void setValue(String string);
-//      int getId();
-//      void copy(Object o);
    }
    
    public void setItems(ArrayAdapter<Item> adapter, ArrayList<? extends Item> alItems)
@@ -228,16 +217,6 @@ public class FieldMultiText extends LinearLayout
       boolean hasFieldsOfType = false;
       for(Item item: alItems)
       {
-         
-//         for(int j = 0; j< adapter.getCount(); j++)
-//         {
-//            if(adapter.getItem(j).equals(item))
-//            {
-//               addField(llFields, item);
-//               hasFieldsOfType = true;
-//               
-//            }
-//         }
          int i = adapter.getPosition(item);
          if(i >= 0)
          {
@@ -247,7 +226,7 @@ public class FieldMultiText extends LinearLayout
       }
     
       if(!hasFieldsOfType)
-         addNewField(llFields);
+         addNewField();
    }
    
 }

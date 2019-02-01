@@ -44,11 +44,6 @@ public class FieldType
       return this;
    }
    
-//   public void setDigit(String sDigit)
-//   {
-//      String sDigit1 = sDigit;
-//   }
-   
    public FieldType setInputType(int iInputType)
    {
       this.iInputType = iInputType;
