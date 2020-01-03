@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/text1"
+    android:layout_width="match_parent"
+    android:layout_height="?attr/dropdownListPreferredItemHeight"
+    android:textAppearance="?attr/textAppearanceLargePopupMenu"
+    android:singleLine="true"
+    android:ellipsize="marquee"
+    style="?android:attr/dropDownItemStyle"
+    android:paddingStart="16dip"
+    android:paddingEnd="16dip"/>
+<!--    android:layout_alignParentLeft="true"-->
+
+<!--    android:textAlignment="viewStart"-->
+<!--    android:duplicateParentState="true"-->
+<!--    android:gravity="start"-->
+<!--    android:fadingEdge="horizontal"-->
+
+    <!--    android:layout_alignParentTop="true"-->
+    <!--    android:layout_alignParentStart="true"-->
