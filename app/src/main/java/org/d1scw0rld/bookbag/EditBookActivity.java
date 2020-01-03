@@ -54,8 +54,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
-public class EditBookActivity extends AppCompatActivity 
+public class EditBookActivity extends AppCompatActivity
 {
    public final static String BOOK_ID = "book_id",
                               IS_COPY = "is_copy";
@@ -236,13 +237,11 @@ public class EditBookActivity extends AppCompatActivity
    @Override
    public boolean onOptionsItemSelected(MenuItem item)
    {
-      switch (item.getItemId())
-      {
-         case R.id.cancel:
-            // "Cancel"
-            setResult(RESULT_CANCELED, new Intent());
-            finish();
-            return true;
+      if(item.getItemId() == R.id.cancel)
+      {// "Cancel"
+         setResult(RESULT_CANCELED, new Intent());
+         finish();
+         return true;
       }
       return super.onOptionsItemSelected(item);
    }
@@ -394,7 +393,9 @@ public class EditBookActivity extends AppCompatActivity
       
       oFieldAutoCompleteTextView.setTag(oField);
       
-      ArrayFieldsAdapter oArrayAdapter = new ArrayFieldsAdapter(this, android.R.layout.select_dialog_item, alFieldValues);
+//      ArrayFieldsAdapter oArrayAdapter = new ArrayFieldsAdapter(this, android.R.layout.select_dialog_item, alFieldValues);
+      ArrayFieldsAdapter oArrayAdapter = new ArrayFieldsAdapter(this, R.layout.dropdown, alFieldValues);
+//      ArrayFieldsAdapter oArrayAdapter = new ArrayFieldsAdapter(this, android.R.layout.simple_expandable_list_item_2, alFieldValues);
       oFieldAutoCompleteTextView.setAdapter(oArrayAdapter);
       oFieldAutoCompleteTextView.setOnItemClickListener(new OnItemClickListener()
       {
@@ -450,6 +451,7 @@ public class EditBookActivity extends AppCompatActivity
          oBook.alFields.add(oField);
 
       ArrayAdapter<String> oArrayAdapter = new ArrayAdapter<String> (this, R.layout.spinner_item)
+//      ArrayAdapter<String> oArrayAdapter = new ArrayAdapter<String> (this, R.layout.dropdown)
       {
          @NonNull
          @Override
@@ -459,6 +461,7 @@ public class EditBookActivity extends AppCompatActivity
             v.setPadding(0, v.getPaddingTop(), v.getPaddingRight(), v.getPaddingBottom()); // Removing leading pad
             if(position == 0) 
                ((TextView)v.findViewById(android.R.id.text1)).setTextColor(ResourcesCompat.getColor(getResources(), R.color.text, null));
+//            ((TextView)v.findViewById(R.id.text1)).setTextColor(ResourcesCompat.getColor(getResources(), R.color.text, null));
             
             return v;
          }       
@@ -481,7 +484,8 @@ public class EditBookActivity extends AppCompatActivity
             return v;
          }         
       };
-      oArrayAdapter.setDropDownViewResource(R.layout.spinner_item);
+//      oArrayAdapter.setDropDownViewResource(R.layout.spinner_item);
+      oArrayAdapter.setDropDownViewResource(R.layout.dropdown);
       oArrayAdapter.add(oFieldType.sName);
       for(Field f: alFieldValues)
          oArrayAdapter.add(f.sValue);
@@ -522,7 +526,7 @@ public class EditBookActivity extends AppCompatActivity
          oFieldMultiText.setId(View.generateViewId());
       if(vPrevious != null)
          vPrevious.setNextFocusDownId(R.id.et_author_1);
-      String tsNames[] = oFieldType.sName.split("\\|");
+      String[] tsNames = oFieldType.sName.split("\\|");
       oFieldMultiText.setTitle(tsNames.length > 1 ? tsNames[1] : oFieldType.sName);
       oFieldMultiText.setTitleColor(ResourcesCompat.getColor(getResources(), R.color.primary, null));
 //      oFieldMultiText.setHint(oFieldType.sName);
@@ -532,7 +536,8 @@ public class EditBookActivity extends AppCompatActivity
       final ArrayList<Field> alFieldsValues = oDbAdapter.getFieldValues(oFieldType.iID, true);
       final ArrayList<FieldMultiText.Item> alItemsValues = new ArrayList<FieldMultiText.Item>(alFieldsValues);
 
-      final ArrayItemsAdapter oArrayAdapter = new ArrayItemsAdapter(this, android.R.layout.select_dialog_item, alItemsValues);
+//      final ArrayItemsAdapter oArrayAdapter = new ArrayItemsAdapter(this, android.R.layout.select_dialog_item, alItemsValues);
+      final ArrayItemsAdapter oArrayAdapter = new ArrayItemsAdapter(this, R.layout.dropdown, alItemsValues);
       
       oFieldMultiText.setOnAddRemoveListener(new FieldMultiText.OnAddRemoveFieldListener()
       {
@@ -596,7 +601,7 @@ public class EditBookActivity extends AppCompatActivity
    private void addFieldMultiSpinner(ViewGroup rootView, final FieldType oFieldType)
    {
       final FieldMultiSpinner oFieldMultiSpinner = new FieldMultiSpinner(this);
-      String tsNames[] = oFieldType.sName.split("\\|");
+      String[] tsNames = oFieldType.sName.split("\\|");
       oFieldMultiSpinner.setTitle(tsNames.length > 1 ? tsNames[1] : oFieldType.sName);
       oFieldMultiSpinner.setTitleColor(ResourcesCompat.getColor(getResources(), R.color.primary, null));
       oFieldMultiSpinner.setHint(tsNames.length > 1 ? tsNames[1] : oFieldType.sName);
@@ -903,80 +908,146 @@ public class EditBookActivity extends AppCompatActivity
 //      private final String MY_DEBUG_TAG = "ArrayFieldsAdapter";
       private ArrayList<Field> items;
       private ArrayList<Field> suggestions;
+      FieldFilter nameFilter;
 
       ArrayFieldsAdapter(Context context, int viewResourceId, ArrayList<Field> items)
       {
          super(context, viewResourceId, items);
+//         super(context, viewResourceId, suggestions);
          this.items = items;
-         this.suggestions = new ArrayList<>();
+         suggestions = new ArrayList<>();
+         suggestions.addAll(items);
       }
 
       @NonNull
       public View getView(int position, View convertView, @NonNull ViewGroup parent)
       {
          TextView view = (TextView) super.getView(position, convertView, parent);
-         // Replace text with my own
          view.setText(getItem(position).sValue);
-         return view;         
-         
+         return view;
       }
 
       @NonNull
       @Override
       public Filter getFilter() 
       {
-          return nameFilter;
+         if (nameFilter == null)
+            nameFilter = new FieldFilter<Field>(items);
+         return nameFilter;
+//          return nameFilter;
       }
 
-      Filter nameFilter = new Filter() 
+      private class FieldFilter<T> extends Filter
       {
-         @Override
-         public String convertResultToString(Object resultValue) 
+         private ArrayList<T> alSourceObjects;
+
+         FieldFilter(List<T> objects)
          {
-            return ((Field)(resultValue)).sValue;
-         }
-         
-         @Override
-         protected FilterResults performFiltering(CharSequence constraint) 
-         {
-            if(constraint != null) 
+            alSourceObjects = new ArrayList<>();
+            synchronized((this))
             {
-               suggestions.clear();
-               for (Field oField : items) 
-               {
-                  if(oField.sValue.toLowerCase(ConfigurationCompat.getLocales(getResources().getConfiguration()).get(0)).startsWith(constraint.toString().toLowerCase()))
-                  {
-                     suggestions.add(oField);
-                  }
-               }
-               
-               FilterResults filterResults = new FilterResults();
-               filterResults.values = suggestions;
-               filterResults.count = suggestions.size();
-               return filterResults;
-            } 
-            else 
-            {
-               return new FilterResults();
+               alSourceObjects.addAll(objects);
             }
          }
-          
+
          @Override
-         protected void publishResults(CharSequence constraint, FilterResults results) 
+         protected FilterResults performFiltering(CharSequence charSequence)
          {
-            ArrayList<Field> filteredList = (ArrayList<Field>) results.values;
-            if(results != null && results.count > 0) 
+            String filterSeq = charSequence.toString().toLowerCase();
+            FilterResults result = new FilterResults();
+            if (filterSeq != null && filterSeq.length() > 0)
             {
-               clear();
-               for (Field c : filteredList) 
+               ArrayList<T> filter = new ArrayList<T>();
+
+               for (T object : alSourceObjects)
                {
-                  add(c);
+                  // the filtering itself:
+                  if (object.toString().toLowerCase().startsWith(filterSeq))
+                     filter.add(object);
                }
-               
-               notifyDataSetChanged();
+               result.count = filter.size();
+               result.values = filter;
             }
+            else
+               {
+               // add all objects
+               synchronized (this)
+               {
+                  result.values = alSourceObjects;
+                  result.count = alSourceObjects.size();
+               }
+            }
+            return result;
          }
-      };
+
+         @Override
+         protected void publishResults(CharSequence charSequence, FilterResults filterResults)
+         {
+            ArrayList<T> filtered = (ArrayList<T>) filterResults.values;
+            notifyDataSetChanged();
+            clear();
+            for (int i = 0, l = filtered.size(); i < l; i++)
+               add((Field) filtered.get(i));
+            notifyDataSetInvalidated();
+
+//            if(filterResults != null && filterResults.count > 0) {
+//               notifyDataSetChanged();
+//            }
+//            else {
+//               notifyDataSetInvalidated();
+//            }
+         }
+      }
+
+//      Filter nameFilter = new Filter()
+//      {
+//         @Override
+//         public String convertResultToString(Object resultValue)
+//         {
+//            return ((Field)(resultValue)).sValue;
+//         }
+//
+//         @Override
+//         protected FilterResults performFiltering(CharSequence constraint)
+//         {
+//            if(constraint != null)
+//            {
+//               suggestions.clear();
+//               for (Field oField : items)
+//               {
+//                  if(oField.sValue.toLowerCase(ConfigurationCompat.getLocales(getResources().getConfiguration()).get(0)).startsWith(constraint.toString().toLowerCase()))
+//                  {
+//                     suggestions.add(oField);
+//                  }
+//               }
+//
+//               FilterResults filterResults = new FilterResults();
+//               filterResults.values = suggestions;
+//               filterResults.count = suggestions.size();
+//               return filterResults;
+//            }
+//            else
+//            {
+//               return new FilterResults();
+//            }
+//         }
+//
+//         @Override
+//         protected void publishResults(CharSequence constraint, FilterResults results)
+//         {
+//            ArrayList<Field> filteredList = (ArrayList<Field>) results.values;
+//            if(results != null && results.count > 0)
+//            {
+//               clear();
+//               for (Field c : filteredList)
+//               {
+//                  add(c);
+//               }
+//
+//               notifyDataSetChanged();
+//            }
+//         }
+//      };
    }
 
    private void hideField(View view, String sName)

@@ -13,6 +13,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -100,6 +101,7 @@ public class AutoCompleteTextViewX extends android.support.v7.widget.AppCompatAu
                    if (oCallback != null) oCallback.beforeClear(AutoCompleteTextViewX.this);
                    setText("");
                    requestFocus();
+                  ((ArrayAdapter)getAdapter()).getFilter().filter("");
                    if (oCallback != null) oCallback.afterClear(AutoCompleteTextViewX.this);
                    return false;
                }
