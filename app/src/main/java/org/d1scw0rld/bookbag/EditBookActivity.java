@@ -1,10 +1,8 @@
 package org.d1scw0rld.bookbag;
 
-import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v4.content.res.ResourcesCompat;
-import android.support.v4.os.ConfigurationCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
@@ -24,7 +22,6 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
-import android.widget.Filter;
 import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.RatingBar.OnRatingBarChangeListener;
@@ -54,7 +51,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class EditBookActivity extends AppCompatActivity
 {
@@ -393,9 +389,9 @@ public class EditBookActivity extends AppCompatActivity
       
       oFieldAutoCompleteTextView.setTag(oField);
       
-//      ArrayFieldsAdapter oArrayAdapter = new ArrayFieldsAdapter(this, android.R.layout.select_dialog_item, alFieldValues);
-      ArrayFieldsAdapter oArrayAdapter = new ArrayFieldsAdapter(this, R.layout.dropdown, alFieldValues);
-//      ArrayFieldsAdapter oArrayAdapter = new ArrayFieldsAdapter(this, android.R.layout.simple_expandable_list_item_2, alFieldValues);
+//      FilteredArrayAdapter oArrayAdapter = new FilteredArrayAdapter(this, android.R.layout.select_dialog_item, alFieldValues);
+      FilteredArrayAdapter oArrayAdapter = new FilteredArrayAdapter(this, R.layout.dropdown, alFieldValues);
+//      FilteredArrayAdapter oArrayAdapter = new FilteredArrayAdapter(this, android.R.layout.simple_expandable_list_item_2, alFieldValues);
       oFieldAutoCompleteTextView.setAdapter(oArrayAdapter);
       oFieldAutoCompleteTextView.setOnItemClickListener(new OnItemClickListener()
       {
@@ -534,10 +530,11 @@ public class EditBookActivity extends AppCompatActivity
 
       // Set adapter
       final ArrayList<Field> alFieldsValues = oDbAdapter.getFieldValues(oFieldType.iID, true);
-      final ArrayList<FieldMultiText.Item> alItemsValues = new ArrayList<FieldMultiText.Item>(alFieldsValues);
+      final ArrayList<IItem> alItemsValues = new ArrayList<IItem>(alFieldsValues);
 
-//      final ArrayItemsAdapter oArrayAdapter = new ArrayItemsAdapter(this, android.R.layout.select_dialog_item, alItemsValues);
-      final ArrayItemsAdapter oArrayAdapter = new ArrayItemsAdapter(this, R.layout.dropdown, alItemsValues);
+//      final ArrayItemsAdapter filteredArrayAdapter = new ArrayItemsAdapter(this, android.R.layout.select_dialog_item, alItemsValues);
+//      final ArrayItemsAdapter filteredArrayAdapter = new ArrayItemsAdapter(this, R.layout.dropdown, alItemsValues);
+      final FilteredArrayAdapter filteredArrayAdapter = new FilteredArrayAdapter(this, R.layout.dropdown, alItemsValues);
       
       oFieldMultiText.setOnAddRemoveListener(new FieldMultiText.OnAddRemoveFieldListener()
       {
@@ -583,14 +580,14 @@ public class EditBookActivity extends AppCompatActivity
 //         }
 
          @Override
-         public void onItemSelect(View view, FieldMultiText.Item selection)
+         public void onItemSelect(View view, IItem selection)
          {
             if(selection instanceof Field)
                ((Field) view.getTag()).copy((Field)selection);
          }
       });
       
-      oFieldMultiText.setItems(oArrayAdapter, oBook.alFields);
+      oFieldMultiText.setItems(filteredArrayAdapter, oBook.alFields);
       
       rootView.addView(oFieldMultiText);
       
@@ -903,156 +900,9 @@ public class EditBookActivity extends AppCompatActivity
          hideField(oFieldCheckBox, oFieldType.sName);   
    }
 
-   public class ArrayFieldsAdapter extends ArrayAdapter<Field> 
-   {
-//      private final String MY_DEBUG_TAG = "ArrayFieldsAdapter";
-      private ArrayList<Field> items;
-      private ArrayList<Field> suggestions;
-      FieldFilter nameFilter;
-
-      ArrayFieldsAdapter(Context context, int viewResourceId, ArrayList<Field> items)
-      {
-         super(context, viewResourceId, items);
-//         super(context, viewResourceId, suggestions);
-         this.items = items;
-         suggestions = new ArrayList<>();
-         suggestions.addAll(items);
-      }
-
-      @NonNull
-      public View getView(int position, View convertView, @NonNull ViewGroup parent)
-      {
-         TextView view = (TextView) super.getView(position, convertView, parent);
-         view.setText(getItem(position).sValue);
-         return view;
-      }
-
-      @NonNull
-      @Override
-      public Filter getFilter() 
-      {
-         if (nameFilter == null)
-            nameFilter = new FieldFilter<Field>(items);
-         return nameFilter;
-//          return nameFilter;
-      }
-
-      private class FieldFilter<T> extends Filter
-      {
-         private ArrayList<T> alSourceObjects;
-
-         FieldFilter(List<T> objects)
-         {
-            alSourceObjects = new ArrayList<>();
-            synchronized((this))
-            {
-               alSourceObjects.addAll(objects);
-            }
-         }
-
-         @Override
-         protected FilterResults performFiltering(CharSequence charSequence)
-         {
-            String filterSeq = charSequence.toString().toLowerCase();
-            FilterResults result = new FilterResults();
-            if (filterSeq != null && filterSeq.length() > 0)
-            {
-               ArrayList<T> filter = new ArrayList<T>();
-
-               for (T object : alSourceObjects)
-               {
-                  // the filtering itself:
-                  if (object.toString().toLowerCase().startsWith(filterSeq))
-                     filter.add(object);
-               }
-               result.count = filter.size();
-               result.values = filter;
-            }
-            else
-               {
-               // add all objects
-               synchronized (this)
-               {
-                  result.values = alSourceObjects;
-                  result.count = alSourceObjects.size();
-               }
-            }
-            return result;
-         }
-
-         @Override
-         protected void publishResults(CharSequence charSequence, FilterResults filterResults)
-         {
-            ArrayList<T> filtered = (ArrayList<T>) filterResults.values;
-            notifyDataSetChanged();
-            clear();
-            for (int i = 0, l = filtered.size(); i < l; i++)
-               add((Field) filtered.get(i));
-            notifyDataSetInvalidated();
-
-//            if(filterResults != null && filterResults.count > 0) {
-//               notifyDataSetChanged();
-//            }
-//            else {
-//               notifyDataSetInvalidated();
-//            }
-         }
-      }
-
-//      Filter nameFilter = new Filter()
-//      {
-//         @Override
-//         public String convertResultToString(Object resultValue)
-//         {
-//            return ((Field)(resultValue)).sValue;
-//         }
-//
-//         @Override
-//         protected FilterResults performFiltering(CharSequence constraint)
-//         {
-//            if(constraint != null)
-//            {
-//               suggestions.clear();
-//               for (Field oField : items)
-//               {
-//                  if(oField.sValue.toLowerCase(ConfigurationCompat.getLocales(getResources().getConfiguration()).get(0)).startsWith(constraint.toString().toLowerCase()))
-//                  {
-//                     suggestions.add(oField);
-//                  }
-//               }
-//
-//               FilterResults filterResults = new FilterResults();
-//               filterResults.values = suggestions;
-//               filterResults.count = suggestions.size();
-//               return filterResults;
-//            }
-//            else
-//            {
-//               return new FilterResults();
-//            }
-//         }
-//
-//         @Override
-//         protected void publishResults(CharSequence constraint, FilterResults results)
-//         {
-//            ArrayList<Field> filteredList = (ArrayList<Field>) results.values;
-//            if(results != null && results.count > 0)
-//            {
-//               clear();
-//               for (Field c : filteredList)
-//               {
-//                  add(c);
-//               }
-//
-//               notifyDataSetChanged();
-//            }
-//         }
-//      };
-   }
-
    private void hideField(View view, String sName)
    {
-      
+
       view.setVisibility(View.GONE);
       
       pmHiddenFields.getMenu().add(Menu.NONE, pmHiddenFields.getMenu().size(), 0, sName);

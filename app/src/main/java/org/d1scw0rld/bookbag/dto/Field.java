@@ -2,12 +2,12 @@ package org.d1scw0rld.bookbag.dto;
 
 import android.support.annotation.NonNull;
 
-import org.d1scw0rld.bookbag.fields.FieldMultiText.Item;
+import org.d1scw0rld.bookbag.IItem;
 
 /**
  * Created by Iasen on 12.7.2016 г..
  */
-public class Field implements Item
+public class Field implements IItem
 {
    public int iTypeID;
    public long iID = 0;

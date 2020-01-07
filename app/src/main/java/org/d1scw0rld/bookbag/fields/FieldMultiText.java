@@ -2,6 +2,8 @@ package org.d1scw0rld.bookbag.fields;
 
 import java.util.ArrayList;
 
+import org.d1scw0rld.bookbag.FilteredArrayAdapter;
+import org.d1scw0rld.bookbag.IItem;
 import org.d1scw0rld.bookbag.R;
 import org.d1scw0rld.bookbag.fields.AutoCompleteTextViewX.OnUpdateListener;
 
@@ -29,16 +31,17 @@ public class FieldMultiText extends LinearLayout
       
       void onFieldUpdated(View view, String value);
 
-      void onItemSelect(View view, Item selection);
+      void onItemSelect(View view, IItem selection);
    }
 
-   private LayoutInflater oInflater;
-   private Title oTitle;
-   private LinearLayout llFields;
-   private String hint = "";
-   private String contentDescription = "";
-   private ArrayAdapter<Item> adapter;
-   private OnAddRemoveFieldListener onAddRemoveFieldListener;
+   private LayoutInflater              oInflater;
+   private Title                       oTitle;
+   private LinearLayout                llFields;
+   private String                      hint = "";
+   private String                      contentDescription = "";
+//   private ArrayAdapter<IItem> adapter;
+   private FilteredArrayAdapter<IItem> adapter;
+   private OnAddRemoveFieldListener    onAddRemoveFieldListener;
 
    public FieldMultiText(Context context)
    {
@@ -115,7 +118,7 @@ public class FieldMultiText extends LinearLayout
          @Override
          public void onItemClick(AdapterView<?> adapter, View view, int position, long rowId)
          {
-            Item selection = (Item) adapter.getItemAtPosition(position);
+            IItem selection = (IItem) adapter.getItemAtPosition(position);
             etValue.setText(selection.getValue());
             etValue.setSelection(selection.getValue().length());
             onAddRemoveFieldListener.onItemSelect(vRow, selection);
@@ -146,7 +149,7 @@ public class FieldMultiText extends LinearLayout
       onAddRemoveFieldListener.onAddNewField(addRow());
    }
 
-   private void addField(LinearLayout llFields, Item item)
+   private void addField(LinearLayout llFields, IItem item)
    {
       final View vRow = addRow();
       
@@ -205,17 +208,17 @@ public class FieldMultiText extends LinearLayout
       this.onAddRemoveFieldListener = onAddRemoveFieldListener;
    }   
 
-   public interface Item 
-   {
-      String getValue();
-   }
+//   public interface Item extends IItem
+//   {
+//      String getValue();
+//   }
    
-   public void setItems(ArrayAdapter<Item> adapter, ArrayList<? extends Item> alItems)
+   public void setItems(FilteredArrayAdapter<IItem> adapter, ArrayList<? extends IItem> alItems)
    {
       this.adapter = adapter;
 
       boolean hasFieldsOfType = false;
-      for(Item item: alItems)
+      for(IItem item: alItems)
       {
          int i = adapter.getPosition(item);
          if(i >= 0)

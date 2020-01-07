@@ -11,31 +11,28 @@ import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.TextView;
 
-import org.d1scw0rld.bookbag.fields.FieldMultiText.Item;
-
-public class ArrayItemsAdapter extends ArrayAdapter<Item>
+public class ArrayItemsAdapter extends ArrayAdapter<IItem>
 {
-//   private final String MY_DEBUG_TAG = "ArrayFieldsAdapter";
+//   private final String MY_DEBUG_TAG = "FilteredArrayAdapter";
    private Context context;
-   private ArrayList<Item> items;
-   private ArrayList<Item> suggestions;
+   private ArrayList<IItem> items;
+   private ArrayList<IItem> suggestions;
 
-   ArrayItemsAdapter(Context context, int viewResourceId, ArrayList<Item> alDictionaryFields)
+   public ArrayItemsAdapter(Context context, int viewResourceId, ArrayList<IItem> items)
    {
-       super(context, viewResourceId, alDictionaryFields);
+       super(context, viewResourceId, items);
        this.context = context;
-       this.items = alDictionaryFields;
+       this.items = items;
        this.suggestions = new ArrayList<>();
+       suggestions.addAll(items);
    }
 
    @NonNull
    public View getView(int position, View convertView, @NonNull ViewGroup parent)
    {
       TextView view = (TextView) super.getView(position, convertView, parent);
-      // Replace text with my own
       view.setText(getItem(position).getValue());
       return view;         
-      
    }
 
    @NonNull
@@ -50,7 +47,7 @@ public class ArrayItemsAdapter extends ArrayAdapter<Item>
       @Override
       public String convertResultToString(Object resultValue) 
       {
-         return ((Item)(resultValue)).getValue();
+         return ((IItem)(resultValue)).getValue();
       }
       
       @Override
@@ -59,11 +56,11 @@ public class ArrayItemsAdapter extends ArrayAdapter<Item>
          if(constraint != null) 
          {
             suggestions.clear();
-            for (Item oField : items) 
+            for (IItem item : items)
             {
-               if(oField.getValue().toLowerCase(ConfigurationCompat.getLocales(context.getResources().getConfiguration()).get(0)).startsWith(constraint.toString().toLowerCase()))
+               if(item.getValue().toLowerCase(ConfigurationCompat.getLocales(context.getResources().getConfiguration()).get(0)).startsWith(constraint.toString().toLowerCase()))
                {
-                  suggestions.add(oField);
+                  suggestions.add(item);
                }
             }
             
@@ -81,13 +78,13 @@ public class ArrayItemsAdapter extends ArrayAdapter<Item>
       @Override
       protected void publishResults(CharSequence constraint, FilterResults results) 
       {
-         ArrayList<Item> filteredList = (ArrayList<Item>) results.values;
+         ArrayList<IItem> filteredList = (ArrayList<IItem>) results.values;
          if(results != null && results.count > 0) 
          {
             clear();
-            for (Item c : filteredList) 
+            for (IItem item : filteredList)
             {
-               add(c);
+               add(item);
             }
             
             notifyDataSetChanged();

@@ -2,7 +2,8 @@ package org.d1scw0rld.bookbag.fields;
 
 import java.util.ArrayList;
 
-import org.d1scw0rld.bookbag.ArrayFieldsAdapter;
+import org.d1scw0rld.bookbag.ArrayItemsAdapter;
+import org.d1scw0rld.bookbag.IItem;
 import org.d1scw0rld.bookbag.R;
 import org.d1scw0rld.bookbag.dto.Field;
 import org.d1scw0rld.bookbag.fields.AutoCompleteTextViewX.Callback;
@@ -30,7 +31,7 @@ public class FieldAutoCompleteTextView extends LinearLayout
       vInit(context);
    }
    
-   public FieldAutoCompleteTextView(Context context, Field oField, ArrayList<Field> alFieldValues)
+   public FieldAutoCompleteTextView(Context context, Field oField, ArrayList<IItem> alFieldValues)
    {
       super(context);
       
@@ -66,7 +67,7 @@ public class FieldAutoCompleteTextView extends LinearLayout
       oAutoCompleteTextViewX.setHint(hint);
    }
    
-   public FieldAutoCompleteTextView(Context context, AttributeSet attrs, Field oField, ArrayList<Field> alFieldValues)
+   public FieldAutoCompleteTextView(Context context, AttributeSet attrs, Field oField, ArrayList<IItem> alFieldValues)
    {
       super(context, attrs);
       
@@ -105,7 +106,7 @@ public class FieldAutoCompleteTextView extends LinearLayout
       oAutoCompleteTextViewX.setThreshold(1);
    }
    
-   public void vInit(Context context, Field oField, final ArrayList<Field> alFieldValues)
+   public void vInit(Context context, Field oField, final ArrayList<IItem> alFieldValues)
    {
       LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       inflater.inflate(R.layout.field_auto_complete_text_view, this, true);
@@ -117,7 +118,7 @@ public class FieldAutoCompleteTextView extends LinearLayout
       if(oField != null && !oField.sValue.isEmpty())
          oAutoCompleteTextViewX.setText(oField.sValue);
 
-      ArrayFieldsAdapter oArrayAdapter = new ArrayFieldsAdapter(context, android.R.layout.select_dialog_item, alFieldValues);
+      ArrayItemsAdapter oArrayAdapter = new ArrayItemsAdapter(context, android.R.layout.select_dialog_item, alFieldValues);
       oAutoCompleteTextViewX.setAdapter(oArrayAdapter);
    }
    
