@@ -16,7 +16,7 @@ public class FilteredArrayAdapter<T> extends ArrayAdapter<T>
    private ArrayList<T> items;
    private FieldFilter  nameFilter;
 
-   FilteredArrayAdapter(Context context, int viewResourceId, ArrayList<T> items)
+   public FilteredArrayAdapter(Context context, int viewResourceId, ArrayList<T> items)
    {
       super(context, viewResourceId, items);
       this.items = items;

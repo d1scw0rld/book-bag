@@ -2,12 +2,7 @@ package org.d1scw0rld.bookbag.dto;
 
 import android.support.annotation.NonNull;
 
-import org.d1scw0rld.bookbag.IItem;
-
-/**
- * Created by Iasen on 12.7.2016 г..
- */
-public class Field implements IItem
+public class Field
 {
    public int iTypeID;
    public long iID = 0;
@@ -46,16 +41,16 @@ public class Field implements IItem
    }
 
 
-   @Override
-   public String getValue()
-   {
-      return sValue;
-   }
+//   @Override
+//   public String getValue()
+//   {
+//      return sValue;
+//   }
 
    @Override
    public boolean equals(Object o)
    {
       Field f = (Field) o;
-      return iID == f.iID && iTypeID == f.iTypeID && sValue.equalsIgnoreCase(f.sValue); 
+      return o != null && iID == f.iID && iTypeID == f.iTypeID && sValue.equalsIgnoreCase(f.sValue);
    }
 }

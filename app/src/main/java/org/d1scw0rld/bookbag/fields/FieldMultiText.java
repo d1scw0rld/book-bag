@@ -3,8 +3,9 @@ package org.d1scw0rld.bookbag.fields;
 import java.util.ArrayList;
 
 import org.d1scw0rld.bookbag.FilteredArrayAdapter;
-import org.d1scw0rld.bookbag.IItem;
+//import org.d1scw0rld.bookbag.IItem;
 import org.d1scw0rld.bookbag.R;
+import org.d1scw0rld.bookbag.dto.Field;
 import org.d1scw0rld.bookbag.fields.AutoCompleteTextViewX.OnUpdateListener;
 
 import android.content.Context;
@@ -16,7 +17,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
@@ -31,34 +31,34 @@ public class FieldMultiText extends LinearLayout
       
       void onFieldUpdated(View view, String value);
 
-      void onItemSelect(View view, IItem selection);
+      void onItemSelect(View view, Field selection);
    }
 
-   private LayoutInflater              oInflater;
-   private Title                       oTitle;
+   private LayoutInflater              inflater;
+   private Title                       title;
    private LinearLayout                llFields;
    private String                      hint = "";
    private String                      contentDescription = "";
 //   private ArrayAdapter<IItem> adapter;
-   private FilteredArrayAdapter<IItem> adapter;
+   private FilteredArrayAdapter<Field> adapter;
    private OnAddRemoveFieldListener    onAddRemoveFieldListener;
 
    public FieldMultiText(Context context)
    {
       super(context);
       
-      vInit(context);
+      init(context);
    }
 
    public FieldMultiText(Context context, AttributeSet attrs)
    {
       super(context, attrs);
      
-      vInit(context);
+      init(context);
       
       TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.FieldMultiText, 0, 0);
       
-      String title = a.getString(R.styleable.FieldMultiText_title);
+      String sTitle = a.getString(R.styleable.FieldMultiText_title);
       int titleValueColor = a.getColor(R.styleable.FieldMultiText_titleColor, 0);
       int titleTextSize = a.getDimensionPixelOffset(R.styleable.FieldMultiText_titleTextSize, 0);
       int titleLineSize = a.getDimensionPixelOffset(R.styleable.FieldMultiText_titleLineSize, 0);
@@ -70,19 +70,19 @@ public class FieldMultiText extends LinearLayout
       setOrientation(LinearLayout.VERTICAL);
       setGravity(Gravity.CENTER_VERTICAL);
 
-      oTitle.setText(title);
-      oTitle.setColor(titleValueColor);
-      oTitle.setTextSize(titleTextSize);
-      oTitle.setLineSize(titleLineSize);
+      this.title.setText(sTitle);
+      this.title.setColor(titleValueColor);
+      this.title.setTextSize(titleTextSize);
+      this.title.setLineSize(titleLineSize);
    }
 
-   void vInit(Context context)
+   void init(Context context)
    {
-      oInflater = LayoutInflater.from(context);
-      oInflater.inflate(R.layout.field_multi_text, this, true);
+      inflater = LayoutInflater.from(context);
+      inflater.inflate(R.layout.field_multi_text, this, true);
 
-      
-      oTitle = findViewById(R.id.title);
+
+      title = findViewById(R.id.title);
       
       llFields = findViewById(R.id.ll_fields);
       findViewById(R.id.ib_add_field).setOnClickListener(new View.OnClickListener()
@@ -97,7 +97,7 @@ public class FieldMultiText extends LinearLayout
    
    private View addRow()
    {
-      final View vRow = oInflater.inflate(R.layout.row_field, null);
+      final View vRow = inflater.inflate(R.layout.row_field, null);
       vRow.findViewById(R.id.ib_remove_field).setOnClickListener(new View.OnClickListener()
       {
          @Override
@@ -118,9 +118,9 @@ public class FieldMultiText extends LinearLayout
          @Override
          public void onItemClick(AdapterView<?> adapter, View view, int position, long rowId)
          {
-            IItem selection = (IItem) adapter.getItemAtPosition(position);
-            etValue.setText(selection.getValue());
-            etValue.setSelection(selection.getValue().length());
+            Field selection = (Field) adapter.getItemAtPosition(position);
+            etValue.setText(selection.sValue);
+            etValue.setSelection(selection.sValue.length());
             onAddRemoveFieldListener.onItemSelect(vRow, selection);
          }
       });
@@ -149,7 +149,7 @@ public class FieldMultiText extends LinearLayout
       onAddRemoveFieldListener.onAddNewField(addRow());
    }
 
-   private void addField(LinearLayout llFields, IItem item)
+   private void addField(LinearLayout llFields, Field field)
    {
       final View vRow = addRow();
       
@@ -157,8 +157,8 @@ public class FieldMultiText extends LinearLayout
       if(llFields.getChildCount() == 1)
          etValue.setId(R.id.et_author_1);
 
-      etValue.setText(item.getValue());
-      vRow.setTag(item);
+      etValue.setText(field.sValue);
+      vRow.setTag(field);
    }
    
    private void removeField(View vField)
@@ -170,27 +170,27 @@ public class FieldMultiText extends LinearLayout
    
    public void setTitle(String title)
    {
-      oTitle.setText(title);
+      this.title.setText(title);
    }
    
    public void setTitle(int resid)
    {
-      oTitle.setText(resid);
+      title.setText(resid);
    }
    
    public void setTitleColor(int valueColor)
    {
-      oTitle.setColor(valueColor);
+      title.setColor(valueColor);
    }
    
    public void setTitleTextSize(int textSize)
    {
-      oTitle.setTextSize(textSize);
+      title.setTextSize(textSize);
    }
    
    public void setLineSize(int lineSize)
    {
-      oTitle.setTextSize(lineSize);
+      title.setTextSize(lineSize);
    }
 
    public void setContentDescription(String contentDescription)
@@ -213,12 +213,12 @@ public class FieldMultiText extends LinearLayout
 //      String getValue();
 //   }
    
-   public void setItems(FilteredArrayAdapter<IItem> adapter, ArrayList<? extends IItem> alItems)
+   public void setItems(FilteredArrayAdapter<Field> adapter, ArrayList<Field> alItems)
    {
       this.adapter = adapter;
 
       boolean hasFieldsOfType = false;
-      for(IItem item: alItems)
+      for(Field item: alItems)
       {
          int i = adapter.getPosition(item);
          if(i >= 0)
