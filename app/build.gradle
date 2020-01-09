@@ -21,10 +21,25 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
             applicationVariants.all { variant ->
-                variant.outputs.each { output ->
-                    println("new filename" +outputFileName )
+//                variant.outputs.each { output ->
+//                    println("new filename" +outputFileName )
+//                    def projectName = 'BookBag'
+//                    def newName = output.outputFile.name
+//                    newName = newName.replace("app-", projectName + '-')
+//                    def manifestFile = file("src/main/AndroidManifest.xml")
+//                    def patternVersionNumber = Pattern.compile("versionName=\"(\\d+)\\.(\\d+)\\.(\\d+)\"")
+//                    def manifestText = manifestFile.getText()
+//                    def matcherVersionNumber = patternVersionNumber.matcher(manifestText)
+//                    matcherVersionNumber.find()
+//
+//                    newName = newName.replace("-release", '-' + matcherVersionNumber.group(1) + '.' + matcherVersionNumber.group(2) + '.' + matcherVersionNumber.group(3))
+//                    output.outputFileName = new File("", newName)
+//                }
+                variant.outputs.all {
+                    println("new filename" + outputFileName )
                     def projectName = 'BookBag'
-                    def newName = output.outputFile.name
+//                    project.ext { appName = 'my_app' }
+                    def newName = outputFileName
                     newName = newName.replace("app-", projectName + '-')
                     def manifestFile = file("src/main/AndroidManifest.xml")
                     def patternVersionNumber = Pattern.compile("versionName=\"(\\d+)\\.(\\d+)\\.(\\d+)\"")
@@ -33,10 +48,9 @@ android {
                     matcherVersionNumber.find()
 
                     newName = newName.replace("-release", '-' + matcherVersionNumber.group(1) + '.' + matcherVersionNumber.group(2) + '.' + matcherVersionNumber.group(3))
-                    output.outputFileName = new File("", newName)
+                    outputFileName = new File("", newName)
                 }
             }
-
         }
     }
 }

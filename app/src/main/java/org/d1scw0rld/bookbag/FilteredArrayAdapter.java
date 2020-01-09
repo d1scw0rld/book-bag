@@ -8,32 +8,27 @@ import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.TextView;
 
-import org.d1scw0rld.bookbag.dto.Field;
-
 import java.util.ArrayList;
 import java.util.List;
 
-public class FilteredArrayAdapter<T> extends ArrayAdapter
+public class FilteredArrayAdapter<T> extends ArrayAdapter<T>
 {
-   //      private final String MY_DEBUG_TAG = "FilteredArrayAdapter";
    private ArrayList<T> items;
-   private ArrayList<T> suggestions;
-   FieldFilter nameFilter;
+   private FieldFilter  nameFilter;
 
-   public FilteredArrayAdapter(Context context, int viewResourceId, ArrayList<T> items)
+   FilteredArrayAdapter(Context context, int viewResourceId, ArrayList<T> items)
    {
       super(context, viewResourceId, items);
       this.items = items;
-      suggestions = new ArrayList<>();
-      suggestions.addAll(items);
    }
 
    @NonNull
    public View getView(int position, View convertView, @NonNull ViewGroup parent)
    {
       TextView view = (TextView) super.getView(position, convertView, parent);
-//      view.setText(getItem(position).sValue);
-      view.setText(getItem(position).toString());
+      T t = getItem(position);
+      assert t!= null;
+      view.setText(t.toString());
       return view;
    }
 
@@ -42,35 +37,34 @@ public class FilteredArrayAdapter<T> extends ArrayAdapter
    public Filter getFilter()
    {
       if(nameFilter == null)
-         nameFilter = new FieldFilter<>(items);
+         nameFilter = new FieldFilter(items);
       return nameFilter;
 //          return nameFilter;
    }
 
-   private class FieldFilter<T> extends Filter
+   private class FieldFilter extends Filter
    {
-      private ArrayList<T> alSourceObjects;
+      private ArrayList<T> suggestions;
 
       FieldFilter(List<T> objects)
       {
-         alSourceObjects = new ArrayList<T>();
+         suggestions = new ArrayList<>();
          synchronized(this)
          {
-            alSourceObjects.addAll(objects);
+            suggestions.addAll(objects);
          }
       }
 
       @Override
       protected FilterResults performFiltering(CharSequence charSequence)
       {
-         String filterSeq = charSequence.toString().toLowerCase();
-
          FilterResults result = new FilterResults();
-         if(filterSeq != null && filterSeq.length() > 0)
+         if(charSequence != null && charSequence.length() > 0)
          {
-            ArrayList<T> filter = new ArrayList<T>();
+            String filterSeq = charSequence.toString().toLowerCase();
+            ArrayList<T> filter = new ArrayList<>();
 
-            for(T object : alSourceObjects)
+            for(T object : suggestions)
             {
                // the filtering itself:
                if(object.toString()
@@ -83,32 +77,28 @@ public class FilteredArrayAdapter<T> extends ArrayAdapter
          }
          else
          {
-            // add all objects
             synchronized(this)
             {
-               result.values = alSourceObjects;
-               result.count = alSourceObjects.size();
+               result.values = suggestions;
+               result.count = suggestions.size();
             }
          }
          return result;
       }
-
+      @SuppressWarnings("unchecked")
       @Override
       protected void publishResults(CharSequence charSequence, FilterResults filterResults)
       {
-         ArrayList<?> filtered = (ArrayList<?>) filterResults.values;
          if(filterResults != null && filterResults.count > 0)
          {
+            ArrayList<T> filtered = (ArrayList<T>) filterResults.values;
             notifyDataSetChanged();
             clear();
-//            for(int i = 0, l = filtered.size(); i < l; i++)
             addAll(filtered);
-//            for(T object : filtered)
+//            for(Object o: filtered)
 //            {
-////               add(filtered.get(i));
-//               add(object);
+//               add((T) o);
 //            }
-
          }
          else
             notifyDataSetInvalidated();
@@ -122,54 +112,4 @@ public class FilteredArrayAdapter<T> extends ArrayAdapter
 //            }
       }
    }
-
-//      Filter nameFilter = new Filter()
-//      {
-//         @Override
-//         public String convertResultToString(Object resultValue)
-//         {
-//            return ((Field)(resultValue)).sValue;
-//         }
-//
-//         @Override
-//         protected FilterResults performFiltering(CharSequence constraint)
-//         {
-//            if(constraint != null)
-//            {
-//               suggestions.clear();
-//               for (Field oField : items)
-//               {
-//                  if(oField.sValue.toLowerCase(ConfigurationCompat.getLocales(getResources().getConfiguration()).get(0)).startsWith(constraint.toString().toLowerCase()))
-//                  {
-//                     suggestions.add(oField);
-//                  }
-//               }
-//
-//               FilterResults filterResults = new FilterResults();
-//               filterResults.values = suggestions;
-//               filterResults.count = suggestions.size();
-//               return filterResults;
-//            }
-//            else
-//            {
-//               return new FilterResults();
-//            }
-//         }
-//
-//         @Override
-//         protected void publishResults(CharSequence constraint, FilterResults results)
-//         {
-//            ArrayList<Field> filteredList = (ArrayList<Field>) results.values;
-//            if(results != null && results.count > 0)
-//            {
-//               clear();
-//               for (Field c : filteredList)
-//               {
-//                  add(c);
-//               }
-//
-//               notifyDataSetChanged();
-//            }
-//         }
-//      };
 }
