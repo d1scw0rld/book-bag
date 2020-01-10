@@ -2,6 +2,7 @@ package org.d1scw0rld.bookbag;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.v4.os.ConfigurationCompat;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -13,6 +14,7 @@ import java.util.List;
 
 public class FilteredArrayAdapter<T> extends ArrayAdapter<T>
 {
+   private Context context;
    private ArrayList<T> items;
    private FieldFilter  nameFilter;
 
@@ -20,6 +22,7 @@ public class FilteredArrayAdapter<T> extends ArrayAdapter<T>
    {
       super(context, viewResourceId, items);
       this.items = items;
+      this.context = context;
    }
 
    @NonNull
@@ -66,9 +69,8 @@ public class FilteredArrayAdapter<T> extends ArrayAdapter<T>
 
             for(T object : suggestions)
             {
-               // the filtering itself:
                if(object.toString()
-                        .toLowerCase()
+                        .toLowerCase(ConfigurationCompat.getLocales(context.getResources().getConfiguration()).get(0))
                         .startsWith(filterSeq))
                   filter.add(object);
             }
@@ -102,14 +104,6 @@ public class FilteredArrayAdapter<T> extends ArrayAdapter<T>
          }
          else
             notifyDataSetInvalidated();
-
-
-//            if(filterResults != null && filterResults.count > 0) {
-//               notifyDataSetChanged();
-//            }
-//            else {
-//               notifyDataSetInvalidated();
-//            }
       }
    }
 }
