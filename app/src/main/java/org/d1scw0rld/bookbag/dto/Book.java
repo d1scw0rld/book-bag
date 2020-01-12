@@ -24,7 +24,7 @@ public class Book
                               ciDueDate,
                               ciRating;
 
-   public ArrayList<Field> alFields = new ArrayList<>();
+   public ArrayList<Property> alProperties = new ArrayList<>();
 
    public Book()
    {
@@ -74,4 +74,24 @@ public class Book
       csISBN = new Changeable<>(sISBN);
       csWeb = new Changeable<>(sWeb);
    }
+
+//   public void addProperty(Property property)
+//   {
+//      alProperties.add(property);
+//   }
+//
+//   public Property getProperty(int i)
+//   {
+//      return alProperties.get(i);
+//   }
+//
+//   public void removeProperty(int i)
+//   {
+//      alProperties.remove(i);
+//   }
+//
+//   public int getPropertiesSize()
+//   {
+//      return alProperties.size();
+//   }
 }

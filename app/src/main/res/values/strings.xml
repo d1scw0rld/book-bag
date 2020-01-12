@@ -47,7 +47,7 @@
    <string name="add_new">Add new</string>
    <string name="amn_vl">%1$01d%2$c%3$02d</string>
    <string name="amn_vl_crn">%1$01d%2$c%3$02d %4$s</string>
-   <string name="btn_add_field">Add another field</string>
+   <string name="btn_add_field">Add another property</string>
    <string name="err_db">Error inserting in %1$s TypeID:%2$d Value:%3$s</string>
    <string name="srt_title">Sort by title</string>
    <string name="srt_author">Sort by author</string>

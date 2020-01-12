@@ -21,8 +21,8 @@ import android.text.InputType;
 import android.util.Log;
 
 import org.d1scw0rld.bookbag.dto.Book;
+import org.d1scw0rld.bookbag.dto.Property;
 import org.d1scw0rld.bookbag.dto.Field;
-import org.d1scw0rld.bookbag.dto.FieldType;
 import org.d1scw0rld.bookbag.dto.FileUtils;
 import org.d1scw0rld.bookbag.dto.ParentResult;
 import org.d1scw0rld.bookbag.dto.Result;
@@ -159,39 +159,39 @@ public class DBAdapter
                     SRT_LND_TTL = 11,
                     SRT_LND_BRW = 12;
 
-   final static ArrayList<FieldType> FIELD_TYPES = new ArrayList<>();
+   final static ArrayList<Field> FIELDS = new ArrayList<>();
    
 	DBAdapter(Context _context)
 	{
 		this.context = _context;
 		dbHelper = new DBOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION);
 		Resources r = context.getResources();
-		FIELD_TYPES.clear();
-		FIELD_TYPES.add(new FieldType(FLD_TITLE, r.getString(R.string.fld_title), FieldType.TYPE_TEXT).setVisibility(true));
-		FIELD_TYPES.add(new FieldType(FLD_AUTHOR, r.getString(R.string.fld_author), FieldType.TYPE_MULTIFIELD).setVisibility(true));
-		FIELD_TYPES.add(new FieldType(FLD_DESCRIPTION, r.getString(R.string.fld_descrition), FieldType.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_MULTI_LINE).setVisibility(false));
-		FIELD_TYPES.add(new FieldType(FLD_SERIE, r.getString(R.string.fld_serie), FieldType.TYPE_TEXT_AUTOCOMPLETE));
-		FIELD_TYPES.add(new FieldType(FLD_VOLUME, r.getString(R.string.fld_volume), FieldType.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
-		FIELD_TYPES.add(new FieldType(FLD_GENRE, r.getString(R.string.fld_genre), FieldType.TYPE_MULTI_SPINNER));
-		FIELD_TYPES.add(new FieldType(FLD_LANGUAGE, r.getString(R.string.fld_language), FieldType.TYPE_SPINNER));
-		FIELD_TYPES.add(new FieldType(FLD_PAGES, r.getString(R.string.fld_pages), FieldType.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
-		FIELD_TYPES.add(new FieldType(FLD_PUBLISHER, r.getString(R.string.fld_publisher), FieldType.TYPE_TEXT_AUTOCOMPLETE));
-		FIELD_TYPES.add(new FieldType(FLD_PUBLICATION_DATE, r.getString(R.string.fld_publication_date), FieldType.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
-		FIELD_TYPES.add(new FieldType(FLD_PUBLICATION_LOCATION, r.getString(R.string.fld_publication_location), FieldType.TYPE_TEXT_AUTOCOMPLETE));
-		FIELD_TYPES.add(new FieldType(FLD_EDITION, r.getString(R.string.fld_edition), FieldType.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
-		FIELD_TYPES.add(new FieldType(FLD_PRICE, r.getString(R.string.fld_price), FieldType.TYPE_MONEY).setInputType(InputType.TYPE_CLASS_NUMBER|InputType.TYPE_NUMBER_FLAG_DECIMAL));
-      FIELD_TYPES.add(new FieldType(FLD_VALUE, r.getString(R.string.fld_value), FieldType.TYPE_MONEY).setInputType(InputType.TYPE_CLASS_NUMBER|InputType.TYPE_NUMBER_FLAG_DECIMAL));
-		FIELD_TYPES.add(new FieldType(FLD_STATUS, r.getString(R.string.fld_status), FieldType.TYPE_SPINNER));
-		FIELD_TYPES.add(new FieldType(FLD_LOANED_TO, r.getString(R.string.fld_loaned_to), FieldType.TYPE_TEXT_AUTOCOMPLETE));
-		FIELD_TYPES.add(new FieldType(FLD_READ, r.getString(R.string.fld_read), FieldType.TYPE_CHECK_BOX));
-		FIELD_TYPES.add(new FieldType(FLD_READ_DATE, r.getString(R.string.fld_read_date), FieldType.TYPE_DATE));
-		FIELD_TYPES.add(new FieldType(FLD_RATING, r.getString(R.string.fld_rating), FieldType.TYPE_RATING));
-		FIELD_TYPES.add(new FieldType(FLD_FORMAT, r.getString(R.string.fld_format), FieldType.TYPE_SPINNER));
-      FIELD_TYPES.add(new FieldType(FLD_CONDITION, r.getString(R.string.fld_condition), FieldType.TYPE_SPINNER));
-		FIELD_TYPES.add(new FieldType(FLD_LOCATION, r.getString(R.string.fld_location), FieldType.TYPE_TEXT_AUTOCOMPLETE));
-		FIELD_TYPES.add(new FieldType(FLD_DUE_DATE, r.getString(R.string.fld_due_date), FieldType.TYPE_DATE));
-		FIELD_TYPES.add(new FieldType(FLD_ISBN, r.getString(R.string.fld_isbn), FieldType.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
-		FIELD_TYPES.add(new FieldType(FLD_WEB, r.getString(R.string.fld_web), FieldType.TYPE_TEXT));
+		FIELDS.clear();
+		FIELDS.add(new Field(FLD_TITLE, r.getString(R.string.fld_title), Field.TYPE_TEXT).setVisibility(true));
+		FIELDS.add(new Field(FLD_AUTHOR, r.getString(R.string.fld_author), Field.TYPE_MULTIFIELD).setVisibility(true));
+		FIELDS.add(new Field(FLD_DESCRIPTION, r.getString(R.string.fld_descrition), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_MULTI_LINE).setVisibility(false));
+		FIELDS.add(new Field(FLD_SERIE, r.getString(R.string.fld_serie), Field.TYPE_TEXT_AUTOCOMPLETE));
+		FIELDS.add(new Field(FLD_VOLUME, r.getString(R.string.fld_volume), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
+		FIELDS.add(new Field(FLD_GENRE, r.getString(R.string.fld_genre), Field.TYPE_MULTI_SPINNER));
+		FIELDS.add(new Field(FLD_LANGUAGE, r.getString(R.string.fld_language), Field.TYPE_SPINNER));
+		FIELDS.add(new Field(FLD_PAGES, r.getString(R.string.fld_pages), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
+		FIELDS.add(new Field(FLD_PUBLISHER, r.getString(R.string.fld_publisher), Field.TYPE_TEXT_AUTOCOMPLETE));
+		FIELDS.add(new Field(FLD_PUBLICATION_DATE, r.getString(R.string.fld_publication_date), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
+		FIELDS.add(new Field(FLD_PUBLICATION_LOCATION, r.getString(R.string.fld_publication_location), Field.TYPE_TEXT_AUTOCOMPLETE));
+		FIELDS.add(new Field(FLD_EDITION, r.getString(R.string.fld_edition), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
+		FIELDS.add(new Field(FLD_PRICE, r.getString(R.string.fld_price), Field.TYPE_MONEY).setInputType(InputType.TYPE_CLASS_NUMBER|InputType.TYPE_NUMBER_FLAG_DECIMAL));
+      FIELDS.add(new Field(FLD_VALUE, r.getString(R.string.fld_value), Field.TYPE_MONEY).setInputType(InputType.TYPE_CLASS_NUMBER|InputType.TYPE_NUMBER_FLAG_DECIMAL));
+		FIELDS.add(new Field(FLD_STATUS, r.getString(R.string.fld_status), Field.TYPE_SPINNER));
+		FIELDS.add(new Field(FLD_LOANED_TO, r.getString(R.string.fld_loaned_to), Field.TYPE_TEXT_AUTOCOMPLETE));
+		FIELDS.add(new Field(FLD_READ, r.getString(R.string.fld_read), Field.TYPE_CHECK_BOX));
+		FIELDS.add(new Field(FLD_READ_DATE, r.getString(R.string.fld_read_date), Field.TYPE_DATE));
+		FIELDS.add(new Field(FLD_RATING, r.getString(R.string.fld_rating), Field.TYPE_RATING));
+		FIELDS.add(new Field(FLD_FORMAT, r.getString(R.string.fld_format), Field.TYPE_SPINNER));
+      FIELDS.add(new Field(FLD_CONDITION, r.getString(R.string.fld_condition), Field.TYPE_SPINNER));
+		FIELDS.add(new Field(FLD_LOCATION, r.getString(R.string.fld_location), Field.TYPE_TEXT_AUTOCOMPLETE));
+		FIELDS.add(new Field(FLD_DUE_DATE, r.getString(R.string.fld_due_date), Field.TYPE_DATE));
+		FIELDS.add(new Field(FLD_ISBN, r.getString(R.string.fld_isbn), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
+		FIELDS.add(new Field(FLD_WEB, r.getString(R.string.fld_web), Field.TYPE_TEXT));
 	}
 
 	void open() throws SQLiteException
@@ -520,21 +520,21 @@ public class DBAdapter
 
          long iBookID = db.insert(TABLE_BOOKS, null, values);
          
-         for(int i = 0; i < oBook.alFields.size(); i++)
+         for(int i = 0; i < oBook.alProperties.size(); i++)
          {
-            if (oBook.alFields.get(i).iID == 0)
+            if (oBook.alProperties.get(i).iID == 0)
             {
                values = new ContentValues();
-               values.put(KEY_TP_ID, oBook.alFields.get(i).iTypeID);
-               values.put(KEY_NM, oBook.alFields.get(i).sValue);
-               oBook.alFields.get(i).iID = db.insert(TABLE_FIELDS, null, values);
+               values.put(KEY_TP_ID, oBook.alProperties.get(i).iFieldTypeID);
+               values.put(KEY_NM, oBook.alProperties.get(i).sValue);
+               oBook.alProperties.get(i).iID = db.insert(TABLE_FIELDS, null, values);
             }
          }
 
-         for (Field oField : oBook.alFields)
+         for (Property oProperty : oBook.alProperties)
          {
             values = new ContentValues();
-            values.put(KEY_FLD_ID, oField.iID);
+            values.put(KEY_FLD_ID, oProperty.iID);
             values.put(KEY_BK_ID, iBookID);
             db.insert(TABLE_BOOK_FIELDS, null, values);
          }
@@ -548,15 +548,15 @@ public class DBAdapter
       shrink();
    }
 
-   ArrayList<Field> getFieldValues(int iTypeID)
+   ArrayList<Property> getPropertyValues(int iTypeID)
    {
-      return getFieldValues(iTypeID, false);
+      return getPropertyValues(iTypeID, false);
    }
    
-   ArrayList<Field> getFieldValues(int iTypeID, boolean isOrdered)
+   ArrayList<Property> getPropertyValues(int iTypeID, boolean isOrdered)
    {
 
-      ArrayList<Field> alFieldValues = new ArrayList<>();
+      ArrayList<Property> alPropertyValues = new ArrayList<>();
 
       String sql = "SELECT f." + KEY_ID + ", f." + KEY_TP_ID + ", f." + KEY_NM
                    + " FROM " + TABLE_FIELDS + " as f "
@@ -567,21 +567,21 @@ public class DBAdapter
 
       Cursor cursor = db.rawQuery(sql, null);
 
-      Field oField;
+      Property oProperty;
       if(cursor.moveToFirst())
       {
          do
          {
-            oField = new Field(Integer.parseInt(cursor.getString(ID_KEY_ID)),
-                               Integer.parseInt(cursor.getString(ID_KEY_TP_ID)),
-                               cursor.getString(ID_KEY_NM));
+            oProperty = new Property(Integer.parseInt(cursor.getString(ID_KEY_ID)),
+                                     Integer.parseInt(cursor.getString(ID_KEY_TP_ID)),
+                                     cursor.getString(ID_KEY_NM));
 
-            alFieldValues.add(oField);
+            alPropertyValues.add(oProperty);
          } while(cursor.moveToNext());
       }
       cursor.close();
 
-      return alFieldValues;
+      return alPropertyValues;
    }
 
    Book getBook(long iBookID)
@@ -621,17 +621,17 @@ public class DBAdapter
 
       cursor = db.rawQuery(sql, null);
 
-      Field oField;
+      Property oProperty;
       if(cursor.moveToFirst())
       {
          do
          {
-            oField = new Field(Integer.parseInt(cursor.getString(ID_KEY_ID)),
-                               Integer.parseInt(cursor.getString(ID_KEY_TP_ID)),
-                               cursor.getString(ID_KEY_NM));
+            oProperty = new Property(Integer.parseInt(cursor.getString(ID_KEY_ID)),
+                                     Integer.parseInt(cursor.getString(ID_KEY_TP_ID)),
+                                     cursor.getString(ID_KEY_NM));
 
             assert oBook != null;
-            oBook.alFields.add(oField);
+            oBook.alProperties.add(oProperty);
          } while(cursor.moveToNext());
       }
       cursor.close();
@@ -673,23 +673,23 @@ public class DBAdapter
       db.beginTransaction();
       try
       {
-         for(Field oField : oBook.alFields)
+         for(Property oProperty : oBook.alProperties)
          {
-            if(oField.iID == 0)
+            if(oProperty.iID == 0)
             {
                oValues = new ContentValues();
-               oValues.put(KEY_TP_ID, oField.iTypeID);
-               oValues.put(KEY_NM, oField.sValue);
-               oField.iID = db.insert(TABLE_FIELDS, null, oValues);
+               oValues.put(KEY_TP_ID, oProperty.iFieldTypeID);
+               oValues.put(KEY_NM, oProperty.sValue);
+               oProperty.iID = db.insert(TABLE_FIELDS, null, oValues);
             }
          }
 
          db.delete(TABLE_BOOK_FIELDS, KEY_BK_ID + " = " + oBook.iID, null);
 
-         for(Field oField : oBook.alFields)
+         for(Property oProperty : oBook.alProperties)
          {
             oValues = new ContentValues();
-            oValues.put(KEY_FLD_ID, oField.iID);
+            oValues.put(KEY_FLD_ID, oProperty.iID);
             oValues.put(KEY_BK_ID, oBook.iID);
             db.insert(TABLE_BOOK_FIELDS, null, oValues);
          }

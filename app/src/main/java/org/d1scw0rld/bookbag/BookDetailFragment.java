@@ -18,8 +18,8 @@ import android.widget.TextView;
 
 import org.d1scw0rld.bookbag.dto.Book;
 import org.d1scw0rld.bookbag.dto.Date;
+import org.d1scw0rld.bookbag.dto.Property;
 import org.d1scw0rld.bookbag.dto.Field;
-import org.d1scw0rld.bookbag.dto.FieldType;
 import org.d1scw0rld.bookbag.dto.Price;
 
 /**
@@ -115,21 +115,21 @@ public class BookDetailFragment extends Fragment
          String sName,
                 sValue = "";
          
-         ArrayList<Field> alCurrencies = oDbAdapter.getFieldValues(DBAdapter.FLD_CURRENCY);
+         ArrayList<Property> alCurrencies = oDbAdapter.getPropertyValues(DBAdapter.FLD_CURRENCY);
          
          Price oPrice = null;
          
-         for(FieldType fieldType: DBAdapter.FIELD_TYPES)
+         for(Field field : DBAdapter.FIELDS)
          {
-            sName = fieldType.sName;
+            sName = field.sName;
             
-            if(fieldType.iID > 99)
+            if(field.iID > 99)
             {
-               switch (fieldType.iType)
+               switch (field.iType)
                {
-                  case FieldType.TYPE_TEXT:
+                  case Field.TYPE_TEXT:
                   {
-                     switch(fieldType.iID)
+                     switch(field.iID)
                      {
                         case DBAdapter.FLD_TITLE:
                            sValue = oBook.csTitle.value;
@@ -165,9 +165,9 @@ public class BookDetailFragment extends Fragment
                   }
                   break;
                   
-                  case FieldType.TYPE_MONEY:
+                  case Field.TYPE_MONEY:
                   {
-                     switch(fieldType.iID)
+                     switch(field.iID)
                      {
                         case DBAdapter.FLD_PRICE:
                            oPrice = new Price(oBook.csPrice.value);
@@ -182,8 +182,8 @@ public class BookDetailFragment extends Fragment
                      if(oPrice == null || oPrice.iValue == 0)
                         break;
 
-                     Field fldCurrency = null;
-                     for(Field oCurrency : alCurrencies)
+                     Property fldCurrency = null;
+                     for(Property oCurrency : alCurrencies)
                         if(oCurrency.iID == oPrice.iCurrencyID)
                         {
                            fldCurrency = oCurrency;
@@ -196,10 +196,10 @@ public class BookDetailFragment extends Fragment
                   }
                   break;
                   
-                  case FieldType.TYPE_DATE:
+                  case Field.TYPE_DATE:
                   {
                      Date date = null;
-                     switch(fieldType.iID)
+                     switch(field.iID)
                      {
                         case DBAdapter.FLD_READ_DATE:
                            date = new Date(oBook.ciReadDate.value);
@@ -221,22 +221,22 @@ public class BookDetailFragment extends Fragment
             }
             else
             {
-               for(Field oField: oBook.alFields)
+               for(Property oProperty : oBook.alProperties)
                {
-                  if(oField.iTypeID == fieldType.iID)
+                  if(oProperty.iFieldTypeID == field.iID)
                   {
-                     switch (fieldType.iType)
+                     switch (field.iType)
                      {
-                        case FieldType.TYPE_MULTIFIELD:
-                        case FieldType.TYPE_MULTI_SPINNER:
-                           String tsNames[] = fieldType.sName.split("\\|");
+                        case Field.TYPE_MULTIFIELD:
+                        case Field.TYPE_MULTI_SPINNER:
+                           String tsNames[] = field.sName.split("\\|");
                            if(tsNames.length > 1)
                               sName = tsNames[1];
-                           sValue += (!sValue.trim().isEmpty() ? SEP : "") + oField.sValue;  
+                           sValue += (!sValue.trim().isEmpty() ? SEP : "") + oProperty.sValue;
                         break;
                         
                         default:
-                           sValue = oField.sValue;
+                           sValue = oProperty.sValue;
                            break;
                      }
                   }
@@ -245,9 +245,9 @@ public class BookDetailFragment extends Fragment
             
             if(!sValue.trim().isEmpty())
             {
-               if(fieldType.iType == FieldType.TYPE_RATING)
+               if(field.iType == Field.TYPE_RATING)
                   addRatingField(llCategories, sName, sValue);
-               else if(fieldType.iType == FieldType.TYPE_CHECK_BOX)
+               else if(field.iType == Field.TYPE_CHECK_BOX)
                   addCheckBoxField(llCategories, sName, sValue);
                else
                   addField(llCategories, sName, sValue);

@@ -1,56 +1,54 @@
 package org.d1scw0rld.bookbag.dto;
 
-import android.support.annotation.NonNull;
+/**
+ * Created by Iasen on 12.7.2016 г..
+ */
 
 public class Field
 {
-   public int iTypeID;
-   public long iID = 0;
-   public String sValue = "";
+   public  int     iID;
+   public  String  sName;
+   public  boolean isVisible  = false;
+   public  byte    iType;
+   public  int     iInputType = 0;
 
-   public Field(int iTypeID)
-   {
-      this.iTypeID = iTypeID;
-   }
-
-   public Field(int iTypeID, String sValue)
-   {
-      this.iTypeID = iTypeID;
-      this.sValue = sValue;
-   }
-
-   public Field(long iID, int iTypeID, String sValue)
+   public final static byte TYPE_TEXT              = 1,
+                            TYPE_TEXT_AUTOCOMPLETE = 2,
+                            TYPE_MONEY             = 3,
+                            TYPE_MULTIFIELD        = 4,
+                            TYPE_SPINNER           = 5,
+                            TYPE_MULTI_SPINNER     = 6,
+                            TYPE_DATE              = 7,
+                            TYPE_RATING            = 8,
+                            TYPE_CHECK_BOX         = 9;
+   
+   
+   public Field(int iID, String sName, boolean isVisible, byte iType)
    {
       this.iID = iID;
-      this.iTypeID = iTypeID;
-      this.sValue = sValue;
+      this.sName = sName;
+      this.isVisible = isVisible;
+      this.iType = iType;
    }
 
-   public void copy(Field f)
+   public Field(int iID, String sName, byte iType)
    {
-      iID = f.iID;
-      iTypeID = f.iTypeID;
-      sValue = f.sValue;
+      this.iID = iID;
+      this.sName = sName;      
+      this.iType = iType;
    }
 
-   @NonNull
-   @Override
-   public String toString()
+   public Field setVisibility(boolean isVisible)
    {
-      return sValue;
+      this.isVisible = isVisible;
+      return this;
    }
-
-
-//   @Override
-//   public String getValue()
-//   {
-//      return sValue;
-//   }
-
-   @Override
-   public boolean equals(Object o)
+   
+   public Field setInputType(int iInputType)
    {
-      Field f = (Field) o;
-      return o != null && iID == f.iID && iTypeID == f.iTypeID && sValue.equalsIgnoreCase(f.sValue);
+      this.iInputType = iInputType;
+      return this;
    }
+
+   
 }

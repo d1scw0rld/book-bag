@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import org.d1scw0rld.bookbag.FilteredArrayAdapter;
 //import org.d1scw0rld.bookbag.IItem;
 import org.d1scw0rld.bookbag.R;
-import org.d1scw0rld.bookbag.dto.Field;
+import org.d1scw0rld.bookbag.dto.Property;
 import org.d1scw0rld.bookbag.fields.AutoCompleteTextViewX.OnUpdateListener;
 
 import android.content.Context;
@@ -31,17 +31,17 @@ public class FieldMultiText extends LinearLayout
       
       void onFieldUpdated(View view, String value);
 
-      void onItemSelect(View view, Field selection);
+      void onItemSelect(View view, Property selection);
    }
 
-   private LayoutInflater              inflater;
-   private Title                       title;
-   private LinearLayout                llFields;
-   private String                      hint = "";
-   private String                      contentDescription = "";
+   private LayoutInflater                 inflater;
+   private Title                          title;
+   private LinearLayout                   llFields;
+   private String                         hint = "";
+   private String                         contentDescription = "";
 //   private ArrayAdapter<IItem> adapter;
-   private FilteredArrayAdapter<Field> adapter;
-   private OnAddRemoveFieldListener    onAddRemoveFieldListener;
+   private FilteredArrayAdapter<Property> adapter;
+   private OnAddRemoveFieldListener       onAddRemoveFieldListener;
 
    public FieldMultiText(Context context)
    {
@@ -118,7 +118,7 @@ public class FieldMultiText extends LinearLayout
          @Override
          public void onItemClick(AdapterView<?> adapter, View view, int position, long rowId)
          {
-            Field selection = (Field) adapter.getItemAtPosition(position);
+            Property selection = (Property) adapter.getItemAtPosition(position);
             etValue.setText(selection.sValue);
             etValue.setSelection(selection.sValue.length());
             onAddRemoveFieldListener.onItemSelect(vRow, selection);
@@ -149,7 +149,7 @@ public class FieldMultiText extends LinearLayout
       onAddRemoveFieldListener.onAddNewField(addRow());
    }
 
-   private void addField(LinearLayout llFields, Field field)
+   private void addField(LinearLayout llFields, Property property)
    {
       final View vRow = addRow();
       
@@ -157,8 +157,8 @@ public class FieldMultiText extends LinearLayout
       if(llFields.getChildCount() == 1)
          etValue.setId(R.id.et_author_1);
 
-      etValue.setText(field.sValue);
-      vRow.setTag(field);
+      etValue.setText(property.sValue);
+      vRow.setTag(property);
    }
    
    private void removeField(View vField)
@@ -213,12 +213,12 @@ public class FieldMultiText extends LinearLayout
 //      String getValue();
 //   }
    
-   public void setItems(FilteredArrayAdapter<Field> adapter, ArrayList<Field> alItems)
+   public void setItems(FilteredArrayAdapter<Property> adapter, ArrayList<Property> alItems)
    {
       this.adapter = adapter;
 
       boolean hasFieldsOfType = false;
-      for(Field item: alItems)
+      for(Property item: alItems)
       {
          int i = adapter.getPosition(item);
          if(i >= 0)

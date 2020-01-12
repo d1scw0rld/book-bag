@@ -30,8 +30,8 @@ import android.widget.TextView;
 import org.d1scw0rld.bookbag.dto.Book;
 import org.d1scw0rld.bookbag.dto.Changeable;
 import org.d1scw0rld.bookbag.dto.Date;
+import org.d1scw0rld.bookbag.dto.Property;
 import org.d1scw0rld.bookbag.dto.Field;
-import org.d1scw0rld.bookbag.dto.FieldType;
 import org.d1scw0rld.bookbag.dto.Price;
 import org.d1scw0rld.bookbag.dto.Utils;
 import org.d1scw0rld.bookbag.fields.AutoCompleteTextViewX;
@@ -55,7 +55,7 @@ import java.util.HashMap;
 public class EditBookActivity extends AppCompatActivity
 {
    public final static String BOOK_ID = "book_id",
-         IS_COPY                      = "is_copy";
+                              IS_COPY = "is_copy";
 
    private Book book;
 
@@ -167,44 +167,44 @@ public class EditBookActivity extends AppCompatActivity
 
       LinearLayout llFields = findViewById(R.id.ll_fields);
 
-      for(FieldType fieldType : DBAdapter.FIELD_TYPES)
+      for(Field field : DBAdapter.FIELDS)
       {
-         switch(fieldType.iType)
+         switch(field.iType)
          {
-            case FieldType.TYPE_TEXT:
-               addFieldText(llFields, fieldType);
+            case Field.TYPE_TEXT:
+               addFieldText(llFields, field);
                break;
 
-            case FieldType.TYPE_MULTIFIELD:
-               addFieldMultiText(llFields, fieldType);
+            case Field.TYPE_MULTIFIELD:
+               addFieldMultiText(llFields, field);
                break;
 
-            case FieldType.TYPE_TEXT_AUTOCOMPLETE:
-               addAutocompleteField(llFields, fieldType);
+            case Field.TYPE_TEXT_AUTOCOMPLETE:
+               addAutocompleteField(llFields, field);
                break;
 
-            case FieldType.TYPE_SPINNER:
-               addFieldSpinner(llFields, fieldType);
+            case Field.TYPE_SPINNER:
+               addFieldSpinner(llFields, field);
                break;
 
-            case FieldType.TYPE_MULTI_SPINNER:
-               addFieldMultiSpinner(llFields, fieldType);
+            case Field.TYPE_MULTI_SPINNER:
+               addFieldMultiSpinner(llFields, field);
                break;
 
-            case FieldType.TYPE_MONEY:
-               addFieldMoney(llFields, fieldType);
+            case Field.TYPE_MONEY:
+               addFieldMoney(llFields, field);
                break;
 
-            case FieldType.TYPE_DATE:
-               addFieldDate(llFields, fieldType);
+            case Field.TYPE_DATE:
+               addFieldDate(llFields, field);
                break;
 
-            case FieldType.TYPE_RATING:
-               addFieldRating(llFields, fieldType);
+            case Field.TYPE_RATING:
+               addFieldRating(llFields, field);
                break;
 
-            case FieldType.TYPE_CHECK_BOX:
-               addFieldCheckBox(llFields, fieldType);
+            case Field.TYPE_CHECK_BOX:
+               addFieldCheckBox(llFields, field);
                break;
          }
       }
@@ -258,11 +258,11 @@ public class EditBookActivity extends AppCompatActivity
    private void saveBook()
    {
       // Clear empty fields
-      for(int i = book.alFields.size() - 1; i >= 0; i--)
+      for(int i = book.alProperties.size() - 1; i >= 0; i--)
       {
-         if(book.alFields.get(i).sValue.trim()
-                                       .isEmpty())
-            book.alFields.remove(i);
+         if(book.alProperties.get(i).sValue.trim()
+                                           .isEmpty())
+            book.alProperties.remove(i);
       }
 
       if(book.iID != 0)
@@ -271,52 +271,52 @@ public class EditBookActivity extends AppCompatActivity
          dbAdapter.insertBook(book);
    }
 
-   private void addFieldText(LinearLayout rootView, FieldType fieldType)
+   private void addFieldText(LinearLayout rootView, Field field)
    {
-      switch(fieldType.iID)
+      switch(field.iID)
       {
          case DBAdapter.FLD_TITLE:
-            addFieldText(rootView, fieldType, book.csTitle);
+            addFieldText(rootView, field, book.csTitle);
             break;
 
          case DBAdapter.FLD_DESCRIPTION:
-            addFieldText(rootView, fieldType, book.csDescription);
+            addFieldText(rootView, field, book.csDescription);
             break;
 
          case DBAdapter.FLD_VOLUME:
-            addFieldText(rootView, fieldType, book.ciVolume);
+            addFieldText(rootView, field, book.ciVolume);
             break;
 
          case DBAdapter.FLD_PAGES:
-            addFieldText(rootView, fieldType, book.ciPages);
+            addFieldText(rootView, field, book.ciPages);
             break;
 
          case DBAdapter.FLD_EDITION:
-            addFieldText(rootView, fieldType, book.ciEdition);
+            addFieldText(rootView, field, book.ciEdition);
             break;
 
          case DBAdapter.FLD_ISBN:
-            addFieldText(rootView, fieldType, book.csISBN);
+            addFieldText(rootView, field, book.csISBN);
             break;
 
          case DBAdapter.FLD_WEB:
-            addFieldText(rootView, fieldType, book.csWeb);
+            addFieldText(rootView, field, book.csWeb);
             break;
 
          default:
       }
    }
 
-   private <T> void addFieldText(ViewGroup rootView, FieldType fieldType, final Changeable<T> cValue)
+   private <T> void addFieldText(ViewGroup rootView, Field field, final Changeable<T> cValue)
    {
       final FieldEditTextUpdatableClearable fieldEditTextUpdatableClearable = new FieldEditTextUpdatableClearable(this);
 
-      fieldEditTextUpdatableClearable.setTitle(fieldType.sName);
+      fieldEditTextUpdatableClearable.setTitle(field.sName);
       fieldEditTextUpdatableClearable.setTitleColor(ResourcesCompat.getColor(getResources(), R.color.primary, null));
       fieldEditTextUpdatableClearable.setText(cValue.toString());
-      fieldEditTextUpdatableClearable.setHint(fieldType.sName);
-      fieldEditTextUpdatableClearable.setInputType(fieldType.iInputType);
-      if(fieldType.iID == DBAdapter.FLD_TITLE)
+      fieldEditTextUpdatableClearable.setHint(field.sName);
+      fieldEditTextUpdatableClearable.setInputType(field.iInputType);
+      if(field.iID == DBAdapter.FLD_TITLE)
       {
          fBookTitle = fieldEditTextUpdatableClearable;
          vPrevious = fieldEditTextUpdatableClearable.findViewById(R.id.editTextX);
@@ -366,45 +366,45 @@ public class EditBookActivity extends AppCompatActivity
          }
       });
       rootView.addView(fieldEditTextUpdatableClearable);
-      if(!fieldType.isVisible && cValue.isEmpty())
-         hideField(fieldEditTextUpdatableClearable, fieldType.sName);
+      if(!field.isVisible && cValue.isEmpty())
+         hideField(fieldEditTextUpdatableClearable, field.sName);
    }
 
-   private void addAutocompleteField(ViewGroup rootView, final FieldType fieldType)
+   private void addAutocompleteField(ViewGroup rootView, final Field field)
    {
       final FieldAutoCompleteTextView fieldAutoCompleteTextView = new FieldAutoCompleteTextView(this);
-      fieldAutoCompleteTextView.setTitle(fieldType.sName);
+      fieldAutoCompleteTextView.setTitle(field.sName);
       fieldAutoCompleteTextView.setTitleColor(ResourcesCompat.getColor(getResources(), R.color.primary, null));
-      fieldAutoCompleteTextView.setHint(fieldType.sName);
+      fieldAutoCompleteTextView.setHint(field.sName);
       View view = new View(this);
       view.setNextFocusDownId(fieldAutoCompleteTextView.getId());
 
-      final ArrayList<Field> alFieldsOfType = dbAdapter.getFieldValues(fieldType.iID, true);
-      Field field = new Field(fieldType.iID);
+      final ArrayList<Property> propertyValues = dbAdapter.getPropertyValues(field.iID, true);
+      Property property = new Property(field.iID);
 
-      for(int i = 0; field.iID == 0 && i < book.alFields.size(); i++)
+      for(int i = 0; property.iID == 0 && i < book.alProperties.size(); i++)
       {
-         if(fieldType.iID == book.alFields.get(i).iTypeID)
-            field = book.alFields.get(i);
+         if(field.iID == book.alProperties.get(i).iFieldTypeID)
+            property = book.alProperties.get(i);
       }
 
-      if(field.iID == 0) // The book has not such a field
-         book.alFields.add(field);
+      if(property.iID == 0) // The book has not such a property
+         book.alProperties.add(property);
       else
-         fieldAutoCompleteTextView.setText(field.sValue);
+         fieldAutoCompleteTextView.setText(property.sValue);
 
-      fieldAutoCompleteTextView.setTag(field);
+      fieldAutoCompleteTextView.setTag(property);
 
-//      FilteredArrayAdapter oArrayAdapter = new FilteredArrayAdapter(this, android.R.layout.select_dialog_item, alFieldsOfType);
-      FilteredArrayAdapter oArrayAdapter = new FilteredArrayAdapter(this, R.layout.dropdown, alFieldsOfType);
-//      FilteredArrayAdapter oArrayAdapter = new FilteredArrayAdapter(this, android.R.layout.simple_expandable_list_item_2, alFieldsOfType);
-      fieldAutoCompleteTextView.setAdapter(oArrayAdapter);
+//      FilteredArrayAdapter filteredArrayAdapter = new FilteredArrayAdapter(this, android.R.layout.select_dialog_item, propertyValues);
+      FilteredArrayAdapter<Property> filteredArrayAdapter = new FilteredArrayAdapter<>(this, R.layout.dropdown, propertyValues);
+//      FilteredArrayAdapter filteredArrayAdapter = new FilteredArrayAdapter(this, android.R.layout.simple_expandable_list_item_2, propertyValues);
+      fieldAutoCompleteTextView.setAdapter(filteredArrayAdapter);
       fieldAutoCompleteTextView.setOnItemClickListener(new OnItemClickListener()
       {
          public void onItemClick(AdapterView<?> adapter, View view, int position, long rowId)
          {
-            Field fldSelected = (Field) adapter.getItemAtPosition(position);
-            ((Field) fieldAutoCompleteTextView.getTag()).copy(fldSelected);
+            Property fldSelected = (Property) adapter.getItemAtPosition(position);
+            ((Property) fieldAutoCompleteTextView.getTag()).copy(fldSelected);
          }
       });
       fieldAutoCompleteTextView.setUpdateListener(new AutoCompleteTextViewX.OnUpdateListener()
@@ -413,50 +413,50 @@ public class EditBookActivity extends AppCompatActivity
          public void onUpdate(EditText et)
          {
             boolean isFound = false;
-            for(Field f : alFieldsOfType)
+            for(Property p : propertyValues)
             {
                if(et.getText()
                     .toString()
                     .trim()
-                    .equalsIgnoreCase(f.sValue))
+                    .equalsIgnoreCase(p.sValue))
                {
                   isFound = true;
-                  ((Field) fieldAutoCompleteTextView.getTag()).copy(f);
+                  ((Property) fieldAutoCompleteTextView.getTag()).copy(p);
                   break;
                }
             }
             if(!isFound)
             {
-               ((Field) fieldAutoCompleteTextView.getTag()).iID = 0;
-               ((Field) fieldAutoCompleteTextView.getTag()).sValue = et.getText()
-                                                                       .toString();
+               ((Property) fieldAutoCompleteTextView.getTag()).iID = 0;
+               ((Property) fieldAutoCompleteTextView.getTag()).sValue = et.getText()
+                                                                          .toString();
             }
          }
       });
 
       rootView.addView(fieldAutoCompleteTextView);
-      if(!fieldType.isVisible && field.sValue.trim()
-                                             .isEmpty())
-         hideField(fieldAutoCompleteTextView, fieldType.sName);
+      if(!field.isVisible && property.sValue.trim()
+                                            .isEmpty())
+         hideField(fieldAutoCompleteTextView, field.sName);
    }
 
-   private void addFieldSpinner(ViewGroup rootView, FieldType fieldType)
+   private void addFieldSpinner(ViewGroup rootView, Field field)
    {
       final FieldSpinner fieldSpinner = new FieldSpinner(this);
 
-      fieldSpinner.setTitle(fieldType.sName);
+      fieldSpinner.setTitle(field.sName);
       fieldSpinner.setTitleColor(ResourcesCompat.getColor(getResources(), R.color.primary, null));
 
-      Field field = new Field(fieldType.iID);
-      final ArrayList<Field> alFieldsOfType = dbAdapter.getFieldValues(fieldType.iID);
+      Property property = new Property(field.iID);
+      final ArrayList<Property> propertyValues = dbAdapter.getPropertyValues(field.iID);
 
-      for(int i = 0; i < book.alFields.size() && (field.iID == 0 || field.iTypeID != fieldType.iID); i++)
+      for(int i = 0; i < book.alProperties.size() && (property.iID == 0 || property.iFieldTypeID != field.iID); i++)
       {
-         if(book.alFields.get(i).iTypeID == fieldType.iID)
-            field = book.alFields.get(i);
+         if(book.alProperties.get(i).iFieldTypeID == field.iID)
+            property = book.alProperties.get(i);
       }
-      if(field.iID == 0) // The book has not such a field
-         book.alFields.add(field);
+      if(property.iID == 0) // The book has not such a property
+         book.alProperties.add(property);
 
       ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item)
 //      ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String> (this, R.layout.dropdown)
@@ -469,8 +469,6 @@ public class EditBookActivity extends AppCompatActivity
             view.setPadding(0, view.getPaddingTop(), view.getPaddingRight(), view.getPaddingBottom()); // Removing leading pad
             if(position == 0)
                ((TextView) view.findViewById(android.R.id.text1)).setTextColor(ResourcesCompat.getColor(getResources(), R.color.text, null));
-//            ((TextView)view.findViewById(R.id.text1)).setTextColor(ResourcesCompat.getColor(getResources(), R.color.text, null));
-
             return view;
          }
 
@@ -494,29 +492,29 @@ public class EditBookActivity extends AppCompatActivity
       };
 //      arrayAdapter.setDropDownViewResource(R.layout.spinner_item);
       arrayAdapter.setDropDownViewResource(R.layout.dropdown);
-      arrayAdapter.add(fieldType.sName);
-      for(Field fieldOfType : alFieldsOfType)
+      arrayAdapter.add(field.sName);
+      for(Property propertyOfType : propertyValues)
       {
-         arrayAdapter.add(fieldOfType.sValue);
+         arrayAdapter.add(propertyOfType.sValue);
       }
 
       fieldSpinner.setAdapter(arrayAdapter);
       int iSelected = 0;
-      for(int i = 0; i < alFieldsOfType.size(); i++)
+      for(int i = 0; i < propertyValues.size(); i++)
       {
-         if(alFieldsOfType.get(i)
-                         .equals(field))
+         if(propertyValues.get(i)
+                         .equals(property))
             iSelected = i + 1;
       }
       fieldSpinner.setSelection(iSelected);
-      fieldSpinner.setTag(field);
+      fieldSpinner.setTag(property);
       fieldSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
       {
          @Override
          public void onItemSelected(AdapterView<?> parent, View view, int pos, long id)
          {
             if(pos > 0)
-               ((Field) fieldSpinner.getTag()).copy(alFieldsOfType.get(pos - 1));
+               ((Property) fieldSpinner.getTag()).copy(propertyValues.get(pos - 1));
          }
 
          @Override
@@ -526,11 +524,11 @@ public class EditBookActivity extends AppCompatActivity
       });
 
       rootView.addView(fieldSpinner);
-      if(!fieldType.isVisible && field.iID == 0)
-         hideField(fieldSpinner, fieldType.sName);
+      if(!field.isVisible && property.iID == 0)
+         hideField(fieldSpinner, field.sName);
    }
 
-   private void addFieldMultiText(ViewGroup rootView, final FieldType fieldType)
+   private void addFieldMultiText(ViewGroup rootView, final Field field)
    {
       final FieldMultiText fieldMultiText = new FieldMultiText(this);
       if(Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -539,32 +537,30 @@ public class EditBookActivity extends AppCompatActivity
          fieldMultiText.setId(View.generateViewId());
       if(vPrevious != null)
          vPrevious.setNextFocusDownId(R.id.et_author_1);
-      String[] tsNames = fieldType.sName.split("\\|");
-      fieldMultiText.setTitle(tsNames.length > 1 ? tsNames[1] : fieldType.sName);
+      String[] tsNames = field.sName.split("\\|");
+      fieldMultiText.setTitle(tsNames.length > 1 ? tsNames[1] : field.sName);
       fieldMultiText.setTitleColor(ResourcesCompat.getColor(getResources(), R.color.primary, null));
       fieldMultiText.setHint(tsNames[0]);
 
-      // Set adapter
-      final ArrayList<Field> alFieldsOfType = dbAdapter.getFieldValues(fieldType.iID, true);
-      final ArrayList<Field> alItemsValues = new ArrayList<>(alFieldsOfType);
+      final ArrayList<Property> propertyValues = dbAdapter.getPropertyValues(field.iID, true);
+      final ArrayList<Property> alItemsValues = new ArrayList<>(propertyValues);
 
-//      final ArrayItemsAdapter filteredArrayAdapter = new ArrayItemsAdapter(this, android.R.layout.select_dialog_item, alItemsValues);
 //      final ArrayItemsAdapter filteredArrayAdapter = new ArrayItemsAdapter(this, R.layout.dropdown, alItemsValues);
-      final FilteredArrayAdapter<Field> filteredArrayAdapter = new FilteredArrayAdapter<>(this, R.layout.dropdown, alItemsValues);
+      final FilteredArrayAdapter<Property> filteredArrayAdapter = new FilteredArrayAdapter<>(this, R.layout.dropdown, alItemsValues);
 
       fieldMultiText.setOnAddRemoveListener(new FieldMultiText.OnAddRemoveFieldListener()
       {
          @Override
          public void onFieldRemove(View view)
          {
-            book.alFields.remove(view.getTag());
+            book.alProperties.remove((Property) view.getTag());
          }
 
          @Override
          public void onAddNewField(View view)
          {
-            Field fldNew = new Field(fieldType.iID);
-            book.alFields.add(fldNew);
+            Property fldNew = new Property(field.iID);
+            book.alProperties.add(fldNew);
             view.setTag(fldNew);
          }
 
@@ -572,53 +568,53 @@ public class EditBookActivity extends AppCompatActivity
          public void onFieldUpdated(View view, String value)
          {
             boolean isExists = false;
-            for(Field field : alFieldsOfType)
+            for(Property property : propertyValues)
             {
-               if(field.sValue.trim()
-                              .equalsIgnoreCase(value.trim()))
+               if(property.sValue.trim()
+                                 .equalsIgnoreCase(value.trim()))
                {
-                  ((Field) view.getTag()).copy(field);
+                  ((Property) view.getTag()).copy(property);
                   isExists = true;
                   break;
                }
             }
             if(!isExists)
             {
-               ((Field) view.getTag()).iID = 0;
-               ((Field) view.getTag()).sValue = value;
+               ((Property) view.getTag()).iID = 0;
+               ((Property) view.getTag()).sValue = value;
             }
          }
 
          @Override
-         public void onItemSelect(View view, Field selection)
+         public void onItemSelect(View view, Property selection)
          {
-            ((Field) view.getTag()).copy(selection);
+            ((Property) view.getTag()).copy(selection);
          }
       });
 
-      fieldMultiText.setItems(filteredArrayAdapter, book.alFields);
+      fieldMultiText.setItems(filteredArrayAdapter, book.alProperties);
 
       rootView.addView(fieldMultiText);
       fieldMultiText.clearFocus();
 
-      if(!fieldType.isVisible && hasNotFieldsOfType(fieldType.iID))
-         hideField(fieldMultiText, fieldType.sName);
+      if(!field.isVisible && hasNotPropertiesOfType(field.iID))
+         hideField(fieldMultiText, field.sName);
    }
 
-   private void addFieldMultiSpinner(ViewGroup rootView, final FieldType fieldType)
+   private void addFieldMultiSpinner(ViewGroup rootView, final Field field)
    {
       final FieldMultiSpinner fieldMultiSpinner = new FieldMultiSpinner(this);
-      String[] tsNames = fieldType.sName.split("\\|");
-      fieldMultiSpinner.setTitle(tsNames.length > 1 ? tsNames[1] : fieldType.sName);
+      String[] tsNames = field.sName.split("\\|");
+      fieldMultiSpinner.setTitle(tsNames.length > 1 ? tsNames[1] : field.sName);
       fieldMultiSpinner.setTitleColor(ResourcesCompat.getColor(getResources(), R.color.primary, null));
-      fieldMultiSpinner.setHint(tsNames.length > 1 ? tsNames[1] : fieldType.sName);
+      fieldMultiSpinner.setHint(tsNames.length > 1 ? tsNames[1] : field.sName);
 
-      final ArrayList<Field> alFieldsOfType = dbAdapter.getFieldValues(fieldType.iID);
+      final ArrayList<Property> propertyValues = dbAdapter.getPropertyValues(field.iID);
       ArrayList<Item> alItems = new ArrayList<>();
-      for(Field filedOfType : alFieldsOfType)
+      for(Property property : propertyValues)
       {
-         Item item = new Item(filedOfType.sValue);
-         item.setSelected(book.alFields.contains(filedOfType));
+         Item item = new Item(property.sValue);
+         item.setSelected(book.alProperties.contains(property));
          alItems.add(item);
       }
 
@@ -629,43 +625,43 @@ public class EditBookActivity extends AppCompatActivity
          public void onUpdate(Item item)
          {
             boolean isFound = false;
-            for(Field fieldValue : alFieldsOfType)
+            for(Property propertyValue : propertyValues)
             {
-               if(fieldValue.sValue.equalsIgnoreCase(item.getTitle()))
+               if(propertyValue.sValue.equalsIgnoreCase(item.getTitle()))
                {
                   isFound = true;
                   if(item.isSelected())
-                     book.alFields.add(fieldValue);
+                     book.alProperties.add(propertyValue);
                   else
-                     book.alFields.remove(fieldValue);
+                     book.alProperties.remove(propertyValue);
                   break;
                }
             }
             if(!isFound)
             {
-               Field newfieldvalue = new Field(fieldType.iID, item.getTitle());
-               alFieldsOfType.add(newfieldvalue);
-               book.alFields.add(newfieldvalue);
+               Property newPropertyValue = new Property(field.iID, item.getTitle());
+               propertyValues.add(newPropertyValue);
+               book.alProperties.add(newPropertyValue);
             }
          }
       });
 
       rootView.addView(fieldMultiSpinner);
 
-      if(!fieldType.isVisible && hasNotFieldsOfType(fieldType.iID))
-         hideField(fieldMultiSpinner, tsNames.length > 1 ? tsNames[1] : fieldType.sName);
+      if(!field.isVisible && hasNotPropertiesOfType(field.iID))
+         hideField(fieldMultiSpinner, tsNames.length > 1 ? tsNames[1] : field.sName);
 
    }
 
    @SuppressWarnings("unchecked")
-   private void addFieldMoney(ViewGroup rootView, FieldType fieldType)
+   private void addFieldMoney(ViewGroup rootView, Field field)
    {
       final FieldMoney fieldMoney = new FieldMoney(this);
-      fieldMoney.setTitle(fieldType.sName);
+      fieldMoney.setTitle(field.sName);
       fieldMoney.setTitleColor(ResourcesCompat.getColor(getResources(), R.color.primary, null));
-      fieldMoney.setHint(fieldType.sName);
+      fieldMoney.setHint(field.sName);
 
-      switch(fieldType.iID)
+      switch(field.iID)
       {
          case DBAdapter.FLD_PRICE:
             fieldMoney.setTag(book.csPrice);
@@ -683,7 +679,7 @@ public class EditBookActivity extends AppCompatActivity
       if(price.iValue != 0)
          fieldMoney.setValue(price.iValue);
 
-      final ArrayList<Field> alCurrencies = dbAdapter.getFieldValues(DBAdapter.FLD_CURRENCY);
+      final ArrayList<Property> alCurrencies = dbAdapter.getPropertyValues(DBAdapter.FLD_CURRENCY);
       int iSelected = 0;
       ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, R.layout.spinner_item);
       for(int i = 0; i < alCurrencies.size(); i++)
@@ -739,18 +735,18 @@ public class EditBookActivity extends AppCompatActivity
 
       rootView.addView(fieldMoney);
 
-      if(!fieldType.isVisible && ((Changeable<?>) fieldMoney.getTag()).isEmpty())
-         hideField(fieldMoney, fieldType.sName);
+      if(!field.isVisible && ((Changeable<?>) fieldMoney.getTag()).isEmpty())
+         hideField(fieldMoney, field.sName);
 
    }
 
-   private void addFieldDate(ViewGroup rootView, FieldType fieldType)
+   private void addFieldDate(ViewGroup rootView, Field field)
    {
       Date date;
 
       FieldDate fieldDate;
 
-      switch(fieldType.iID)
+      switch(field.iID)
       {
          case DBAdapter.FLD_READ_DATE:
             date = new Date(book.ciReadDate.value);
@@ -769,9 +765,9 @@ public class EditBookActivity extends AppCompatActivity
 
       }
 
-      fieldDate.setTitle(fieldType.sName);
+      fieldDate.setTitle(field.sName);
       fieldDate.setTitleColor(ResourcesCompat.getColor(getResources(), R.color.primary, null));
-      fieldDate.setHint(fieldType.sName);
+      fieldDate.setHint(field.sName);
       fieldDate.setDate(date);
 
       fieldDate.setUpdateListener(new FieldDate.OnUpdateListener()
@@ -791,36 +787,36 @@ public class EditBookActivity extends AppCompatActivity
       });
       rootView.addView(fieldDate);
 
-      if(!fieldType.isVisible && ((Changeable<Integer>) fieldDate.getTag()).value == 0)
-         hideField(fieldDate, fieldType.sName);
+      if(!field.isVisible && ((Changeable<Integer>) fieldDate.getTag()).value == 0)
+         hideField(fieldDate, field.sName);
 
    }
 
-   private void addFieldRating(ViewGroup rootView, FieldType fieldType)
+   private void addFieldRating(ViewGroup rootView, Field field)
    {
       final FieldRating fieldRating = new FieldRating(this);
 
-      fieldRating.setTitle(fieldType.sName);
+      fieldRating.setTitle(field.sName);
       fieldRating.setTitleColor(ResourcesCompat.getColor(getResources(), R.color.primary, null));
 
-      final ArrayList<Field> alFieldsOfType = dbAdapter.getFieldValues(fieldType.iID);
-      Field field = new Field(fieldType.iID);
+      final ArrayList<Property> propertyValues = dbAdapter.getPropertyValues(field.iID);
+      Property property = new Property(field.iID);
 
-      // Looking in book field collection for field of type 
-      for(int i = 0; field.iID == 0 && i < book.alFields.size(); i++)
+      // Looking in book property collection for property of type
+      for(int i = 0; property.iID == 0 && i < book.alProperties.size(); i++)
       {
-         if(fieldType.iID == book.alFields.get(i).iTypeID)
-            field = book.alFields.get(i);
+         if(field.iID == book.alProperties.get(i).iFieldTypeID)
+            property = book.alProperties.get(i);
       }
 
-      if(field.iID == 0) // The book has not such a field
-         book.alFields.add(field);
+      if(property.iID == 0) // The book has not such a property
+         book.alProperties.add(property);
       else
       {
-         float fRating = Float.parseFloat(field.sValue);
+         float fRating = Float.parseFloat(property.sValue);
          fieldRating.setRating(fRating);
       }
-      fieldRating.setTag(field);
+      fieldRating.setTag(property);
 
       fieldRating.setOnRatingBarChangeListener(new OnRatingBarChangeListener()
       {
@@ -831,54 +827,54 @@ public class EditBookActivity extends AppCompatActivity
          {
             String sValue = String.valueOf(rating);
             boolean isFound = false;
-            for(Field fieldOfType : alFieldsOfType)
+            for(Property propertyOfType : propertyValues)
             {
-               if(fieldOfType.sValue.equalsIgnoreCase(sValue))
+               if(propertyOfType.sValue.equalsIgnoreCase(sValue))
                {
                   isFound = true;
-                  ((Field) fieldRating.getTag()).copy(fieldOfType);
+                  ((Property) fieldRating.getTag()).copy(propertyOfType);
                   break;
                }
             }
             if(!isFound)
             {
-               ((Field) fieldRating.getTag()).iID = 0;
-               ((Field) fieldRating.getTag()).sValue = sValue;
+               ((Property) fieldRating.getTag()).iID = 0;
+               ((Property) fieldRating.getTag()).sValue = sValue;
             }
          }
       });
 
       rootView.addView(fieldRating);
 
-      if(!fieldType.isVisible && field.sValue.trim().isEmpty())
-         hideField(fieldRating, fieldType.sName);
+      if(!field.isVisible && property.sValue.trim().isEmpty())
+         hideField(fieldRating, field.sName);
    }
 
-   private void addFieldCheckBox(LinearLayout rootView, FieldType fieldType)
+   private void addFieldCheckBox(LinearLayout rootView, Field field)
    {
       final FieldCheckBox fieldCheckBox = new FieldCheckBox(this);
 
-      fieldCheckBox.setTitle(fieldType.sName);
+      fieldCheckBox.setTitle(field.sName);
       fieldCheckBox.setTitleColor(ResourcesCompat.getColor(getResources(), R.color.primary, null));
 
-      final ArrayList<Field> alFieldsOfType = dbAdapter.getFieldValues(fieldType.iID);
-      Field field = new Field(fieldType.iID);
+      final ArrayList<Property> propertyValues = dbAdapter.getPropertyValues(field.iID);
+      Property property = new Property(field.iID);
 
-      // Looking in book field collection for field of type 
-      for(int i = 0; field.iID == 0 && i < book.alFields.size(); i++)
+      // Looking in book property collection for property of type
+      for(int i = 0; property.iID == 0 && i < book.alProperties.size(); i++)
       {
-         if(fieldType.iID == book.alFields.get(i).iTypeID)
-            field = book.alFields.get(i);
+         if(field.iID == book.alProperties.get(i).iFieldTypeID)
+            property = book.alProperties.get(i);
       }
 
-      if(field.iID == 0) // The book has not such a field
-         book.alFields.add(field);
+      if(property.iID == 0) // The book has not such a property
+         book.alProperties.add(property);
       else
       {
-         boolean bValue = Boolean.parseBoolean(field.sValue);
+         boolean bValue = Boolean.parseBoolean(property.sValue);
          fieldCheckBox.setChecked(bValue);
       }
-      fieldCheckBox.setTag(field);
+      fieldCheckBox.setTag(property);
 
       fieldCheckBox.setOnCheckedChangeListener(new OnCheckedChangeListener()
       {
@@ -888,27 +884,27 @@ public class EditBookActivity extends AppCompatActivity
          {
             String sValue = String.valueOf(isChecked);
             boolean isFound = false;
-            for(Field fieldValue : alFieldsOfType)
+            for(Property propertyValue : propertyValues)
             {
-               if(fieldValue.sValue.equalsIgnoreCase(sValue))
+               if(propertyValue.sValue.equalsIgnoreCase(sValue))
                {
                   isFound = true;
-                  ((Field) fieldCheckBox.getTag()).copy(fieldValue);
+                  ((Property) fieldCheckBox.getTag()).copy(propertyValue);
                   break;
                }
             }
             if(!isFound)
             {
-               ((Field) fieldCheckBox.getTag()).iID = 0;
-               ((Field) fieldCheckBox.getTag()).sValue = sValue;
+               ((Property) fieldCheckBox.getTag()).iID = 0;
+               ((Property) fieldCheckBox.getTag()).sValue = sValue;
             }
          }
       });
 
       rootView.addView(fieldCheckBox);
 
-      if(!fieldType.isVisible && field.sValue.trim().isEmpty())
-         hideField(fieldCheckBox, fieldType.sName);
+      if(!field.isVisible && property.sValue.trim().isEmpty())
+         hideField(fieldCheckBox, field.sName);
    }
 
    private void hideField(View view, String sName)
@@ -921,17 +917,17 @@ public class EditBookActivity extends AppCompatActivity
       hmHiddenFileds.put(pmHiddenFields.getMenu().getItem(pmHiddenFields.getMenu().size() - 1), view);
    }
 
-   private boolean hasNotFieldsOfType(int iTypeID)
+   private boolean hasNotPropertiesOfType(int iTypeID)
    {
-      boolean hasFieldsOfType = false;
-      for(Field field : book.alFields)
+      boolean hasProperitesOfType = false;
+      for(Property property : book.alProperties)
       {
-         if(field.iTypeID == iTypeID)
+         if(property.iFieldTypeID == iTypeID)
          {
-            hasFieldsOfType = true;
+            hasProperitesOfType = true;
             break;
          }
       }
-      return !hasFieldsOfType;
+      return !hasProperitesOfType;
    }
 }

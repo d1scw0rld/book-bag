@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import org.d1scw0rld.bookbag.FilteredArrayAdapter;
 import org.d1scw0rld.bookbag.R;
-import org.d1scw0rld.bookbag.dto.Field;
+import org.d1scw0rld.bookbag.dto.Property;
 import org.d1scw0rld.bookbag.fields.AutoCompleteTextViewX.Callback;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -30,11 +30,11 @@ public class FieldAutoCompleteTextView extends LinearLayout
       vInit(context);
    }
    
-   public FieldAutoCompleteTextView(Context context, Field oField, ArrayList<Field> alFieldValues)
+   public FieldAutoCompleteTextView(Context context, Property oProperty, ArrayList<Property> alPropertyValues)
    {
       super(context);
       
-      vInit(context, oField, alFieldValues);
+      vInit(context, oProperty, alPropertyValues);
    }
 
    public FieldAutoCompleteTextView(Context context, AttributeSet attrs)
@@ -66,11 +66,11 @@ public class FieldAutoCompleteTextView extends LinearLayout
       oAutoCompleteTextViewX.setHint(hint);
    }
    
-   public FieldAutoCompleteTextView(Context context, AttributeSet attrs, Field oField, ArrayList<Field> alFieldValues)
+   public FieldAutoCompleteTextView(Context context, AttributeSet attrs, Property oProperty, ArrayList<Property> alPropertyValues)
    {
       super(context, attrs);
       
-      vInit(context, oField, alFieldValues);
+      vInit(context, oProperty, alPropertyValues);
       
       TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.FieldAutoCompleteTextView, 0, 0);
 
@@ -105,7 +105,7 @@ public class FieldAutoCompleteTextView extends LinearLayout
       oAutoCompleteTextViewX.setThreshold(1);
    }
    
-   public void vInit(Context context, Field oField, final ArrayList<Field> alFieldValues)
+   public void vInit(Context context, Property oProperty, final ArrayList<Property> alPropertyValues)
    {
       LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       inflater.inflate(R.layout.field_auto_complete_text_view, this, true);
@@ -114,11 +114,11 @@ public class FieldAutoCompleteTextView extends LinearLayout
       oAutoCompleteTextViewX = findViewById(R.id.autoCompleteTextView);
       oAutoCompleteTextViewX.setThreshold(1);
       
-      if(oField != null && !oField.sValue.isEmpty())
-         oAutoCompleteTextViewX.setText(oField.sValue);
+      if(oProperty != null && !oProperty.sValue.isEmpty())
+         oAutoCompleteTextViewX.setText(oProperty.sValue);
 
-//      ArrayItemsAdapter oArrayAdapter = new ArrayItemsAdapter(context, android.R.layout.select_dialog_item, alFieldValues);
-      FilteredArrayAdapter<Field> oArrayAdapter = new FilteredArrayAdapter<>(context, android.R.layout.select_dialog_item, alFieldValues);
+//      ArrayItemsAdapter oArrayAdapter = new ArrayItemsAdapter(context, android.R.layout.select_dialog_item, alPropertyValues);
+      FilteredArrayAdapter<Property> oArrayAdapter = new FilteredArrayAdapter<>(context, android.R.layout.select_dialog_item, alPropertyValues);
       oAutoCompleteTextViewX.setAdapter(oArrayAdapter);
    }
    
