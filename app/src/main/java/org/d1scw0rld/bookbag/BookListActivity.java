@@ -1,33 +1,16 @@
 package org.d1scw0rld.bookbag;
 
-import android.content.SharedPreferences;
-
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.view.ActionMode;
-import androidx.appcompat.widget.PopupMenu;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.appcompat.widget.SearchView;
-import androidx.appcompat.widget.SearchView.OnQueryTextListener;
-import androidx.appcompat.widget.Toolbar;
 
-import android.view.View;
-import android.widget.TextView;
-
-import org.d1scw0rld.bookbag.dto.BooksAdapter;
+//import androidx.recyclerview.widget.RecyclerView;
 //import org.d1scw0rld.bookbag.dto.DividerItemDecoration;
-import org.d1scw0rld.bookbag.fileselector.FileSelectorDialog;
-
-import java.io.File;
 
 /**
  * An activity representing a list of Books. This activity
@@ -53,33 +36,33 @@ public class BookListActivity extends AppCompatActivity
    
    private boolean bExpandAll = false;
    
-   private long sel_id;
-   
-   private String sExportFolder;
-   private TextView tvBooksOrder, 
-                    tvBooksCount;
-   
-   private DBAdapter oDbAdapter = null;
+//   private long sel_id;
+//
+//   private String sExportFolder;
+//   private TextView tvBooksOrder,
+//                    tvBooksCount;
+//
+//   private DBAdapter oDbAdapter = null;
    
 //   private ArrayList<OrderItem> alOrderItems = new ArrayList<>();
    
-   private BooksAdapter oBooksAdapter;
-   
-   private SharedPreferences oPreferences;
+//   private BooksAdapter oBooksAdapter;
+//
+//   private SharedPreferences oPreferences;
 
-   private View vSelected = null;
-   
-   final String[] mFileFilter = { "*.*", ".db" };
+//   private View vSelected = null;
+//
+//   final String[] mFileFilter = { "*.*", ".db" };
 
-   private RecyclerView recyclerView;
+//   private RecyclerView recyclerView;
+//
+//   private ActionMode mActionMode;
 
-   private ActionMode mActionMode;
-
-   FragmentManager fm = getSupportFragmentManager();
-
-   File flCurrent;
-
-   FileSelectorDialog oFileSelectorDialog;
+//   FragmentManager fm = getSupportFragmentManager();
+//
+//   File flCurrent;
+//
+//   FileSelectorDialog oFileSelectorDialog;
 
    /**
     * Whether or not the activity is in two-pane mode, i.e. running on a tablet

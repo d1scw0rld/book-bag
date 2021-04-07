@@ -8,7 +8,8 @@
     <fragment
         android:id="@+id/bookListFragment"
         android:name="org.d1scw0rld.bookbag.BookListFragment"
-        android:label="BookListFragment" >
+        android:label="@string/app_name"
+        >
         <action
             android:id="@+id/action_bookListFragment_to_bookDetailNewFragment"
             app:destination="@id/bookDetailNewFragment" />
@@ -47,6 +48,5 @@
     <fragment
         android:id="@+id/settings_fragment"
         android:name="org.d1scw0rld.bookbag.SettingsFragment"
-        android:label="@string/title_settings"
-        tools:layout="act"/>
+        android:label="@string/title_settings"/>
 </navigation>

@@ -14,21 +14,25 @@ public class SettingsFragment extends PreferenceFragmentCompat
    public SettingsFragment()
    {
    }
-//   @Override
-//   public View onCreateView(LayoutInflater inflater,
-//                            ViewGroup container,
-//                            Bundle savedInstanceState)
-//   {
-////      container.getContext().setTheme(R.style.SettingsTheme);
-//      View view = super.onCreateView(inflater, container, savedInstanceState);
-////      ((AppCompatActivity)requireActivity()).getActionBar().setTitle(R.string.title_settings);
-//      return view;
-//   }
+   @Override
+   public View onCreateView(LayoutInflater inflater,
+                            ViewGroup container,
+                            Bundle savedInstanceState)
+   {
+//      container.getContext().setTheme(R.style.SettingsTheme);
+      View view = super.onCreateView(inflater, container, savedInstanceState);
+//      ((AppCompatActivity)requireActivity()).getActionBar().setTitle(R.string.title_settings);
+      getContext().getTheme().applyStyle(R.style.SettingsTheme, true);
+      return view;
+   }
+
+
 
    @Override
    public void onCreatePreferences(Bundle savedInstanceState, String rootKey)
    {
-      setPreferencesFromResource(R.xml.preference_screen,rootKey);
+//      setPreferencesFromResource(R.xml.preference_screen, rootKey);
+      addPreferencesFromResource(R.xml.preference_screen);
    }
 
 //   @Override
