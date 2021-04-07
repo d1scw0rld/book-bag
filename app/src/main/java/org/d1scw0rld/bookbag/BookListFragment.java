@@ -359,35 +359,35 @@ public class BookListFragment extends BaseFragment
 //      toolbar.setTitle(requireActivity().getTitle());
 
 
-      NavController navController = Navigation.findNavController(view);
-      AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
-      Toolbar toolbar = view.findViewById(R.id.toolbar);
-      NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration);
-      toolbar.setTitle(requireActivity().getTitle());
-//      setHasOptionsMenu(true);
-      toolbar.inflateMenu(R.menu.menu_main);
-      final MenuItem searchItem = toolbar.getMenu().findItem(R.id.action_search);
-      final SearchView searchView = (SearchView) searchItem.getActionView();
-
-      searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
-      {
-
-         @Override
-         public boolean onQueryTextSubmit(String arg0)
-         {
-            return false;
-         }
-
-         @Override
-         public boolean onQueryTextChange(String arg0)
-         {
-            booksAdapter.expandAll();
-            booksAdapter.filter(arg0);
-            tvBooksCount.setText(getResources().getQuantityString(R.plurals.books, booksAdapter.getAllChildrenCount(), booksAdapter.getAllChildrenCount()));
-            return true;
-         }
-      });
-      toolbar.setOnMenuItemClickListener(this::onOptionsItemSelected);
+//      NavController navController = Navigation.findNavController(view);
+//      AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
+//      Toolbar toolbar = view.findViewById(R.id.toolbar);
+//      NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration);
+//      toolbar.setTitle(requireActivity().getTitle());
+      setHasOptionsMenu(true);
+//      toolbar.inflateMenu(R.menu.menu_main);
+//      final MenuItem searchItem = toolbar.getMenu().findItem(R.id.action_search);
+//      final SearchView searchView = (SearchView) searchItem.getActionView();
+//
+//      searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
+//      {
+//
+//         @Override
+//         public boolean onQueryTextSubmit(String arg0)
+//         {
+//            return false;
+//         }
+//
+//         @Override
+//         public boolean onQueryTextChange(String arg0)
+//         {
+//            booksAdapter.expandAll();
+//            booksAdapter.filter(arg0);
+//            tvBooksCount.setText(getResources().getQuantityString(R.plurals.books, booksAdapter.getAllChildrenCount(), booksAdapter.getAllChildrenCount()));
+//            return true;
+//         }
+//      });
+//      toolbar.setOnMenuItemClickListener(this::onOptionsItemSelected);
    }
 
    @Override
@@ -418,33 +418,33 @@ public class BookListFragment extends BaseFragment
       super.onPause();
    }
 
-//   @Override
-//   public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater)
-//   {
-//      inflater.inflate(R.menu.menu_main, menu);
-//
-//      final MenuItem searchItem = menu.findItem(R.id.action_search);
-//      final SearchView searchView = (SearchView) searchItem.getActionView();
-//
-//      searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
-//      {
-//
-//         @Override
-//         public boolean onQueryTextSubmit(String arg0)
-//         {
-//            return false;
-//         }
-//
-//         @Override
-//         public boolean onQueryTextChange(String arg0)
-//         {
-//            booksAdapter.expandAll();
-//            booksAdapter.filter(arg0);
-//            tvBooksCount.setText(getResources().getQuantityString(R.plurals.books, booksAdapter.getAllChildrenCount(), booksAdapter.getAllChildrenCount()));
-//            return true;
-//         }
-//      });
-//   }
+   @Override
+   public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater)
+   {
+      inflater.inflate(R.menu.menu_main, menu);
+
+      final MenuItem searchItem = menu.findItem(R.id.action_search);
+      final SearchView searchView = (SearchView) searchItem.getActionView();
+
+      searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
+      {
+
+         @Override
+         public boolean onQueryTextSubmit(String arg0)
+         {
+            return false;
+         }
+
+         @Override
+         public boolean onQueryTextChange(String arg0)
+         {
+            booksAdapter.expandAll();
+            booksAdapter.filter(arg0);
+            tvBooksCount.setText(getResources().getQuantityString(R.plurals.books, booksAdapter.getAllChildrenCount(), booksAdapter.getAllChildrenCount()));
+            return true;
+         }
+      });
+   }
 
    @Override
    public boolean onOptionsItemSelected(MenuItem item)
@@ -453,93 +453,89 @@ public class BookListFragment extends BaseFragment
 //      return NavigationUI.onNavDestinationSelected(item, navController)
 //            || super.onOptionsItemSelected(item);
 
+
+
       switch(item.getItemId())
       {
          case R.id.settings_fragment:
+//            Intent intent = new Intent(getContext(), SettingsActivity.class);
+//            startActivity(intent);
+
             if(isAdded())
             {
                Navigation.findNavController(getView()).navigate(BookListFragmentDirections.actionBookListFragmentToSettingsFragment());
             }
             break;
+         case R.id.action_imp_db:
+            flCurrent = new File(Environment.getExternalStorageDirectory()
+                                       + File.separator
+                                       + sExportFolder);
+            fileSelectorDialog = FileSelectorDialog.newInstance(flCurrent,
+                                                                FileOperation.LOAD,
+                                                                mLoadFileListener,
+                                                                mFileFilter);
+            fileSelectorDialog.show(fragmentManager, "fragment_alert");
+
+            return true;
+
+         case R.id.action_exp_db:
+            Calendar calendar = Calendar.getInstance(Locale.getDefault());
+            int iExtNdx = DBAdapter.DATABASE_NAME.lastIndexOf(".");
+            String sFileName = String.format(getString(R.string.fmt_fl_nm),
+                                             DBAdapter.DATABASE_NAME.substring(0, iExtNdx),
+                                             calendar.get(Calendar.YEAR),
+                                             calendar.get(Calendar.MONTH) + 1,
+                                             calendar.get(Calendar.DAY_OF_MONTH),
+                                             calendar.get(Calendar.HOUR_OF_DAY),
+                                             calendar.get(Calendar.MINUTE),
+                                             DBAdapter.DATABASE_NAME.substring(iExtNdx+1));
+            File flCurrent = new File(Environment.getExternalStorageDirectory()
+                                            + File.separator
+                                            + sExportFolder
+                                            + File.separator
+                                            + sFileName);
+
+            fileSelectorDialog = FileSelectorDialog.newInstance(flCurrent,
+                                                                FileOperation.SAVE,
+                                                                mSaveFileListener,
+                                                                mFileFilter);
+            fileSelectorDialog.show(fragmentManager, "fragment_alert");
+            return true;
+
+         case R.id.action_exp_all:
+            booksAdapter.expandAll();
+            return true;
+
+         case R.id.action_clp_all:
+            booksAdapter.collapseAll();
+            return true;
+
+         case R.id.action_sort:
+            View menuItemView = getActivity().findViewById(item.getItemId()); // SAME ID AS MENU ID
+//            View menuItemView = item.getActionView();
+//            MenuItem searchItem = findItem(R.id.action_search);
+            PopupMenu popupMenu = new PopupMenu(requireContext(), menuItemView);
+            for(OrderItem oItem: alOrderItems)
+               popupMenu.getMenu().add(1, oItem.iID, 0, oItem.sTitle).setCheckable(true).setChecked(oItem.iID == iOrderID);
+            popupMenu.getMenu().setGroupCheckable(1, true, true);
+            popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
+            {
+               @Override
+               public boolean onMenuItemClick(MenuItem menuItem)
+               {
+                  iOrderID = menuItem.getItemId();
+                  saveOrderID(iOrderID);
+                  setupRecyclerView(recyclerView, iOrderID);
+                  return true;
+               }
+            });
+            popupMenu.show();
+            return true;
+
+         default:
+            return super.onOptionsItemSelected(item);
       }
-
       return super.onOptionsItemSelected(item);
-
-
-//      switch(item.getItemId())
-//      {
-//         case R.id.settings_fragment:
-////            Intent intent = new Intent(getContext(), SettingsActivity.class);
-////            startActivity(intent);
-//            return true;
-//
-//         case R.id.action_imp_db:
-//            flCurrent = new File(Environment.getExternalStorageDirectory()
-//                                       + File.separator
-//                                       + sExportFolder);
-//            fileSelectorDialog = FileSelectorDialog.newInstance(flCurrent,
-//                                                                FileOperation.LOAD,
-//                                                                mLoadFileListener,
-//                                                                mFileFilter);
-//            fileSelectorDialog.show(fragmentManager, "fragment_alert");
-//
-//            return true;
-//
-//         case R.id.action_exp_db:
-//            Calendar calendar = Calendar.getInstance(Locale.getDefault());
-//            int iExtNdx = DBAdapter.DATABASE_NAME.lastIndexOf(".");
-//            String sFileName = String.format(getString(R.string.fmt_fl_nm),
-//                                             DBAdapter.DATABASE_NAME.substring(0, iExtNdx),
-//                                             calendar.get(Calendar.YEAR),
-//                                             calendar.get(Calendar.MONTH) + 1,
-//                                             calendar.get(Calendar.DAY_OF_MONTH),
-//                                             calendar.get(Calendar.HOUR_OF_DAY),
-//                                             calendar.get(Calendar.MINUTE),
-//                                             DBAdapter.DATABASE_NAME.substring(iExtNdx+1));
-//            File flCurrent = new File(Environment.getExternalStorageDirectory()
-//                                            + File.separator
-//                                            + sExportFolder
-//                                            + File.separator
-//                                            + sFileName);
-//
-//            fileSelectorDialog = FileSelectorDialog.newInstance(flCurrent,
-//                                                                FileOperation.SAVE,
-//                                                                mSaveFileListener,
-//                                                                mFileFilter);
-//            fileSelectorDialog.show(fragmentManager, "fragment_alert");
-//            return true;
-//
-//         case R.id.action_exp_all:
-//            booksAdapter.expandAll();
-//            return true;
-//
-//         case R.id.action_clp_all:
-//            booksAdapter.collapseAll();
-//            return true;
-//
-//         case R.id.action_sort:
-//            View menuItemView = findViewById(R.id.action_sort); // SAME ID AS MENU ID
-//            PopupMenu popupMenu = new PopupMenu(getContext(), menuItemView);
-//            for(OrderItem oItem: alOrderItems)
-//               popupMenu.getMenu().add(1, oItem.iID, 0, oItem.sTitle).setCheckable(true).setChecked(oItem.iID == iOrderID);
-//            popupMenu.getMenu().setGroupCheckable(1, true, true);
-//            popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
-//            {
-//               @Override
-//               public boolean onMenuItemClick(MenuItem menuItem)
-//               {
-//                  iOrderID = menuItem.getItemId();
-//                  saveOrderID(iOrderID);
-//                  setupRecyclerView(recyclerView, iOrderID);
-//                  return true;
-//               }
-//            });
-//            popupMenu.show();
-//            return true;
-//
-//         default:
-//            return true;
-//      }
    }
 
    @Override
