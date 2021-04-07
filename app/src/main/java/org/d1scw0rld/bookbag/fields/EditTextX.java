@@ -16,7 +16,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
-public class EditTextX extends android.support.v7.widget.AppCompatEditText
+public class EditTextX extends androidx.appcompat.widget.AppCompatEditText
 {
    private Context oContext;
    

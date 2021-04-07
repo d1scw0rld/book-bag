@@ -5,14 +5,14 @@ import java.util.ArrayList;
 import org.d1scw0rld.bookbag.R;
 
 import android.app.Activity;
-import android.support.v7.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.TypedArray;
 import android.graphics.Color;
-import android.support.v7.widget.AppCompatEditText;
-import android.support.v7.widget.PopupMenu;
-import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
+import androidx.appcompat.widget.AppCompatEditText;
+import androidx.appcompat.widget.PopupMenu;
+import androidx.appcompat.widget.PopupMenu.OnMenuItemClickListener;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -23,10 +23,10 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
-public class FieldMultiSpinner extends LinearLayout
+public class FieldMultiSpinner extends LinearLayout implements Field
 {
-   private Title              oTitle;
-   private Button             btnSpinner;
+   private Title  title;
+   private Button btnSpinner;
    private String             hint               = "";
    private Context            context;
    private ArrayList<Item>    alItems            = new ArrayList<>();
@@ -36,14 +36,14 @@ public class FieldMultiSpinner extends LinearLayout
    {
       super(context);
 
-      vInit(context);
+      init(context);
    }
 
    public FieldMultiSpinner(Context context, AttributeSet attrs)
    {
       super(context, attrs);
 
-      vInit(context);
+      init(context);
 
       TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.FieldMultiSpinner, 0, 0);
 
@@ -59,22 +59,22 @@ public class FieldMultiSpinner extends LinearLayout
       setOrientation(LinearLayout.VERTICAL);
       setGravity(Gravity.CENTER_VERTICAL);
 
-      oTitle.setText(title);
-      oTitle.setColor(titleValueColor);
-      oTitle.setTextSize(titleTextSize);
-      oTitle.setLineSize(titleLineSize);
+      this.title.setText(title);
+      this.title.setColor(titleValueColor);
+      this.title.setTextSize(titleTextSize);
+      this.title.setLineSize(titleLineSize);
 
       btnSpinner.setContentDescription(contentDescription);
    }
 
-   private void vInit(Context context)
+   private void init(Context context)
    {
       this.context = context;
 
       LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       inflater.inflate(R.layout.field_multi_spinner, this, true);
 
-      oTitle = findViewById(R.id.title);
+      title = findViewById(R.id.title);
       btnSpinner = findViewById(R.id.action_select_type);
       
       setButtonText(btnSpinner, alItems);
@@ -194,27 +194,33 @@ public class FieldMultiSpinner extends LinearLayout
    
    public void setTitle(String title)
    {
-      oTitle.setText(title);
+      this.title.setText(title);
    }
 
    public void setTitle(int resid)
    {
-      oTitle.setText(resid);
+      title.setText(resid);
+   }
+
+   @Override
+   public String getTitle()
+   {
+      return title.getTitle();
    }
 
    public void setTitleColor(int valueColor)
    {
-      oTitle.setColor(valueColor);
+      title.setColor(valueColor);
    }
 
    public void setTitleTextSize(int textSize)
    {
-      oTitle.setTextSize(textSize);
+      title.setTextSize(textSize);
    }
 
    public void setLineSize(int lineSize)
    {
-      oTitle.setTextSize(lineSize);
+      title.setTextSize(lineSize);
    }
 
    public void setContentDescription(String contentDescription)

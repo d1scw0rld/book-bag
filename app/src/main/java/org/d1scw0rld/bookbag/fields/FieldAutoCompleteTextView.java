@@ -17,31 +17,24 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 
-public class FieldAutoCompleteTextView extends LinearLayout
+public class FieldAutoCompleteTextView extends LinearLayout implements Field
 {
    
-   private Title oTitle;
-   private AutoCompleteTextViewX oAutoCompleteTextViewX;
+   private Title                 title;
+   private AutoCompleteTextViewX autoCompleteTextViewX;
 
    public FieldAutoCompleteTextView(Context context)
    {
       super(context);
       
-      vInit(context);
-   }
-   
-   public FieldAutoCompleteTextView(Context context, Property oProperty, ArrayList<Property> alPropertyValues)
-   {
-      super(context);
-      
-      vInit(context, oProperty, alPropertyValues);
+      init(context);
    }
 
    public FieldAutoCompleteTextView(Context context, AttributeSet attrs)
    {
       super(context, attrs);
       
-      vInit(context);
+      init(context);
       
       TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.FieldAutoCompleteTextView, 0, 0);
 
@@ -57,159 +50,108 @@ public class FieldAutoCompleteTextView extends LinearLayout
       setOrientation(LinearLayout.VERTICAL);
       setGravity(Gravity.CENTER_VERTICAL);
 
-      oTitle.setText(titleText);
-      oTitle.setColor(titleValueColor);
-      oTitle.setTextSize(titleTextSize);
-      oTitle.setLineSize(titleLineSize);
+      title.setText(titleText);
+      title.setColor(titleValueColor);
+      title.setTextSize(titleTextSize);
+      title.setLineSize(titleLineSize);
       
-      oAutoCompleteTextViewX.setText(text);
-      oAutoCompleteTextViewX.setHint(hint);
+      autoCompleteTextViewX.setText(text);
+      autoCompleteTextViewX.setHint(hint);
    }
-   
-   public FieldAutoCompleteTextView(Context context, AttributeSet attrs, Property oProperty, ArrayList<Property> alPropertyValues)
-   {
-      super(context, attrs);
-      
-      vInit(context, oProperty, alPropertyValues);
-      
-      TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.FieldAutoCompleteTextView, 0, 0);
 
-      String titleText = a.getString(R.styleable.FieldAutoCompleteTextView_title);
-      int titleValueColor = a.getColor(R.styleable.FieldAutoCompleteTextView_titleColor, 0);
-      int titleTextSize = a.getDimensionPixelOffset(R.styleable.FieldAutoCompleteTextView_titleTextSize, 0);
-      int titleLineSize = a.getDimensionPixelOffset(R.styleable.FieldAutoCompleteTextView_titleLineSize, 0);
-      String text = a.getString(R.styleable.FieldAutoCompleteTextView_android_text);
-      String hint = a.getString(R.styleable.FieldAutoCompleteTextView_android_hint);
-      
-      a.recycle();
-
-      setOrientation(LinearLayout.VERTICAL);
-      setGravity(Gravity.CENTER_VERTICAL);
-
-      oTitle.setText(titleText);
-      oTitle.setColor(titleValueColor);
-      oTitle.setTextSize(titleTextSize);
-      oTitle.setLineSize(titleLineSize);
-      
-      oAutoCompleteTextViewX.setText(text);
-      oAutoCompleteTextViewX.setHint(hint);
-   }
-   
-   public void vInit(Context context)
+   public void init(Context context)
    {
       LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       inflater.inflate(R.layout.field_auto_complete_text_view, this, true);
-      
-      oTitle = this.findViewById(R.id.title);
-      oAutoCompleteTextViewX = this.findViewById(R.id.autoCompleteTextView);
-      oAutoCompleteTextViewX.setThreshold(1);
-   }
-   
-   public void vInit(Context context, Property oProperty, final ArrayList<Property> alPropertyValues)
-   {
-      LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-      inflater.inflate(R.layout.field_auto_complete_text_view, this, true);
-      
-      oTitle = findViewById(R.id.title);
-      oAutoCompleteTextViewX = findViewById(R.id.autoCompleteTextView);
-      oAutoCompleteTextViewX.setThreshold(1);
-      
-      if(oProperty != null && !oProperty.sValue.isEmpty())
-         oAutoCompleteTextViewX.setText(oProperty.sValue);
 
-//      ArrayItemsAdapter oArrayAdapter = new ArrayItemsAdapter(context, android.R.layout.select_dialog_item, alPropertyValues);
-      FilteredArrayAdapter<Property> oArrayAdapter = new FilteredArrayAdapter<>(context, android.R.layout.select_dialog_item, alPropertyValues);
-      oAutoCompleteTextViewX.setAdapter(oArrayAdapter);
+      title = this.findViewById(R.id.title);
+      autoCompleteTextViewX = this.findViewById(R.id.autoCompleteTextView);
+      autoCompleteTextViewX.setThreshold(1);
    }
-   
+
    public void setTitle(String title)
    {
-      oTitle.setText(title);
+      this.title.setText(title);
    }
 
    public void setTitle(int resid)
    {
-      oTitle.setText(resid);
+      title.setText(resid);
    }
-   
+
+   @Override
+   public String getTitle()
+   {
+      return title.getTitle();
+   }
+
    public void setTitleColor(int valueColor)
    {
-      oTitle.setColor(valueColor);
+      title.setColor(valueColor);
    }
    
    public void setTitleTextSize(int textSize)
    {
-      oTitle.setTextSize(textSize);
+      title.setTextSize(textSize);
    }
    
    public void setLineSize(int lineSize)
    {
-      oTitle.setTextSize(lineSize);
+      title.setTextSize(lineSize);
    }
    
    public void setText(String text)
    {
-      oAutoCompleteTextViewX.setText(text);
+      autoCompleteTextViewX.setText(text);
    }
 
    public void setText(int resid)
    {
-      oAutoCompleteTextViewX.setText(resid);
+      autoCompleteTextViewX.setText(resid);
    }
    
    public Editable getText()
    {
-      return oAutoCompleteTextViewX.getText();
+      return autoCompleteTextViewX.getText();
    }
    
    public void setHint(String hint)
    {
-      oAutoCompleteTextViewX.setHint(hint);
+      autoCompleteTextViewX.setHint(hint);
    }
 
    public void setHint(int resid)
    {
-      oAutoCompleteTextViewX.setHint(resid);
+      autoCompleteTextViewX.setHint(resid);
    }
    
    public void setThreshold(int threshold)
    {
-      oAutoCompleteTextViewX.setThreshold(threshold);
+      autoCompleteTextViewX.setThreshold(threshold);
    }
    
    public void setAdapter(ArrayAdapter<?> adapter)
    {
-      oAutoCompleteTextViewX.setAdapter(adapter);
+      autoCompleteTextViewX.setAdapter(adapter);
    }
    
    public void setUpdateListener(AutoCompleteTextViewX.OnUpdateListener onUpdateListener)
    {
-      oAutoCompleteTextViewX.setOnUpdateListener(onUpdateListener);
+      autoCompleteTextViewX.setOnUpdateListener(onUpdateListener);
    }
-   
-//   public void setUpdateListener(OnUpdateListener onUpdateListener)
-//   {
-//      this.onUpdateListener = onUpdateListener;
-//   }
-   
+
    public void setCallback(Callback callback)
    {
-      oAutoCompleteTextViewX.setCallback(callback);
+      autoCompleteTextViewX.setCallback(callback);
    }   
    
    public void setOnItemSelectedListener(OnItemSelectedListener l)
    {
-      oAutoCompleteTextViewX.setOnItemSelectedListener(l);
+      autoCompleteTextViewX.setOnItemSelectedListener(l);
    }
 
    public void setOnItemClickListener(OnItemClickListener l)
    {
-      oAutoCompleteTextViewX.setOnItemClickListener(l);
+      autoCompleteTextViewX.setOnItemClickListener(l);
    }
- 
-//   public interface OnUpdateListener
-//   {
-//      public void onUpdate(FieldAutoCompleteTextView oFieldAutoCompleteTextView, int position);
-//      public void onUpdate(EditText et);
-//   }
 }

@@ -20,7 +20,7 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
-public class FieldMultiText extends LinearLayout
+public class FieldMultiText extends LinearLayout implements Field
 {
    public interface OnAddRemoveFieldListener
    {
@@ -39,7 +39,6 @@ public class FieldMultiText extends LinearLayout
    private LinearLayout                   llFields;
    private String                         hint = "";
    private String                         contentDescription = "";
-//   private ArrayAdapter<IItem> adapter;
    private FilteredArrayAdapter<Property> adapter;
    private OnAddRemoveFieldListener       onAddRemoveFieldListener;
 
@@ -177,7 +176,13 @@ public class FieldMultiText extends LinearLayout
    {
       title.setText(resid);
    }
-   
+
+   @Override
+   public String getTitle()
+   {
+      return title.getTitle();
+   }
+
    public void setTitleColor(int valueColor)
    {
       title.setColor(valueColor);
@@ -208,11 +213,6 @@ public class FieldMultiText extends LinearLayout
       this.onAddRemoveFieldListener = onAddRemoveFieldListener;
    }   
 
-//   public interface Item extends IItem
-//   {
-//      String getValue();
-//   }
-   
    public void setItems(FilteredArrayAdapter<Property> adapter, ArrayList<Property> alItems)
    {
       this.adapter = adapter;

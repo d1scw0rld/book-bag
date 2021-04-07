@@ -11,23 +11,23 @@ import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 
-public class FieldSpinner extends LinearLayout
+public class FieldSpinner extends LinearLayout implements Field
 {
-   private Title oTitle;
-   private Spinner oSpinner;
+   private Title   title;
+   private Spinner spinner;
 
    public FieldSpinner(Context context)
    {
       super(context);
       
-      vInit(context);
+      init(context);
    }
 
    public FieldSpinner(Context context, AttributeSet attrs)
    {
       super(context, attrs);
 
-      vInit(context);
+      init(context);
       
       TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.FieldSpinner, 0, 0);
       
@@ -42,67 +42,73 @@ public class FieldSpinner extends LinearLayout
       setOrientation(LinearLayout.VERTICAL);
       setGravity(Gravity.CENTER_VERTICAL);
 
-      oTitle.setText(title);
-      oTitle.setColor(titleValueColor);
-      oTitle.setTextSize(titleTextSize);
-      oTitle.setLineSize(titleLineSize);
+      this.title.setText(title);
+      this.title.setColor(titleValueColor);
+      this.title.setTextSize(titleTextSize);
+      this.title.setLineSize(titleLineSize);
       
-      oSpinner.setContentDescription(contentDescription);
+      spinner.setContentDescription(contentDescription);
    }
    
-   void vInit(Context context)
+   void init(Context context)
    {
       LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       inflater.inflate(R.layout.field_spinner, this, true);
-      
-      oTitle = findViewById(R.id.title);
-      oSpinner = findViewById(R.id.action_select_type);
+
+      title = findViewById(R.id.title);
+      spinner = findViewById(R.id.action_select_type);
    }
    
    public void setTitle(String title)
    {
-      oTitle.setText(title);
+      this.title.setText(title);
    }
    
    public void setTitle(int resid)
    {
-      oTitle.setText(resid);
+      title.setText(resid);
    }
-   
+
+   @Override
+   public String getTitle()
+   {
+      return title.getTitle();
+   }
+
    public void setTitleColor(int valueColor)
    {
-      oTitle.setColor(valueColor);
+      title.setColor(valueColor);
    }
    
    public void setTitleTextSize(int textSize)
    {
-      oTitle.setTextSize(textSize);
+      title.setTextSize(textSize);
    }
    
    public void setLineSize(int lineSize)
    {
-      oTitle.setTextSize(lineSize);
+      title.setTextSize(lineSize);
    }
 
    public void setContentDescription(String contentDescription)
    {
-      oSpinner.setContentDescription(contentDescription);
+      spinner.setContentDescription(contentDescription);
    }
    
    public void setAdapter(ArrayAdapter<?> adapter)
    {
-      oSpinner.setAdapter(adapter);
+      spinner.setAdapter(adapter);
    }
    
    public void setOnItemSelectedListener(OnItemSelectedListener listener)
    {
-      oSpinner.setOnItemSelectedListener(listener);
+      spinner.setOnItemSelectedListener(listener);
    }
    
    public void setSelection(int position)
    {
       if(position >= 0)
-         oSpinner.setSelection(position);
+         spinner.setSelection(position);
    }
    
    public interface OnUpdateListener

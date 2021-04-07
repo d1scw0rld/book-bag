@@ -17,24 +17,30 @@ import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 
-public class FieldMoney extends LinearLayout
+public class FieldMoney extends LinearLayout implements Field
 {
-   private Title oTitle;
-   private Spinner oSpinner;
-   private EditTextX oEditTextX;
+   public static final String FILTER = "0*[1-9]?\\d{0,3}(\\" + DBAdapter.separator + "\\d{0,2})?";
+//          FILTER = "([-1-9]{1}[0-9]{0,2}([0-9]{3})*(\\.[0-9]{0,2})?|[1-9]{1}[0-9]{0,}(\\.[0-9]{0,2})?|0(\\.[0-9]{0,2})?|(\\.[0-9]{1,2})?) \u20ac";
+//          FILTER = "((([\\-1-9]?\\d{0,3}))|([\\-1-9]?\\d{0,3}(\\.\\d?)?)|([\\-1-9]?\\d{0,3}(\\.\\d{0,2})?))";
+//          FILTER = "((((\\-\\d)?\\d{0,6}))|([\\-1-9]?\\d{0,4}(\\.\\d?)?)|([\\-1-9]?\\d{0,3}(\\.\\d{0,2})?)) \u20ac");
+
+
+   private Title title;
+   private Spinner   spinner;
+   private EditTextX editTextX;
 
    public FieldMoney(Context context)
    {
       super(context);
       
-      vInit(context);
+      init(context);
    }
 
    public FieldMoney(Context context, AttributeSet attrs)
    {
       super(context, attrs);
 
-      vInit(context);
+      init(context);
       
       TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.FieldMoney, 0, 0);
       
@@ -50,91 +56,86 @@ public class FieldMoney extends LinearLayout
       setOrientation(LinearLayout.VERTICAL);
       setGravity(Gravity.CENTER_VERTICAL);
 
-      oTitle.setText(title);
-      oTitle.setColor(titleValueColor);
-      oTitle.setTextSize(titleTextSize);
-      oTitle.setLineSize(titleLineSize);
+      this.title.setText(title);
+      this.title.setColor(titleValueColor);
+      this.title.setTextSize(titleTextSize);
+      this.title.setLineSize(titleLineSize);
       
-      oSpinner.setContentDescription(contentDescription);
-      oEditTextX.setHint(hint);
+      spinner.setContentDescription(contentDescription);
+      editTextX.setHint(hint);
    }
    
-   void vInit(Context context)
+   void init(Context context)
    {
       LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       inflater.inflate(R.layout.field_money, this, true);
-      
-      oTitle = findViewById(R.id.title);
-      oSpinner = findViewById(R.id.action_select_type);
-      oEditTextX = findViewById(R.id.editTextX);
-      oEditTextX.setFilters(new InputFilter[] {new DecimalDigitsInputFilter()});
+
+      title = findViewById(R.id.title);
+      spinner = findViewById(R.id.action_select_type);
+      editTextX = findViewById(R.id.editTextX);
+      editTextX.setFilters(new InputFilter[] {new DecimalDigitsInputFilter()});
    }
    
    public void setTitle(String title)
    {
-      oTitle.setText(title);
+      this.title.setText(title);
    }
    
    public void setTitle(int resid)
    {
-      oTitle.setText(resid);
+      title.setText(resid);
    }
-   
+
+   @Override
+   public String getTitle()
+   {
+      return title.getTitle();
+   }
+
    public void setValue(int iValue)
    {
-      oEditTextX.setText(String.format(getResources().getString(R.string.amn_vl), iValue / 100, DBAdapter.separator, iValue % 100));  
+      editTextX.setText(String.format(getResources().getString(R.string.amn_vl), iValue / 100, DBAdapter.separator, iValue % 100));
    }
    
    public void setTitleColor(int valueColor)
    {
-      oTitle.setColor(valueColor);
+      title.setColor(valueColor);
    }
    
    public void setTitleTextSize(int textSize)
    {
-      oTitle.setTextSize(textSize);
+      title.setTextSize(textSize);
    }
    
    public void setLineSize(int lineSize)
    {
-      oTitle.setTextSize(lineSize);
+      title.setTextSize(lineSize);
    }
 
    public void setContentDescription(String contentDescription)
    {
-      oSpinner.setContentDescription(contentDescription);
+      spinner.setContentDescription(contentDescription);
    }
    
    public void setHint(String hint)
    {
-      oEditTextX.setHint(hint);
+      editTextX.setHint(hint);
    }
-   
-//   public Price getPrice()
-//   {
-//      return oPrice;
-//   }
-//
-//   public void setPrice(Price oPrice)
-//   {
-//      this.oPrice = oPrice;
-//      setValue(oPrice.iValue);
-//   }
 
    public void setAdapter(ArrayAdapter<?> adapter)
    {
-      oSpinner.setAdapter(adapter);
+      spinner.setAdapter(adapter);
    }
    
    public void setOnItemSelectedListener(OnItemSelectedListener listener)
    {
-      oSpinner.setOnItemSelectedListener(listener);
+      spinner.setOnItemSelectedListener(listener);
    }
 
    public void setSelection(int position)
    {
       if(position >= 0)
-         oSpinner.setSelection(position);
+         spinner.setSelection(position);
    }
    
    public interface OnUpdateListener
@@ -148,10 +149,7 @@ public class FieldMoney extends LinearLayout
 
       DecimalDigitsInputFilter()
       {
-//          mPattern = Pattern.compile("([-1-9]{1}[0-9]{0,2}([0-9]{3})*(\\.[0-9]{0,2})?|[1-9]{1}[0-9]{0,}(\\.[0-9]{0,2})?|0(\\.[0-9]{0,2})?|(\\.[0-9]{1,2})?) \u20ac");
-//          mPattern = Pattern.compile("((([\\-1-9]?\\d{0,3}))|([\\-1-9]?\\d{0,3}(\\.\\d?)?)|([\\-1-9]?\\d{0,3}(\\.\\d{0,2})?))");
-          mPattern = Pattern.compile("0*[1-9]?\\d{0,3}(\\" + DBAdapter.separator + "\\d{0,2})?");
-//          mPattern = Pattern.compile("((((\\-\\d)?\\d{0,6}))|([\\-1-9]?\\d{0,4}(\\.\\d?)?)|([\\-1-9]?\\d{0,3}(\\.\\d{0,2})?)) \u20ac");
+          mPattern = Pattern.compile(FILTER);
       }
 
       @Override
@@ -179,6 +177,6 @@ public class FieldMoney extends LinearLayout
 
    public void setUpdateListener(EditTextX.OnUpdateListener onUpdateListener)
    {
-      oEditTextX.setOnUpdateListener(onUpdateListener);
+      editTextX.setOnUpdateListener(onUpdateListener);
    }   
 }

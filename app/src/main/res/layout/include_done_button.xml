@@ -24,13 +24,15 @@
     <TextView style="?android:actionBarTabTextStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="left|center_vertical"
+        android:layout_gravity="start|center_vertical"
         android:paddingRight="20dp"
         android:drawableLeft="@drawable/ic_action_done_dark"
         android:drawablePadding="8dp"
         android:gravity="center_vertical"
         android:textColor="@android:color/white"
-        android:text="@string/done" />
+        android:text="@string/done"
+        android:paddingEnd="20dp"
+        android:drawableStart="@drawable/ic_action_done_dark" />
     
 <!--     android:drawableLeft="@drawable/ic_check" -->
 </FrameLayout>

@@ -12,6 +12,14 @@
       <attr name="lineSize" format="dimension"/>
    </declare-styleable>
 
+   <declare-styleable name="Field">
+      <attr name="title" />
+      <attr name="titleColor" />
+      <attr name="titleTextSize" />
+      <attr name="titleLineSize" />
+   </declare-styleable>
+
+
    <declare-styleable name="FieldAutoCompleteTextView">
       <attr name="title" />
       <attr name="titleColor" />

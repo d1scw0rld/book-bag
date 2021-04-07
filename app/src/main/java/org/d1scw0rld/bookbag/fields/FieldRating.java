@@ -9,11 +9,11 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 import android.widget.RatingBar.OnRatingBarChangeListener;
-import android.support.v7.widget.AppCompatRatingBar;
+import androidx.appcompat.widget.AppCompatRatingBar;
 
-public class FieldRating extends LinearLayout
+public class FieldRating extends LinearLayout implements Field
 {
-   private Title oTitle;
+   private Title title;
 
    private boolean isIndicator;
    
@@ -28,14 +28,14 @@ public class FieldRating extends LinearLayout
    {
       super(context);
       
-      vInit(context);
+      init(context);
    }
    
    public FieldRating(Context context, AttributeSet attrs)
    {
       super(context, attrs);
 
-      vInit(context);
+      init(context);
       
       TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.FieldRating, 0, 0);
       
@@ -54,10 +54,10 @@ public class FieldRating extends LinearLayout
       setOrientation(LinearLayout.VERTICAL);
       setGravity(Gravity.CENTER_VERTICAL);
 
-      oTitle.setText(title);
-      oTitle.setColor(titleValueColor);
-      oTitle.setTextSize(titleTextSize);
-      oTitle.setLineSize(titleLineSize);
+      this.title.setText(title);
+      this.title.setColor(titleValueColor);
+      this.title.setTextSize(titleTextSize);
+      this.title.setLineSize(titleLineSize);
       oRatingBar.setContentDescription(contentDescription);
       oRatingBar.setNumStars(iNumStars);
       oRatingBar.setRating(fRating);
@@ -65,38 +65,44 @@ public class FieldRating extends LinearLayout
       oRatingBar.setIsIndicator(isIndicator);
    }
    
-   void vInit(Context context)
+   void init(Context context)
    {
       LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       inflater.inflate(R.layout.field_rating, this, true);
-      
-      oTitle = findViewById(R.id.title);
+
+      title = findViewById(R.id.title);
       oRatingBar = findViewById(R.id.rating_bar);
    }
 
    public void setTitle(String title)
    {
-      oTitle.setText(title);
+      this.title.setText(title);
    }
    
    public void setTitle(int resid)
    {
-      oTitle.setText(resid);
+      title.setText(resid);
    }
-   
+
+   @Override
+   public String getTitle()
+   {
+      return title.getTitle();
+   }
+
    public void setTitleColor(int valueColor)
    {
-      oTitle.setColor(valueColor);
+      title.setColor(valueColor);
    }
    
    public void setTitleTextSize(int textSize)
    {
-      oTitle.setTextSize(textSize);
+      title.setTextSize(textSize);
    }
    
    public void setLineSize(int lineSize)
    {
-      oTitle.setTextSize(lineSize);
+      title.setTextSize(lineSize);
    }
 
    public void setContentDescription(String contentDescription)

@@ -27,6 +27,8 @@ import org.d1scw0rld.bookbag.dto.FileUtils;
 import org.d1scw0rld.bookbag.dto.ParentResult;
 import org.d1scw0rld.bookbag.dto.Result;
 
+import androidx.annotation.StyleableRes;
+
 public class DBAdapter
 {
 	static final String DATABASE_NAME = "book_bag.db";
@@ -111,9 +113,9 @@ public class DBAdapter
          + KEY_FLD_ID + " INTEGER)";
 //         + KEY_TP_ID + " INTEGER)";
    
-	private SQLiteDatabase db;
-	private final Context context;
-	private DBOpenHelper dbHelper;
+	private       SQLiteDatabase db;
+	private final Context        context;
+	private final DBOpenHelper   dbHelper;
 	
 	public final static char separator = DecimalFormatSymbols.getInstance().getDecimalSeparator();
 
@@ -731,7 +733,7 @@ public class DBAdapter
 
    private static class DBOpenHelper extends SQLiteOpenHelper
 	{
-      private Context context;
+      private final Context context;
 		
       DBOpenHelper(Context context, String name, CursorFactory factory, int version)
 		{
@@ -766,7 +768,8 @@ public class DBAdapter
 	            iFieldID = taFieldsValues.getResourceId(i, -1);
 	            taField = context.getResources().obtainTypedArray(iFieldID);
 	            iTypeID = taField.getInt(0, -1);
-	            iValuesID = taField.getResourceId(1, -1);
+               @StyleableRes int index = 1;
+	            iValuesID = taField.getResourceId(index, -1);
 	            tsValues = context.getResources().getStringArray(iValuesID);
 	            sFieldName = context.getResources().getResourceEntryName(iValuesID);
 	            for(String sValue : tsValues)

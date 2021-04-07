@@ -16,10 +16,11 @@
         <!-- <item name="actionOverflowMenuStyle">@style/CMOptionsMenu</item> -->
         <item name="actionModeStyle">@style/LStyled.ActionMode</item>
 <!--         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item> -->
-        <item name="preferenceTheme">@style/SettingsTheme</item>
+<!--        <item name="preferenceTheme">@style/SettingsTheme</item>-->
     </style>
 
     <style name="SettingsTheme" parent="@style/PreferenceThemeOverlay.v14.Material">
+<!--    <style name="SettingsTheme" parent="@style/PreferenceThemeOverlay">-->
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
@@ -27,7 +28,13 @@
         <item name="colorControlActivated">@color/accent</item>
         <item name="colorControlHighlight">@color/accent</item>
         <item name="android:textColor">@color/primary_dark</item>
+<!--        <item name="android:textColor">@android:color/holo_blue_light</item>-->
+        <item name="allowDividerAbove">true</item>
+        <item name="allowDividerBelow">true</item>
+        <item name="divider">?android:dividerHorizontal</item>
+        <item name="iconSpaceReserved">false</item>
         <item name="android:activatedBackgroundIndicator">@drawable/listitem_backround</item>
+<!--        <item name="android:layout">@layout/pref_template</item>-->
     </style>
 
     <style name="CustomRatingBar" parent="Theme.AppCompat.Light.DarkActionBar">

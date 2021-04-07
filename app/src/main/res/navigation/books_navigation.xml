@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/books_navigation"
+    app:startDestination="@id/bookListFragment">
+
+    <fragment
+        android:id="@+id/bookListFragment"
+        android:name="org.d1scw0rld.bookbag.BookListFragment"
+        android:label="BookListFragment" >
+        <action
+            android:id="@+id/action_bookListFragment_to_bookDetailNewFragment"
+            app:destination="@id/bookDetailNewFragment" />
+        <action
+            android:id="@+id/action_bookListFragment_to_editBookFragment"
+            app:destination="@id/editBookFragment" />
+        <action
+            android:id="@+id/action_bookListFragment_to_settingsFragment"
+            app:destination="@id/settings_fragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/bookDetailNewFragment"
+        android:name="org.d1scw0rld.bookbag.BookDetailNewFragment"
+        android:label="BookDetailNewFragment" >
+        <argument
+            android:name="bookID"
+            app:argType="long" />
+        <action
+            android:id="@+id/action_bookDetailNewFragment_to_editBookFragment"
+            app:destination="@id/editBookFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/editBookFragment"
+        android:name="org.d1scw0rld.bookbag.EditBookFragment"
+        android:label="EditBookFragment"
+        tools:layout="@layout/activity_edit_book">
+        <argument
+            android:name="bookID"
+            app:argType="long"
+            android:defaultValue="0L" />
+        <argument
+            android:name="isCopy"
+            app:argType="boolean"
+            android:defaultValue="false" />
+    </fragment>
+    <fragment
+        android:id="@+id/settings_fragment"
+        android:name="org.d1scw0rld.bookbag.SettingsFragment"
+        android:label="@string/title_settings"
+        tools:layout="act"/>
+</navigation>

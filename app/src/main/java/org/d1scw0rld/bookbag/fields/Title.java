@@ -36,11 +36,8 @@ public class Title extends LinearLayout
          setOrientation(LinearLayout.VERTICAL);
          setGravity(Gravity.CENTER_VERTICAL);
 
-         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-         inflater.inflate(R.layout.title, this, true);
+         init(context);
 
-         title = findViewById(R.id.tv_title);
-         line = findViewById(R.id.ll_line);
          title.setText(titleText);
          title.setTextColor(valueColor);
          if(textSize > 0)
@@ -57,10 +54,24 @@ public class Title extends LinearLayout
          }
       }
    }
-   
+
+   private void init(Context context)
+   {
+      LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+      inflater.inflate(R.layout.title, this, true);
+
+      title = findViewById(R.id.tv_title);
+      line = findViewById(R.id.ll_line);
+   }
+
    public void setText(String text)
    {
       title.setText(text);
+   }
+
+   public String getTitle()
+   {
+      return title.getText().toString();
    }
 
    public void setText(int resid)

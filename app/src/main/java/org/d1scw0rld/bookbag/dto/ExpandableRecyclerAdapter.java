@@ -1,8 +1,8 @@
 package org.d1scw0rld.bookbag.dto;
 
 import android.content.Context;
-import android.support.annotation.UiThread;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.UiThread;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
