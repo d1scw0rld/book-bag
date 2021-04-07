@@ -263,7 +263,8 @@ public class BookListActivity extends AppCompatActivity
    {
       super.onCreate(savedInstanceState);
 //      setContentView(R.layout.activity_frame_content);
-      setContentView(R.layout.activity_navhost);
+//      setContentView(R.layout.activity_navhost);
+      setContentView(R.layout.activity_main);
 
       fragment = getSupportFragmentManager().findFragmentById(R.id.fragment);
 
