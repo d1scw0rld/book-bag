@@ -65,21 +65,22 @@ public class EditBookFragment extends Fragment implements IBackPressListener
       View view = inflater.inflate(R.layout.activity_edit_book, container, false);
       requireActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
-      Toolbar toolbar = view.findViewById(R.id.toolbar);
-      ((AppCompatActivity)requireActivity()).setSupportActionBar(toolbar);
+//      Toolbar toolbar = view.findViewById(R.id.toolbar);
+//      ((AppCompatActivity)requireActivity()).setSupportActionBar(toolbar);
 
 
       ActionBar actionBar =  ((AppCompatActivity)requireActivity()).getSupportActionBar();
       if(actionBar != null)
       {
-      actionBar.setDisplayShowHomeEnabled(true);
-//         actionBar.setDisplayShowHomeEnabled(false);
+//      actionBar.setDisplayShowHomeEnabled(true);
+         actionBar.setDisplayShowHomeEnabled(false);
          actionBar.setDisplayShowTitleEnabled(false);
          actionBar.setDisplayShowCustomEnabled(true);
          actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
 //         actionBar.setCustomView(R.layout.actionbar_custom_view_done);
-         View mCustomView = inflater.inflate(R.layout.actionbar_custom_view_done, null);
-         actionBar.setCustomView(mCustomView);
+//         View mCustomView = inflater.inflate(R.layout.actionbar_custom_view_done, null);
+//         actionBar.setCustomView(mCustomView);
+         actionBar.setCustomView(R.layout.actionbar_custom_view_done);
 
 
          ((Toolbar) actionBar.getCustomView()
@@ -341,6 +342,20 @@ public class EditBookFragment extends Fragment implements IBackPressListener
          if(book.alProperties.get(i).sValue.trim()
                                            .isEmpty())
             book.alProperties.remove(i);
+      }
+   }
+
+   @Override
+   public void onDestroy()
+   {
+      super.onDestroy();
+
+      ActionBar actionBar =  ((AppCompatActivity)requireActivity()).getSupportActionBar();
+      if(actionBar != null)
+      {
+         actionBar.setDisplayShowHomeEnabled(true);
+         actionBar.setDisplayShowTitleEnabled(true);
+         actionBar.setDisplayShowCustomEnabled(false);
       }
    }
 }

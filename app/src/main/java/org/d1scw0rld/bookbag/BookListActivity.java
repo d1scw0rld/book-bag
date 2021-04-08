@@ -1,5 +1,6 @@
 package org.d1scw0rld.bookbag;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -241,6 +242,7 @@ public class BookListActivity extends AppCompatActivity
 //      }
 //   };
 //
+   @SuppressLint("RestrictedApi")
    @Override
    protected void onCreate(Bundle savedInstanceState)
    {

@@ -1,8 +1,10 @@
 package org.d1scw0rld.bookbag;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.CollapsibleActionView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -12,6 +14,8 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,12 +27,17 @@ import androidx.lifecycle.Observer;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.NavigationUI;
 
 
 public class BookDetailNewFragment extends BaseFragment implements IBackPressListener
 {
    private int resultCode = Activity.RESULT_CANCELED;
    private long iBookID = 0;
+   private ActionBar actionBar;
+
+
 
    public static BookDetailNewFragment newInstance(long iBookID)
    {
@@ -40,11 +49,33 @@ public class BookDetailNewFragment extends BaseFragment implements IBackPressLis
       return fragment;
    }
 
+   @SuppressLint("RestrictedApi")
    @Override
    public void onCreate(Bundle savedInstanceState)
    {
       super.onCreate(savedInstanceState);
-      setHasOptionsMenu(true);
+      actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
+      if(actionBar != null)
+      {
+         actionBar.setShowHideAnimationEnabled(false);
+      }
+
+//      ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+   }
+
+   @SuppressLint("RestrictedApi")
+   @Override
+   public void onStart()
+   {
+      super.onStart();
+      actionBar.hide();
+   }
+
+   @Override
+   public void onStop()
+   {
+      super.onStop();
+      actionBar.show();
    }
 
    @Nullable
@@ -53,19 +84,28 @@ public class BookDetailNewFragment extends BaseFragment implements IBackPressLis
    {
 //      return super.onCreateView(inflater, container, savedInstanceState);
 
+
       View view = inflater.inflate(R.layout.activity_book_detail,container, false);
+      setHasOptionsMenu(true);
 
 //      iBookID = getIntent().getLongExtra(BookDetailFragment.ARG_ITEM_ID, 0);
       iBookID = getBookID();
 
-      Toolbar toolbar = view.findViewById(R.id.detail_toolbar);
-      ((AppCompatActivity)requireActivity()).setSupportActionBar(toolbar);
-//      getActivity().setSupportActionBar(toolbar);
+//      ((AppCompatActivity)requireActivity()).getSupportActionBar().;
+//
 
+      Toolbar toolbar = view.findViewById(R.id.detail_toolbar);
+      toolbar.inflateMenu(R.menu.menu_details);
+      toolbar.setOnMenuItemClickListener(item -> onOptionsItemSelected(item));
+////      ((AppCompatActivity)requireActivity()).setSupportActionBar(toolbar);
+////      getActivity().setSupportActionBar(toolbar);
+//
 //      NavController navController = Navigation.findNavController(getActivity(), R.id.fragment);
 //      AppBarConfiguration appBarConfiguration =
 //            new AppBarConfiguration.Builder(navController.getGraph()).build();
-//      NavigationUI.setupWithNavController(toolbar, NavHostFragment.findNavController(this));
+//      CollapsibleActionView collapsibleActionView = view.findViewById(R.id.toolbar_layout);
+      NavigationUI.setupWithNavController(toolbar, NavHostFragment.findNavController(this));
+//      NavigationUI.setupWithNavController(collapsibleActionView, NavHostFragment.findNavController(this));
 
 
       FloatingActionButton fab = view.findViewById(R.id.fab);
@@ -82,12 +122,12 @@ public class BookDetailNewFragment extends BaseFragment implements IBackPressLis
          }
       });
 
-      // Show the Up button in the action bar.
-      ActionBar actionBar = ((AppCompatActivity)requireActivity()).getSupportActionBar();
-      if (actionBar != null)
-      {
-         actionBar.setDisplayHomeAsUpEnabled(true);
-      }
+//      // Show the Up button in the action bar.
+//      ActionBar actionBar = ((AppCompatActivity)requireActivity()).getSupportActionBar();
+//      if (actionBar != null)
+//      {
+//         actionBar.setDisplayHomeAsUpEnabled(true);
+//      }
 
       if (savedInstanceState == null)
       {
@@ -100,6 +140,7 @@ public class BookDetailNewFragment extends BaseFragment implements IBackPressLis
    @Override
    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
    {
+
       NavController navController = NavHostFragment.findNavController(this);
       // We use a String here, but any type that can be put in a Bundle is supported
       final MutableLiveData<String> liveData = navController.getCurrentBackStackEntry()
@@ -136,6 +177,7 @@ public class BookDetailNewFragment extends BaseFragment implements IBackPressLis
    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater)
    {
       inflater.inflate(R.menu.menu_details, menu);
+
 
 //      return true;
    }
