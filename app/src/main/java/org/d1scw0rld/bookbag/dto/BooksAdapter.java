@@ -28,11 +28,11 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
    
    private String sFilter = "";
    
-   private ArrayList<BookListItem> alListItemsNotFiltered; 
+   private final ArrayList<BookListItem> alListItemsNotFiltered;
    
    private OnClickListener onClickListener = null;
 
-   private OnLongClickListener onLongClickListener = null;   
+   private OnLongClickListener onLongClickListener = null;
 
    public BooksAdapter(Context context, ArrayList<ParentResult> alParentsResults)
    {
@@ -85,7 +85,7 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
    {
       TextView name;
 
-      private ImageView arrow;
+      private final ImageView arrow;
 
       HeaderViewHolder(View view)
       {
@@ -209,7 +209,6 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
             ((ItemViewHolder) holder).bind(position);
             ((ItemViewHolder) holder).view.setOnClickListener(onClickListener);
             ((ItemViewHolder) holder).view.setOnLongClickListener(onLongClickListener);
-
          break;
       }
    }

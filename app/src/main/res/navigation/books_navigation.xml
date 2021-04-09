@@ -22,28 +22,26 @@
     </fragment>
     <fragment
         android:id="@+id/bookDetailNewFragment"
-        android:name="org.d1scw0rld.bookbag.BookDetailNewFragment"
-        android:label="BookDetailNewFragment" >
-        <argument
-            android:name="bookID"
-            app:argType="long" />
+        android:name="org.d1scw0rld.bookbag.BookDetailNewFragment">
         <action
             android:id="@+id/action_bookDetailNewFragment_to_editBookFragment"
             app:destination="@id/editBookFragment" />
+        <argument
+            android:name="bookID"
+            app:argType="long" />
     </fragment>
     <fragment
         android:id="@+id/editBookFragment"
         android:name="org.d1scw0rld.bookbag.EditBookFragment"
-        android:label="EditBookFragment"
         tools:layout="@layout/activity_edit_book">
         <argument
             android:name="bookID"
-            app:argType="long"
-            android:defaultValue="0L" />
+            android:defaultValue="0L"
+            app:argType="long" />
         <argument
             android:name="isCopy"
-            app:argType="boolean"
-            android:defaultValue="false" />
+            android:defaultValue="false"
+            app:argType="boolean" />
     </fragment>
     <fragment
         android:id="@+id/settings_fragment"

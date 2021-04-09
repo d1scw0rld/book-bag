@@ -28,15 +28,8 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 
-//import static android.app.Activity.RESULT_CANCELED;
-//import static android.app.Activity.RESULT_OK;
-
-
 public class EditBookFragment extends Fragment implements IBackPressListener
 {
-//   public final static String BOOK_ID = "book_id",
-//         IS_COPY = "is_copy";
-
    private Book book;
 
    private DBAdapter dbAdapter = null;
@@ -45,41 +38,24 @@ public class EditBookFragment extends Fragment implements IBackPressListener
 
    private FieldEditTextUpdatableClearable fBookTitle = null;
 
-//   private View vPrevious = null;
-
    HashMap<MenuItem, View> hiddenFieldsHashMap = new HashMap<>();
    private FieldsFactory fieldsFactory;
-
-   @Override
-   public void onCreate(Bundle savedInstanceState)
-   {
-      super.onCreate(savedInstanceState);
-      setHasOptionsMenu(true);
-   }
+   private ActionBar actionBar;
 
    @Nullable
    @Override
    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
    {
-
       View view = inflater.inflate(R.layout.activity_edit_book, container, false);
+      setHasOptionsMenu(true);
+
       requireActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
-//      Toolbar toolbar = view.findViewById(R.id.toolbar);
-//      ((AppCompatActivity)requireActivity()).setSupportActionBar(toolbar);
-
-
-      ActionBar actionBar =  ((AppCompatActivity)requireActivity()).getSupportActionBar();
+      actionBar = ((AppCompatActivity)requireActivity()).getSupportActionBar();
       if(actionBar != null)
       {
-//      actionBar.setDisplayShowHomeEnabled(true);
-         actionBar.setDisplayShowHomeEnabled(false);
-         actionBar.setDisplayShowTitleEnabled(false);
-         actionBar.setDisplayShowCustomEnabled(true);
+         showHideHomeTitle(false);
          actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
-//         actionBar.setCustomView(R.layout.actionbar_custom_view_done);
-//         View mCustomView = inflater.inflate(R.layout.actionbar_custom_view_done, null);
-//         actionBar.setCustomView(mCustomView);
          actionBar.setCustomView(R.layout.actionbar_custom_view_done);
 
 
@@ -87,14 +63,7 @@ public class EditBookFragment extends Fragment implements IBackPressListener
                              .getParent()).setContentInsetsAbsolute(0, 0);
          actionBar.getCustomView()
                   .findViewById(R.id.actionbar_done)
-                  .setOnClickListener(new View.OnClickListener()
-                  {
-                     @Override
-                     public void onClick(View v)
-                     {
-                        onBookSave(v);
-                     }
-                  });
+                  .setOnClickListener(v -> onBookSave(v));
 
       }
 
@@ -118,35 +87,21 @@ public class EditBookFragment extends Fragment implements IBackPressListener
       fieldsFactory = new FieldsFactory(getContext(), book, dbAdapter);
 
       final Button btnAddField = view.findViewById(R.id.btn_add_field);
-      btnAddField.setOnClickListener(new View.OnClickListener()
-      {
-
-         @Override
-         public void onClick(View v)
-         {
-            hiddenFieldsPopupMenu.show();
-         }
-      });
+      btnAddField.setOnClickListener(v -> hiddenFieldsPopupMenu.show());
 
       hiddenFieldsPopupMenu = new PopupMenu(requireContext(), btnAddField);
-      hiddenFieldsPopupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
-      {
-
-         @Override
-         public boolean onMenuItemClick(MenuItem menuItem)
+      hiddenFieldsPopupMenu.setOnMenuItemClickListener(menuItem -> {
+         View view1 = hiddenFieldsHashMap.get(menuItem);
+         if(view1 != null)
          {
-            View view = hiddenFieldsHashMap.get(menuItem);
-            if(view != null)
-            {
-               view.setVisibility(View.VISIBLE);
-               view.requestFocus();
-            }
-            hiddenFieldsPopupMenu.getMenu()
-                                 .removeItem(menuItem.getItemId());
-            if(hiddenFieldsPopupMenu.getMenu().size() == 0)
-               btnAddField.setEnabled(false);
-            return false;
+            view1.setVisibility(View.VISIBLE);
+            view1.requestFocus();
          }
+         hiddenFieldsPopupMenu.getMenu()
+                              .removeItem(menuItem.getItemId());
+         if(hiddenFieldsPopupMenu.getMenu().size() == 0)
+            btnAddField.setEnabled(false);
+         return false;
       });
 
       LinearLayout fieldsRoot = view.findViewById(R.id.ll_fields);
@@ -161,22 +116,11 @@ public class EditBookFragment extends Fragment implements IBackPressListener
 
    private boolean getIsCopy()
    {
-//      if(getArguments() != null)
-////         return getArguments().getBoolean(IS_COPY);
-//         return EditBookFragmentArgs.fromBundle(getArguments()).getIsCopy();
-//      return false;
-
       return EditBookFragmentArgs.fromBundle(requireArguments()).getIsCopy();
-
    }
 
    private long getBookID()
    {
-//      if(getArguments() != null)
-////         return getArguments().getLong(BOOK_ID);
-//         return EditBookFragmentArgs.fromBundle(getArguments()).getBookID();
-//      return 0;
-
       return EditBookFragmentArgs.fromBundle(requireArguments()).getBookID();
    }
 
@@ -243,12 +187,6 @@ public class EditBookFragment extends Fragment implements IBackPressListener
 
    private void onBookSave(View v)
    {
-//      if(Objects.requireNonNull(getActivity())
-//                .getCurrentFocus() != null)
-//      {
-//         getActivity().getCurrentFocus().clearFocus();
-//      }
-
       requireActivity().getCurrentFocus().clearFocus();
 
       v.requestFocus();
@@ -260,13 +198,12 @@ public class EditBookFragment extends Fragment implements IBackPressListener
       else
       {
          fBookTitle.setError(null);
-
          saveBook();
          returnOK();
       }
    }
 
-   // TODO Fix it.
+   // TODO Just test. Fix it.
    private void returnOK()
    {
 //      setResult(RESULT_OK, new Intent());
@@ -350,12 +287,13 @@ public class EditBookFragment extends Fragment implements IBackPressListener
    {
       super.onDestroy();
 
-      ActionBar actionBar =  ((AppCompatActivity)requireActivity()).getSupportActionBar();
-      if(actionBar != null)
-      {
-         actionBar.setDisplayShowHomeEnabled(true);
-         actionBar.setDisplayShowTitleEnabled(true);
-         actionBar.setDisplayShowCustomEnabled(false);
-      }
+      showHideHomeTitle(true);
+   }
+
+   private void showHideHomeTitle(boolean isShown)
+   {
+      actionBar.setDisplayShowHomeEnabled(isShown);
+      actionBar.setDisplayShowTitleEnabled(isShown);
+      actionBar.setDisplayShowCustomEnabled(!isShown);
    }
 }

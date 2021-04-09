@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.CollapsibleActionView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -14,8 +13,6 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
-import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,7 +24,6 @@ import androidx.lifecycle.Observer;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
-import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 
@@ -36,8 +32,6 @@ public class BookDetailNewFragment extends BaseFragment implements IBackPressLis
    private int resultCode = Activity.RESULT_CANCELED;
    private long iBookID = 0;
    private ActionBar actionBar;
-
-
 
    public static BookDetailNewFragment newInstance(long iBookID)
    {
@@ -56,14 +50,9 @@ public class BookDetailNewFragment extends BaseFragment implements IBackPressLis
       super.onCreate(savedInstanceState);
       actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
       if(actionBar != null)
-      {
          actionBar.setShowHideAnimationEnabled(false);
-      }
-
-//      ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
    }
 
-   @SuppressLint("RestrictedApi")
    @Override
    public void onStart()
    {
@@ -82,17 +71,10 @@ public class BookDetailNewFragment extends BaseFragment implements IBackPressLis
    @Override
    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
    {
-//      return super.onCreateView(inflater, container, savedInstanceState);
-
-
       View view = inflater.inflate(R.layout.activity_book_detail,container, false);
       setHasOptionsMenu(true);
 
-//      iBookID = getIntent().getLongExtra(BookDetailFragment.ARG_ITEM_ID, 0);
       iBookID = getBookID();
-
-//      ((AppCompatActivity)requireActivity()).getSupportActionBar().;
-//
 
       Toolbar toolbar = view.findViewById(R.id.detail_toolbar);
       toolbar.inflateMenu(R.menu.menu_details);
@@ -109,30 +91,10 @@ public class BookDetailNewFragment extends BaseFragment implements IBackPressLis
 
 
       FloatingActionButton fab = view.findViewById(R.id.fab);
-      fab.setOnClickListener(new View.OnClickListener()
-      {
-         @Override
-         public void onClick(View view)
-         {
-//            Intent intent = new Intent(getContext(), EditBookActivity.class);
-//            intent.putExtra(EditBookActivity.BOOK_ID, iBookID);
-//            startActivityForResult(intent, BookListActivity.SHOW_EDIT_BOOK);
-
-            navigateToEditBook(view);
-         }
-      });
-
-//      // Show the Up button in the action bar.
-//      ActionBar actionBar = ((AppCompatActivity)requireActivity()).getSupportActionBar();
-//      if (actionBar != null)
-//      {
-//         actionBar.setDisplayHomeAsUpEnabled(true);
-//      }
+      fab.setOnClickListener(v -> navigateToEditBook(v));
 
       if (savedInstanceState == null)
-      {
          loadFragment(iBookID);
-      }
 
       return view;
    }
@@ -146,12 +108,9 @@ public class BookDetailNewFragment extends BaseFragment implements IBackPressLis
       final MutableLiveData<String> liveData = navController.getCurrentBackStackEntry()
                                                             .getSavedStateHandle()
                                                             .getLiveData("key");
-      liveData.observe(getViewLifecycleOwner(), new Observer<String>() {
-         @Override
-         public void onChanged(String s) {
-            // Do something with the result.
-            Toast.makeText(getContext(), s, Toast.LENGTH_LONG).show();
-         }
+      liveData.observe(getViewLifecycleOwner(), s -> {
+         // Do something with the result.
+         Toast.makeText(getContext(), s, Toast.LENGTH_LONG).show();
       });
 
    }
@@ -160,15 +119,12 @@ public class BookDetailNewFragment extends BaseFragment implements IBackPressLis
    {
       BookDetailNewFragmentDirections.ActionBookDetailNewFragmentToEditBookFragment action = BookDetailNewFragmentDirections.actionBookDetailNewFragmentToEditBookFragment();
       action.setBookID(iBookID);
-//            action.setIsCopy(false);
       Navigation.findNavController(view).navigate(action);
    }
 
    private long getBookID()
    {
-//      iBookID = getIntent().getLongExtra(BookDetailFragment.ARG_ITEM_ID, 0);
       if(getArguments() != null)
-//         return getArguments().getLong(BookDetailFragment.ARG_ITEM_ID);
          return BookDetailNewFragmentArgs.fromBundle(getArguments()).getBookID();
       return 0;
    }
@@ -177,9 +133,6 @@ public class BookDetailNewFragment extends BaseFragment implements IBackPressLis
    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater)
    {
       inflater.inflate(R.menu.menu_details, menu);
-
-
-//      return true;
    }
 
    @Override
@@ -201,21 +154,13 @@ public class BookDetailNewFragment extends BaseFragment implements IBackPressLis
             return true;
 
          case R.id.action_duplicate:
-//            Intent intent = new Intent(getContext(), EditBookActivity.class);
-//            intent.putExtra(EditBookActivity.BOOK_ID, iBookID);
-//            intent.putExtra(EditBookActivity.IS_COPY, true);
-//            startActivityForResult(intent, BookListActivity.SHOW_EDIT_BOOK_COPY);
-
             openBookCopy();
-
             return true;
 
          case R.id.action_delete:
             deleteBook();
-
             resultCode = Activity.RESULT_OK;
             close();
-
             return true;
 
          default:
