@@ -20,8 +20,8 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
    private SparseIntArray expandMap = new SparseIntArray();
    private int mode;
    
-   static final int TYPE_HEADER = 1000,
-                    TYPE_ITEM = 1001;
+   public static final int TYPE_HEADER = 1000,
+                            TYPE_ITEM = 1001;
 
    private static final int MODE_ACCORDION = 1;
 
@@ -74,14 +74,7 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
       {
          super(view);
 
-         view.setOnClickListener(new View.OnClickListener()
-         {
-            @Override
-            public void onClick(View v)
-            {
-               handleClick();
-            }
-         });
+         view.setOnClickListener(v -> handleClick());
       }
 
       void handleClick()

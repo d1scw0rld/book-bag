@@ -1,6 +1,5 @@
 package org.d1scw0rld.bookbag;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,7 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 /**
- * A fragment representing a single Book detail screen.
+ * A fragment representing a single book detail screen.
  * This fragment is either contained in a {@link BookListActivity}
  * in two-pane mode (on tablets) or a {@link BookDetailNewFragment}
  * on handsets.
@@ -35,13 +34,13 @@ public class BookDetailFragment extends Fragment
 
    private BookDetailFieldsFactory bookDetailFieldsFactory;
 
-   /**
-    * Mandatory empty constructor for the fragment manager to instantiate the
-    * fragment (e.g. upon screen orientation changes).
-    */
-   public BookDetailFragment()
-   {
-   }
+//   /**
+//    * Mandatory empty constructor for the fragment manager to instantiate the
+//    * fragment (e.g. upon screen orientation changes).
+//    */
+//   public BookDetailFragment()
+//   {
+//   }
 
    @Override
    public void onCreate(Bundle savedInstanceState)
@@ -55,22 +54,18 @@ public class BookDetailFragment extends Fragment
 
       if(getArguments() != null && getArguments().containsKey(BOOK_ID))
       {
-         // Load the dummy content specified by the fragment
-         // arguments. In a real-world scenario, use a Loader
-         // to load content from a content provider.
-         //         long id = getArguments().getLong(ARG_ITEM_ID);
          book = dbAdapter.getBook(getArguments().getLong(BOOK_ID));
 
-         Activity activity = this.getActivity();
-         CollapsingToolbarLayout appBarLayout = null;
-         if(activity != null)
-         {
-            appBarLayout = activity.findViewById(R.id.toolbar_layout);
-         }
-         if(appBarLayout != null)
-         {
-            appBarLayout.setTitle(book.csTitle.value);
-         }
+//         Activity activity = this.getActivity();
+//         CollapsingToolbarLayout appBarLayout = null;
+//         if(activity != null)
+//         {
+//            appBarLayout = activity.findViewById(R.id.toolbar_layout);
+//         }
+//         if(appBarLayout != null)
+//         {
+//            appBarLayout.setTitle(book.csTitle.value);
+//         }
 
          bookDetailFieldsFactory = new BookDetailFieldsFactory(getContext(), dbAdapter, book);
       }
@@ -86,6 +81,11 @@ public class BookDetailFragment extends Fragment
    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
    {
       super.onViewCreated(view, savedInstanceState);
+
+      CollapsingToolbarLayout appBarLayout = requireActivity().findViewById(R.id.toolbar_layout);
+
+      if(appBarLayout != null)
+         appBarLayout.setTitle(book.csTitle.value);
 
       if (book != null)
       {

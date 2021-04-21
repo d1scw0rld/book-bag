@@ -20,7 +20,6 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Observer;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
@@ -29,7 +28,8 @@ import androidx.navigation.ui.NavigationUI;
 
 public class BookDetailNewFragment extends BaseFragment implements IBackPressListener
 {
-   private int resultCode = Activity.RESULT_CANCELED;
+   private static final String SAVED_BOOK_ID = "saved_book_id";
+   private int resultCode                 = Activity.RESULT_CANCELED;
    private long iBookID = 0;
    private ActionBar actionBar;
 
@@ -74,7 +74,10 @@ public class BookDetailNewFragment extends BaseFragment implements IBackPressLis
       View view = inflater.inflate(R.layout.activity_book_detail,container, false);
       setHasOptionsMenu(true);
 
-      iBookID = getBookID();
+      if(savedInstanceState != null)
+         iBookID = savedInstanceState.getLong(SAVED_BOOK_ID);
+      else
+         iBookID = getBookID();
 
       Toolbar toolbar = view.findViewById(R.id.detail_toolbar);
       toolbar.inflateMenu(R.menu.menu_details);
@@ -90,13 +93,20 @@ public class BookDetailNewFragment extends BaseFragment implements IBackPressLis
 //      NavigationUI.setupWithNavController(collapsibleActionView, NavHostFragment.findNavController(this));
 
 
-      FloatingActionButton fab = view.findViewById(R.id.fab);
+      FloatingActionButton fab = view.findViewById(R.id.fab_edit_book);
       fab.setOnClickListener(v -> navigateToEditBook(v));
 
       if (savedInstanceState == null)
          loadFragment(iBookID);
 
       return view;
+   }
+
+   @Override
+   public void onSaveInstanceState(@NonNull Bundle outState)
+   {
+      super.onSaveInstanceState(outState);
+      outState.putLong(SAVED_BOOK_ID, iBookID);
    }
 
    @Override

@@ -30,6 +30,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.SearchView;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.MutableLiveData;
 import androidx.navigation.NavController;
@@ -47,16 +48,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class BookListFragment extends BaseFragment
 {
-   public final static String IS_UPDATED = "isUpdated";
+   public final static String IS_UPDATED = "is_updated";
 
 //   public final static int SHOW_EDIT_BOOK = 101,
 //         SHOW_EDIT_BOOK_COPY = 102;
 
    private final static String PREF_ORDER_ID = "order_id",
-         PREF_EXPAND_ALL = "pref_expand_all",
-         PREF_EXPORT_FOLDER = "pref_export_folder";
+         PREF_EXPAND_ALL                     = "pref_expand_all",
+         PREF_EXPORT_FOLDER                  = "pref_export_folder";
 
-   private final String[] mFileFilter = { "*.*", ".db" };
+   private final String[] mFileFilter = {"*.*",
+                                         ".db"};
 
    private final ArrayList<OrderItem> alOrderItems = new ArrayList<>();
 
@@ -65,18 +67,18 @@ public class BookListFragment extends BaseFragment
     * Whether or not the activity is in two-pane mode, i.e. running on a tablet
     * device.
     */
-                  isTwoPane,
-                  isUpdated = true;
+   isTwoPane,
+         isUpdated = true;
 
-   private int iOrderID = DBAdapter.SRT_TTL,
-               iClickedItemNdx = -1;
+   private int iOrderID  = DBAdapter.SRT_TTL,
+         iClickedItemNdx = -1;
 
    private long bookID;
 
    private String sExportFolderAbsPath;
 
    private TextView tvBooksOrder,
-                    tvBooksCount;
+         tvBooksCount;
 
    private DBAdapter dbAdapter = null;
 
@@ -94,72 +96,49 @@ public class BookListFragment extends BaseFragment
 
    private FileSelectorDialog fileSelectorDialog;
 
+   private final View.OnClickListener onCategoryClickListener = v -> unselectBook();
 
-   private final View.OnClickListener onRecyclerViewClickListener = new View.OnClickListener()
-   {
-      @Override
-      public void onClick(View v)
-      {
-         iClickedItemNdx = recyclerView.getChildLayoutPosition(v);
-         bookID = booksAdapter.getItemId(iClickedItemNdx);
+   private final View.OnClickListener onBookClickListener = v -> {
+         //            fab.setVisibility(View.GONE);
+
+         getSelectedBook(v);
 
          if(mActionMode != null)
             mActionMode.finish();
 
+
          if(isTwoPane)
          {
-            Bundle arguments = new Bundle();
-            arguments.putLong(BookDetailFragment.BOOK_ID, bookID);
-            BookDetailFragment fragment = new BookDetailFragment();
-            fragment.setArguments(arguments);
-            v.setSelected(true);
-            if(vSelected != null && !vSelected.equals(v))
-               vSelected.setSelected(false);
-            vSelected = v;
-            requireActivity().getSupportFragmentManager().beginTransaction()
-                                       .replace(R.id.book_detail_container, fragment)
-                                       .commit();
+            selectBook(v);
+            showBookDetails();
          }
          else
-         {
-            NavDirections action = BookListFragmentDirections.actionBookListFragmentToBookDetailNewFragment(bookID);
-            Navigation.findNavController(v).navigate(action);
-         }
-      }
+            navigateToBookDetails(v);
    };
 
-   private final View.OnLongClickListener onRecyclerViewLongClickListener = new View.OnLongClickListener()
+
+   private final View.OnLongClickListener onBookLongClickListener = new View.OnLongClickListener()
    {
       @Override
       public boolean onLongClick(View v)
       {
-         iClickedItemNdx = recyclerView.getChildLayoutPosition(v);
-         bookID = booksAdapter.getItemId(iClickedItemNdx);
+         getSelectedBook(v);
+
          if(mActionMode != null)
             return false;
 
          // Start the CAB using the ActionMode.Callback defined above
          mActionMode = requireActivity().startActionMode(onActionModeCallback);
 
-         v.setSelected(true);
 
          if(isTwoPane)
          {
-            Bundle arguments = new Bundle();
-            arguments.putLong(BookDetailFragment.BOOK_ID, bookID);
-            BookDetailFragment fragment = new BookDetailFragment();
-            fragment.setArguments(arguments);
-            if(vSelected != null && !vSelected.equals(v))
-               vSelected.setSelected(false);
-            vSelected = v;
-            requireActivity().getSupportFragmentManager().beginTransaction()
-                                       .replace(R.id.book_detail_container, fragment)
-                                       .commit();
+            selectBook(v);
+            showBookDetails();
          }
          return true;
       }
    };
-
    private final ActionMode.Callback onActionModeCallback = new ActionMode.Callback()
    {
       // Called when the action mode is created; startActionMode() was called
@@ -211,7 +190,9 @@ public class BookListFragment extends BaseFragment
                                                                   booksAdapter.getAllChildrenCount()));
          }
          else
+         {
             return false;
+         }
 
          mode.finish(); // Action picked, so close the CAB
          return true;
@@ -232,7 +213,9 @@ public class BookListFragment extends BaseFragment
       {
          dbAdapter.close();
          if(dbAdapter.importDatabase(filePath))
+         {
             showToast(R.string.prf_imp_db_scs);
+         }
          dbAdapter.open();
          setupRecyclerView(recyclerView, iOrderID);
       }
@@ -241,13 +224,17 @@ public class BookListFragment extends BaseFragment
    private final OnHandleFileListener onSaveFileListener = filePath -> {
       dbAdapter.close();
       if(dbAdapter.exportDatabase(filePath))
+      {
          showToast(R.string.prf_xpr_db_scs);
+      }
       dbAdapter.open();
    };
 
    private final SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = (prefs, key) -> {
       if(key.equalsIgnoreCase(PREF_EXPAND_ALL))
+      {
          isExpandAll = preferences.getBoolean(PREF_EXPAND_ALL, false);
+      }
       if(key.equalsIgnoreCase(PREF_EXPORT_FOLDER))
       {
 //            sExportFolder = preferences.getString(PREF_EXPORT_FOLDER, getString(R.string.app_name));
@@ -287,10 +274,11 @@ public class BookListFragment extends BaseFragment
       tvBooksOrder = view.findViewById(R.id.tv_books_order);
       tvBooksCount = view.findViewById(R.id.tv_books_count);
 
-      FloatingActionButton fab = view.findViewById(R.id.fab);
+      FloatingActionButton fab = view.findViewById(R.id.fab_add_book);
       fab.setOnClickListener(v -> {
          NavDirections action = BookListFragmentDirections.actionBookListFragmentToEditBookFragment();
-         Navigation.findNavController(v).navigate(action);
+         Navigation.findNavController(v)
+                   .navigate(action);
       });
 
       if((recyclerView = view.findViewById(R.id.book_list)) != null)
@@ -300,7 +288,7 @@ public class BookListFragment extends BaseFragment
          recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
       }
 
-      if (view.findViewById(R.id.book_detail_container) != null)
+      if(view.findViewById(R.id.book_detail_container) != null)
       {
          // The detail container view will be present only in the
          // large-screen layouts (res/values-w900dp).
@@ -310,7 +298,6 @@ public class BookListFragment extends BaseFragment
       }
 
       NavController navController = NavHostFragment.findNavController(this);
-      // We use a String here, but any type that can be put in a Bundle is supported
       final MutableLiveData<Boolean> liveData = Objects.requireNonNull(navController.getCurrentBackStackEntry())
                                                        .getSavedStateHandle()
                                                        .getLiveData(IS_UPDATED);
@@ -327,7 +314,8 @@ public class BookListFragment extends BaseFragment
       {
          setupRecyclerView(recyclerView, iOrderID);
       }
-      requireContext().getTheme().applyStyle(R.style.AppTheme, true);
+      requireContext().getTheme()
+                      .applyStyle(R.style.AppTheme, true);
    }
 
    @Override
@@ -337,6 +325,7 @@ public class BookListFragment extends BaseFragment
 
       super.onPause();
    }
+
 
 //   @Override
 //   public void onActivityResult(int requestCode, int resultCode, Intent data)
@@ -367,12 +356,13 @@ public class BookListFragment extends BaseFragment
          {
             booksAdapter.expandAll();
             booksAdapter.filter(arg0);
-            tvBooksCount.setText(getResources().getQuantityString(R.plurals.books, booksAdapter.getAllChildrenCount(), booksAdapter.getAllChildrenCount()));
+            tvBooksCount.setText(getResources().getQuantityString(R.plurals.books,
+                                                                  booksAdapter.getAllChildrenCount(),
+                                                                  booksAdapter.getAllChildrenCount()));
             return true;
          }
       });
    }
-
    @Override
    public boolean onOptionsItemSelected(@NonNull MenuItem item)
    {
@@ -393,8 +383,12 @@ public class BookListFragment extends BaseFragment
    {
       File file = new File(sExportFolderAbsPath);
       if(!file.isDirectory())
+      {
          if(!file.mkdirs())
+         {
             throw new RuntimeException("Can't create export folder");
+         }
+      }
    }
 
    private void getOrderItems()
@@ -415,6 +409,7 @@ public class BookListFragment extends BaseFragment
 
    private boolean optionsItemSelect(MenuItem item)
    {
+      unselectBook();
       int itemId = item.getItemId();
       if(itemId == R.id.action_imp_db)
       {
@@ -447,6 +442,60 @@ public class BookListFragment extends BaseFragment
       return super.onOptionsItemSelected(item);
    }
 
+   private void getSelectedBook(View v)
+   {
+      iClickedItemNdx = recyclerView.getChildLayoutPosition(v);
+      bookID = booksAdapter.getItemId(iClickedItemNdx);
+      v.setSelected(true);
+   }
+
+   private void navigateToBookDetails(View v)
+   {
+      NavDirections action = BookListFragmentDirections.actionBookListFragmentToBookDetailNewFragment(bookID);
+      Navigation.findNavController(v)
+                .navigate(action);
+   }
+
+   private void selectBook(View v)
+   {
+      if(vSelected != null && !vSelected.equals(v))
+         vSelected.setSelected(false);
+      vSelected = v;
+   }
+
+   private void unselectBook()
+   {
+      if(vSelected != null)
+         vSelected.setSelected(false);
+
+      hideBookDetails();
+   }
+
+   private void showBookDetails()
+   {
+      Bundle arguments = new Bundle();
+      arguments.putLong(BookDetailFragment.BOOK_ID, bookID);
+      BookDetailFragment fragment = new BookDetailFragment();
+      fragment.setArguments(arguments);
+      requireActivity().getSupportFragmentManager()
+                       .beginTransaction()
+                       .replace(R.id.book_detail_container, fragment)
+                       .commit();
+   }
+
+   private void hideBookDetails()
+   {
+      Fragment fragment = requireActivity().getSupportFragmentManager()
+                                           .findFragmentById(R.id.book_detail_container);
+      if(fragment != null)
+      {
+         requireActivity().getSupportFragmentManager()
+                          .beginTransaction()
+                          .remove(fragment)
+                          .commit();
+      }
+   }
+
    private void showImportDbDialog()
    {
 //      Environment.getExternalStorageDirectory()
@@ -474,7 +523,7 @@ public class BookListFragment extends BaseFragment
 //                                      + sFileName);
 
       File exportFile = new File(sExportFolderAbsPath
-                                      + sFileName);
+                                       + sFileName);
       fileSelectorDialog = FileSelectorDialog.newInstance(exportFile,
                                                           FileOperation.SAVE,
                                                           onSaveFileListener,
@@ -487,21 +536,27 @@ public class BookListFragment extends BaseFragment
       Calendar calendar = Calendar.getInstance(Locale.getDefault());
       int iExtNdx = DBAdapter.DATABASE_NAME.lastIndexOf(".");
       return String.format(getString(R.string.fmt_fl_nm),
-                                       DBAdapter.DATABASE_NAME.substring(0, iExtNdx),
-                                       calendar.get(Calendar.YEAR),
-                                       calendar.get(Calendar.MONTH) + 1,
-                                       calendar.get(Calendar.DAY_OF_MONTH),
-                                       calendar.get(Calendar.HOUR_OF_DAY),
-                                       calendar.get(Calendar.MINUTE),
-                                       DBAdapter.DATABASE_NAME.substring(iExtNdx+1));
+                           DBAdapter.DATABASE_NAME.substring(0, iExtNdx),
+                           calendar.get(Calendar.YEAR),
+                           calendar.get(Calendar.MONTH) + 1,
+                           calendar.get(Calendar.DAY_OF_MONTH),
+                           calendar.get(Calendar.HOUR_OF_DAY),
+                           calendar.get(Calendar.MINUTE),
+                           DBAdapter.DATABASE_NAME.substring(iExtNdx + 1));
    }
 
    private void showOrderPopupMenu(View view)
    {
       PopupMenu popupMenu = new PopupMenu(requireContext(), view);
-      for(OrderItem orderItem: alOrderItems)
-         popupMenu.getMenu().add(1, orderItem.iID, 0, orderItem.sTitle).setCheckable(true).setChecked(orderItem.iID == iOrderID);
-      popupMenu.getMenu().setGroupCheckable(1, true, true);
+      for(OrderItem orderItem : alOrderItems)
+      {
+         popupMenu.getMenu()
+                  .add(1, orderItem.iID, 0, orderItem.sTitle)
+                  .setCheckable(true)
+                  .setChecked(orderItem.iID == iOrderID);
+      }
+      popupMenu.getMenu()
+               .setGroupCheckable(1, true, true);
       popupMenu.setOnMenuItemClickListener(menuItem -> {
          iOrderID = menuItem.getItemId();
          saveOrderID(iOrderID);
@@ -514,17 +569,24 @@ public class BookListFragment extends BaseFragment
    private void setupRecyclerView(@NonNull RecyclerView recyclerView, int iOrderID)
    {
       booksAdapter = new BooksAdapter(getContext(), dbAdapter.getBooks(iOrderID));
-      booksAdapter.setClickListener(onRecyclerViewClickListener);
-      booksAdapter.setLongClickListener(onRecyclerViewLongClickListener);
+      booksAdapter.setBookClickListener(onBookClickListener);
+      booksAdapter.setBookLongClickListener(onBookLongClickListener);
+      booksAdapter.setHeaderClickListener(onCategoryClickListener);
       if(isExpandAll)
+      {
          booksAdapter.expandAll();
+      }
       recyclerView.setAdapter(booksAdapter);
       for(OrderItem oOrderItem : alOrderItems)
+      {
          if(oOrderItem.iID == iOrderID)
          {
             tvBooksOrder.setText(oOrderItem.sTitle);
-            tvBooksCount.setText(getResources().getQuantityString(R.plurals.books, booksAdapter.getAllChildrenCount(), booksAdapter.getAllChildrenCount()));
+            tvBooksCount.setText(getResources().getQuantityString(R.plurals.books,
+                                                                  booksAdapter.getAllChildrenCount(),
+                                                                  booksAdapter.getAllChildrenCount()));
          }
+      }
    }
 
    private void loadPreferences()
@@ -540,7 +602,8 @@ public class BookListFragment extends BaseFragment
       BookListFragmentDirections.ActionBookListFragmentToEditBookFragment actionBookListFragmentToEditBookFragment = BookListFragmentDirections.actionBookListFragmentToEditBookFragment();
       actionBookListFragmentToEditBookFragment.setBookID(iBookID);
       actionBookListFragmentToEditBookFragment.setIsCopy(isCopy);
-      Navigation.findNavController(requireView()).navigate(actionBookListFragmentToEditBookFragment);
+      Navigation.findNavController(requireView())
+                .navigate(actionBookListFragmentToEditBookFragment);
    }
 
    private void saveOrderID(int iOrderID)
@@ -554,7 +617,7 @@ public class BookListFragment extends BaseFragment
 
    private static class OrderItem
    {
-      int iID;
+      int    iID;
       String sTitle;
 
       OrderItem(int iID, String sTitle)

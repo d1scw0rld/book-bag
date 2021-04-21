@@ -1,8 +1,10 @@
 package org.d1scw0rld.bookbag.dto;
 
 import android.content.Context;
+
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -25,14 +27,14 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
    private static final float INITIAL_POSITION = 0f,
                               ROTATED_POSITION = 180f;
    private int iAllChildrenCount;
-   
-   private String sFilter = "";
-   
-   private final ArrayList<BookListItem> alListItemsNotFiltered;
-   
-   private OnClickListener onClickListener = null;
 
-   private OnLongClickListener onLongClickListener = null;
+   private String sFilter = "";
+
+   private final ArrayList<BookListItem> alListItemsNotFiltered;
+
+   private OnClickListener onBookClickListener = null;
+   private OnLongClickListener onBookLongClickListener = null;
+   private OnClickListener onHeaderClickListener   = null;
 
    public BooksAdapter(Context context, ArrayList<ParentResult> alParentsResults)
    {
@@ -40,7 +42,6 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
 
       setItems(generateItems(alParentsResults));
       alListItemsNotFiltered = new ArrayList<>(allItems);
-//      alListItemsNotFiltered.addAll(allItems);
    }
 
    @Override
@@ -53,21 +54,29 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
    {
       iAllChildrenCount = 0;
       List<BookListItem> items = new ArrayList<>();
-      for(ParentResult oParentResult : alParentsResults)
+      for(ParentResult parentResult : alParentsResults)
       {
-         items.add(new BookListItem(oParentResult.getName()));
-         iAllChildrenCount += oParentResult.getChildList().size();
-         for(Result result : oParentResult.getChildList())
+         items.add(new BookListItem(parentResult.getName()));
+         iAllChildrenCount += parentResult.getChildList()
+                                           .size();
+         for(Result result : parentResult.getChildList())
+         {
             items.add(new BookListItem(result.id, result.content));
+         }
       }
 
       return items;
    }
 
+   public void setHeaderClickListener(OnClickListener onHeaderClickListener)
+   {
+      this.onHeaderClickListener = onHeaderClickListener;
+   }
+
    public static class BookListItem extends ExpandableRecyclerAdapter.ListItem
    {
       public long id = -1;
-      
+
       BookListItem(String group)
       {
          super(TYPE_HEADER, group);
@@ -83,6 +92,8 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
 
    public class HeaderViewHolder extends ExpandableRecyclerAdapter<BookListItem>.HeaderViewHolder
    {
+      View view;
+
       TextView name;
 
       private final ImageView arrow;
@@ -90,9 +101,10 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
       HeaderViewHolder(View view)
       {
          super(view);
-         
+
          arrow = view.findViewById(R.id.iv_arrow);
          name = view.findViewById(R.id.tv_header);
+         this.view = view;
       }
 
       public void bind(int position)
@@ -101,55 +113,51 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
 
          name.setText(visibleItems.get(position).sText);
       }
-      
+
       @Override
       public void setExpanded(boolean expanded)
       {
          super.setExpanded(expanded);
-//         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
          arrow.setRotation(expanded ? ROTATED_POSITION : INITIAL_POSITION);
-      }      
-      
+      }
+
       @Override
       public void onExpansionToggled(boolean expanded)
       {
-//         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-//         {
-            RotateAnimation rotateAnimation;
-            if(expanded)
-            { 
-               // rotate counterclockwise
-               rotateAnimation = new RotateAnimation(ROTATED_POSITION,
-                                                     INITIAL_POSITION,
-                                                     RotateAnimation.RELATIVE_TO_SELF,
-                                                     0.5f,
-                                                     RotateAnimation.RELATIVE_TO_SELF,
-                                                     0.5f);
+         RotateAnimation rotateAnimation;
+         if(expanded)
+         {
+            // rotate counterclockwise
+            rotateAnimation = new RotateAnimation(ROTATED_POSITION,
+                                                  INITIAL_POSITION,
+                                                  RotateAnimation.RELATIVE_TO_SELF,
+                                                  0.5f,
+                                                  RotateAnimation.RELATIVE_TO_SELF,
+                                                  0.5f);
 
-            }
-            else
-            {
-               // rotate clockwise
-               rotateAnimation = new RotateAnimation(-1 * ROTATED_POSITION,
-                                                     INITIAL_POSITION,
-                                                     RotateAnimation.RELATIVE_TO_SELF,
-                                                     0.5f,
-                                                     RotateAnimation.RELATIVE_TO_SELF,
-                                                     0.5f);
-
-            }
-
-            rotateAnimation.setDuration(200);
-            rotateAnimation.setFillAfter(true);
-            arrow.startAnimation(rotateAnimation);
          }
-//      }
+         else
+         {
+            // rotate clockwise
+            rotateAnimation = new RotateAnimation(-1 * ROTATED_POSITION,
+                                                  INITIAL_POSITION,
+                                                  RotateAnimation.RELATIVE_TO_SELF,
+                                                  0.5f,
+                                                  RotateAnimation.RELATIVE_TO_SELF,
+                                                  0.5f);
+
+         }
+
+         rotateAnimation.setDuration(200);
+         rotateAnimation.setFillAfter(true);
+         arrow.startAnimation(rotateAnimation);
+      }
    }
 
    public class ItemViewHolder extends ExpandableRecyclerAdapter<BookListItem>.ViewHolder
    {
       public View view;
-      
+
       TextView name;
 
       ItemViewHolder(View view)
@@ -164,19 +172,22 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
       {
          String sText = visibleItems.get(position).sText;
          Spannable spContent = new SpannableString(sText);
-         int iFilteredStart = sText.toLowerCase(Locale.getDefault()).indexOf(sFilter.toLowerCase(Locale.getDefault()));
+         int iFilteredStart = sText.toLowerCase(Locale.getDefault())
+                                   .indexOf(sFilter.toLowerCase(Locale.getDefault()));
          int iFilterEnd;
          if(iFilteredStart < 0)
          {
             iFilteredStart = 0;
             iFilterEnd = 0;
-         } 
+         }
          else
+         {
             iFilterEnd = iFilteredStart + sFilter.length();
+         }
          spContent.setSpan(new ForegroundColorSpan(ContextCompat.getColor(mContext, R.color.accent)),
-                                                   iFilteredStart, 
-                                                   iFilterEnd,
-                                                   Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                           iFilteredStart,
+                           iFilterEnd,
+                           Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
          name.setText(spContent);
       }
    }
@@ -185,7 +196,7 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
    @Override
    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
    {
-      switch (viewType)
+      switch(viewType)
       {
          case TYPE_HEADER:
             return new HeaderViewHolder(inflate(R.layout.item_header, parent));
@@ -199,17 +210,21 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
    public void onBindViewHolder(@NonNull ExpandableRecyclerAdapter<BookListItem>.ViewHolder holder,
                                 int position)
    {
-      switch (getItemViewType(position))
+      switch(getItemViewType(position))
       {
          case TYPE_HEADER:
             ((HeaderViewHolder) holder).bind(position);
-         break;
+            ((HeaderViewHolder) holder).view.setOnClickListener(v-> {
+               onHeaderClickListener.onClick(v);
+               ((HeaderViewHolder) holder).handleClick();
+            });
+            break;
          case TYPE_ITEM:
          default:
             ((ItemViewHolder) holder).bind(position);
-            ((ItemViewHolder) holder).view.setOnClickListener(onClickListener);
-            ((ItemViewHolder) holder).view.setOnLongClickListener(onLongClickListener);
-         break;
+            ((ItemViewHolder) holder).view.setOnClickListener(onBookClickListener);
+            ((ItemViewHolder) holder).view.setOnLongClickListener(onBookLongClickListener);
+            break;
       }
    }
 
@@ -224,38 +239,47 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
       if(charText.length() == 0)
       {
          setItems(alListItemsNotFiltered);
-         for(ListItem oListItem : alListItemsNotFiltered)
-            if(oListItem.ItemType == TYPE_ITEM)
-               iAllChildrenCount++;
-      } 
-      else
-      {
-         for(BookListItem oBookListItem : alListItemsNotFiltered)
+         for(ListItem listItem : alListItemsNotFiltered)
          {
-            if(oBookListItem.ItemType == TYPE_HEADER || oBookListItem.sText.toLowerCase(Locale.getDefault()).contains(charText))
+            if(listItem.ItemType == TYPE_ITEM)
             {
-               /*
-                * If the last and the next items are headers remove the last item - it has not subitems  
-                */
-               
-               if(oBookListItem.ItemType == TYPE_HEADER 
-                  && alBookListItemsTmp.size() > 0 
-                  && alBookListItemsTmp.get(alBookListItemsTmp.size()-1).ItemType == TYPE_HEADER)
-                  alBookListItemsTmp.remove(alBookListItemsTmp.size()-1);
-               if(oBookListItem.ItemType == TYPE_ITEM)
-                  iAllChildrenCount++;
-               alBookListItemsTmp.add(oBookListItem);
+               iAllChildrenCount++;
             }
          }
-         if(alBookListItemsTmp.size() > 0 
-            && alBookListItemsTmp.get(alBookListItemsTmp.size()-1).ItemType == TYPE_HEADER)
-            alBookListItemsTmp.remove(alBookListItemsTmp.size()-1);
+      }
+      else
+      {
+         for(BookListItem bookListItem : alListItemsNotFiltered)
+         {
+            if(bookListItem.ItemType == TYPE_HEADER || bookListItem.sText.toLowerCase(Locale.getDefault())
+                                                                         .contains(charText))
+            {
+               /*
+                * If the last and the next items are headers remove the last item - it has not subitems
+                */
+
+               if(bookListItem.ItemType == TYPE_HEADER
+                     && alBookListItemsTmp.size() > 0
+                     && alBookListItemsTmp.get(alBookListItemsTmp.size() - 1).ItemType == TYPE_HEADER)
+               {
+                  alBookListItemsTmp.remove(alBookListItemsTmp.size() - 1);
+               }
+               if(bookListItem.ItemType == TYPE_ITEM)
+               {
+                  iAllChildrenCount++;
+               }
+               alBookListItemsTmp.add(bookListItem);
+            }
+         }
+         if(alBookListItemsTmp.size() > 0
+               && alBookListItemsTmp.get(alBookListItemsTmp.size() - 1).ItemType == TYPE_HEADER)
+         {
+            alBookListItemsTmp.remove(alBookListItemsTmp.size() - 1);
+         }
          setItems(alBookListItemsTmp);
       }
-      
+
       expandAll();
-      
-//      notifyDataSetChanged();
    }
 
    public int getAllChildrenCount()
@@ -263,14 +287,14 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
       return iAllChildrenCount;
    }
 
-   public void setClickListener(OnClickListener onClickListener)
+   public void setBookClickListener(OnClickListener onClickListener)
    {
-      this.onClickListener = onClickListener;
+      this.onBookClickListener = onClickListener;
    }
 
-   public void setLongClickListener(OnLongClickListener onLongClickListener)
+   public void setBookLongClickListener(OnLongClickListener onLongClickListener)
    {
-      this.onLongClickListener = onLongClickListener;
+      this.onBookLongClickListener = onLongClickListener;
    }
 
    public void removeAt(int iClickedItemNdx)
@@ -284,12 +308,9 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
    {
       alListItemsNotFiltered.remove(visibleItems.get(visiblePosition));
       super.removeItemAt(visiblePosition);
-      if(visibleItems.get(visiblePosition-1).ItemType == TYPE_HEADER && (visiblePosition == visibleItems.size() || visibleItems.get(visiblePosition).ItemType == TYPE_HEADER))
-         super.removeItemAt(visiblePosition-1);
+      if(visibleItems.get(visiblePosition - 1).ItemType == TYPE_HEADER && (visiblePosition == visibleItems.size() || visibleItems.get(visiblePosition).ItemType == TYPE_HEADER))
+      {
+         super.removeItemAt(visiblePosition - 1);
+      }
    }
-   
-//   public boolean isExpandAll()
-//   {
-//      return visibleItems.size() == allItems.size();
-//   }
 }
