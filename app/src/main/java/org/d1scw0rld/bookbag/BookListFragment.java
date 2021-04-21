@@ -86,7 +86,7 @@ public class BookListFragment extends BaseFragment
 
    private SharedPreferences preferences;
 
-   private View vSelected = null;
+   private View selectedBookView = null;
 
    private RecyclerView recyclerView;
 
@@ -96,7 +96,7 @@ public class BookListFragment extends BaseFragment
 
    private FileSelectorDialog fileSelectorDialog;
 
-   private final View.OnClickListener onCategoryClickListener = v -> unselectBook();
+   private final View.OnClickListener onCategoryClickListener = v -> unselectBookView();
 
    private final View.OnClickListener onBookClickListener = v -> {
          //            fab.setVisibility(View.GONE);
@@ -109,7 +109,7 @@ public class BookListFragment extends BaseFragment
 
          if(isTwoPane)
          {
-            selectBook(v);
+            selectBookView(v);
             showBookDetails();
          }
          else
@@ -133,7 +133,7 @@ public class BookListFragment extends BaseFragment
 
          if(isTwoPane)
          {
-            selectBook(v);
+            selectBookView(v);
             showBookDetails();
          }
          return true;
@@ -170,7 +170,7 @@ public class BookListFragment extends BaseFragment
 //            intent.putExtra(EditBookActivity.BOOK_ID, bookID);
 //            startActivityForResult(intent, SHOW_EDIT_BOOK);
 
-            openEditBook(bookID, false);
+            navigateToEditBook(requireView(), bookID, false);
          }
          else if(itemId == R.id.action_duplicate)
          {
@@ -179,15 +179,11 @@ public class BookListFragment extends BaseFragment
 //            duplicateBookIntent.putExtra(EditBookActivity.IS_COPY, true);
 //            startActivityForResult(duplicateBookIntent, SHOW_EDIT_BOOK_COPY);
 
-            openEditBook(bookID, true);
+            navigateToEditBook(requireView(), bookID, true);
          }
          else if(itemId == R.id.action_delete)
          {
-            dbAdapter.deleteBook(bookID);
-            booksAdapter.removeAt(iClickedItemNdx);
-            tvBooksCount.setText(getResources().getQuantityString(R.plurals.books,
-                                                                  booksAdapter.getAllChildrenCount(),
-                                                                  booksAdapter.getAllChildrenCount()));
+            deleteBook();
          }
          else
          {
@@ -205,6 +201,16 @@ public class BookListFragment extends BaseFragment
          mActionMode = null;
       }
    };
+
+   private void deleteBook()
+   {
+      dbAdapter.deleteBook(bookID);
+      booksAdapter.removeAt(iClickedItemNdx);
+      tvBooksCount.setText(getResources().getQuantityString(R.plurals.books,
+                                                            booksAdapter.getAllChildrenCount(),
+                                                            booksAdapter.getAllChildrenCount()));
+      unselectBookView();
+   }
 
    private final OnHandleFileListener onLoadFileListener = new OnHandleFileListener()
    {
@@ -275,11 +281,7 @@ public class BookListFragment extends BaseFragment
       tvBooksCount = view.findViewById(R.id.tv_books_count);
 
       FloatingActionButton fab = view.findViewById(R.id.fab_add_book);
-      fab.setOnClickListener(v -> {
-         NavDirections action = BookListFragmentDirections.actionBookListFragmentToEditBookFragment();
-         Navigation.findNavController(v)
-                   .navigate(action);
-      });
+      fab.setOnClickListener(this::navigateToEditBook);
 
       if((recyclerView = view.findViewById(R.id.book_list)) != null)
       {
@@ -327,6 +329,7 @@ public class BookListFragment extends BaseFragment
    }
 
 
+
 //   @Override
 //   public void onActivityResult(int requestCode, int resultCode, Intent data)
 //   {
@@ -334,7 +337,6 @@ public class BookListFragment extends BaseFragment
 //
 //      bUpdate = resultCode == RESULT_OK;
 //   }
-
    @Override
    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater)
    {
@@ -363,6 +365,7 @@ public class BookListFragment extends BaseFragment
          }
       });
    }
+
    @Override
    public boolean onOptionsItemSelected(@NonNull MenuItem item)
    {
@@ -370,7 +373,6 @@ public class BookListFragment extends BaseFragment
       return NavigationUI.onNavDestinationSelected(item, navController)
             || optionsItemSelect(item);
    }
-
    @SuppressWarnings("deprecation")
    private String getExportFolderAbsPath(String sExportFolder)
    {
@@ -409,7 +411,7 @@ public class BookListFragment extends BaseFragment
 
    private boolean optionsItemSelect(MenuItem item)
    {
-      unselectBook();
+      unselectBookView();
       int itemId = item.getItemId();
       if(itemId == R.id.action_imp_db)
       {
@@ -456,17 +458,34 @@ public class BookListFragment extends BaseFragment
                 .navigate(action);
    }
 
-   private void selectBook(View v)
+   private void navigateToEditBook(View v)
    {
-      if(vSelected != null && !vSelected.equals(v))
-         vSelected.setSelected(false);
-      vSelected = v;
+      NavDirections action = BookListFragmentDirections.actionBookListFragmentToEditBookFragment();
+      Navigation.findNavController(v)
+                .navigate(action);
    }
 
-   private void unselectBook()
+   private void navigateToEditBook(View v, long iBookID, boolean isCopy)
    {
-      if(vSelected != null)
-         vSelected.setSelected(false);
+//      NavDirections action = BookListFragmentDirections.actionBookListFragmentToEditBookFragment(iBookID, isCopy);
+      BookListFragmentDirections.ActionBookListFragmentToEditBookFragment actionBookListFragmentToEditBookFragment = BookListFragmentDirections.actionBookListFragmentToEditBookFragment();
+      actionBookListFragmentToEditBookFragment.setBookID(iBookID);
+      actionBookListFragmentToEditBookFragment.setIsCopy(isCopy);
+      Navigation.findNavController(v)
+                .navigate(actionBookListFragmentToEditBookFragment);
+   }
+
+   private void selectBookView(View v)
+   {
+      if(selectedBookView != null && !selectedBookView.equals(v))
+         selectedBookView.setSelected(false);
+      selectedBookView = v;
+   }
+
+   private void unselectBookView()
+   {
+      if(selectedBookView != null)
+         selectedBookView.setSelected(false);
 
       hideBookDetails();
    }
@@ -597,15 +616,6 @@ public class BookListFragment extends BaseFragment
       sExportFolderAbsPath = getExportFolderAbsPath(preferences.getString(PREF_EXPORT_FOLDER, getString(R.string.app_name)));
    }
 
-   private void openEditBook(long iBookID, boolean isCopy)
-   {
-      BookListFragmentDirections.ActionBookListFragmentToEditBookFragment actionBookListFragmentToEditBookFragment = BookListFragmentDirections.actionBookListFragmentToEditBookFragment();
-      actionBookListFragmentToEditBookFragment.setBookID(iBookID);
-      actionBookListFragmentToEditBookFragment.setIsCopy(isCopy);
-      Navigation.findNavController(requireView())
-                .navigate(actionBookListFragmentToEditBookFragment);
-   }
-
    private void saveOrderID(int iOrderID)
    {
       SharedPreferences.Editor editor = preferences.edit();
@@ -614,9 +624,9 @@ public class BookListFragment extends BaseFragment
 
       editor.apply();
    }
-
    private static class OrderItem
    {
+
       int    iID;
       String sTitle;
 
@@ -625,6 +635,6 @@ public class BookListFragment extends BaseFragment
          this.iID = iID;
          this.sTitle = sTitle;
       }
-   }
 
+   }
 }
