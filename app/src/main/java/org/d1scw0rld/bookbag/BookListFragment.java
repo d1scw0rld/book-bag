@@ -44,18 +44,13 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-//import android.support.v7.view.ActionMode;
-
 public class BookListFragment extends BaseFragment
 {
    public final static String IS_UPDATED = "is_updated";
 
-//   public final static int SHOW_EDIT_BOOK = 101,
-//         SHOW_EDIT_BOOK_COPY = 102;
-
    private final static String PREF_ORDER_ID = "order_id",
-         PREF_EXPAND_ALL                     = "pref_expand_all",
-         PREF_EXPORT_FOLDER                  = "pref_export_folder";
+                               PREF_EXPAND_ALL = "pref_expand_all",
+                               PREF_EXPORT_FOLDER = "pref_export_folder";
 
    private final String[] mFileFilter = {"*.*",
                                          ".db"};
@@ -67,11 +62,11 @@ public class BookListFragment extends BaseFragment
     * Whether or not the activity is in two-pane mode, i.e. running on a tablet
     * device.
     */
-   isTwoPane,
-         isUpdated = true;
+                   isTwoPane,
+                   isUpdated = true;
 
    private int iOrderID  = DBAdapter.SRT_TTL,
-         iClickedItemNdx = -1;
+               iClickedItemNdx = -1;
 
    private long bookID;
 
@@ -90,21 +85,19 @@ public class BookListFragment extends BaseFragment
 
    private RecyclerView recyclerView;
 
-   private ActionMode mActionMode;
+   private ActionMode actionMode;
 
    private FragmentManager fragmentManager;
 
    private FileSelectorDialog fileSelectorDialog;
 
-   private final View.OnClickListener onCategoryClickListener = v -> unselectBookView();
+   private final View.OnClickListener onCategoryClickListener = v -> deselectBookView();
 
    private final View.OnClickListener onBookClickListener = v -> {
-         //            fab.setVisibility(View.GONE);
-
          getSelectedBook(v);
 
-         if(mActionMode != null)
-            mActionMode.finish();
+         if(actionMode != null)
+            actionMode.finish();
 
 
          if(isTwoPane)
@@ -116,7 +109,6 @@ public class BookListFragment extends BaseFragment
             navigateToBookDetails(v);
    };
 
-
    private final View.OnLongClickListener onBookLongClickListener = new View.OnLongClickListener()
    {
       @Override
@@ -124,12 +116,11 @@ public class BookListFragment extends BaseFragment
       {
          getSelectedBook(v);
 
-         if(mActionMode != null)
+         if(actionMode != null)
             return false;
 
          // Start the CAB using the ActionMode.Callback defined above
-         mActionMode = requireActivity().startActionMode(onActionModeCallback);
-
+         actionMode = requireActivity().startActionMode(onActionModeCallback);
 
          if(isTwoPane)
          {
@@ -165,30 +156,13 @@ public class BookListFragment extends BaseFragment
       {
          int itemId = item.getItemId();
          if(itemId == R.id.action_edit)
-         {
-//            Intent intent = new Intent(getContext(), EditBookActivity.class);
-//            intent.putExtra(EditBookActivity.BOOK_ID, bookID);
-//            startActivityForResult(intent, SHOW_EDIT_BOOK);
-
             navigateToEditBook(requireView(), bookID, false);
-         }
          else if(itemId == R.id.action_duplicate)
-         {
-//            Intent duplicateBookIntent = new Intent(getContext(), EditBookActivity.class);
-//            duplicateBookIntent.putExtra(EditBookActivity.BOOK_ID, bookID);
-//            duplicateBookIntent.putExtra(EditBookActivity.IS_COPY, true);
-//            startActivityForResult(duplicateBookIntent, SHOW_EDIT_BOOK_COPY);
-
             navigateToEditBook(requireView(), bookID, true);
-         }
          else if(itemId == R.id.action_delete)
-         {
             deleteBook();
-         }
          else
-         {
             return false;
-         }
 
          mode.finish(); // Action picked, so close the CAB
          return true;
@@ -198,7 +172,7 @@ public class BookListFragment extends BaseFragment
       @Override
       public void onDestroyActionMode(ActionMode mode)
       {
-         mActionMode = null;
+         actionMode = null;
       }
    };
 
@@ -209,7 +183,7 @@ public class BookListFragment extends BaseFragment
       tvBooksCount.setText(getResources().getQuantityString(R.plurals.books,
                                                             booksAdapter.getAllChildrenCount(),
                                                             booksAdapter.getAllChildrenCount()));
-      unselectBookView();
+      deselectBookAndHideDetails();
    }
 
    private final OnHandleFileListener onLoadFileListener = new OnHandleFileListener()
@@ -219,9 +193,7 @@ public class BookListFragment extends BaseFragment
       {
          dbAdapter.close();
          if(dbAdapter.importDatabase(filePath))
-         {
             showToast(R.string.prf_imp_db_scs);
-         }
          dbAdapter.open();
          setupRecyclerView(recyclerView, iOrderID);
       }
@@ -243,7 +215,6 @@ public class BookListFragment extends BaseFragment
       }
       if(key.equalsIgnoreCase(PREF_EXPORT_FOLDER))
       {
-//            sExportFolder = preferences.getString(PREF_EXPORT_FOLDER, getString(R.string.app_name));
          sExportFolderAbsPath = getExportFolderAbsPath(preferences.getString(PREF_EXPORT_FOLDER, getString(R.string.app_name)));
          checkCreateExportFolder(sExportFolderAbsPath);
       }
@@ -253,7 +224,7 @@ public class BookListFragment extends BaseFragment
    @Override
    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
    {
-      View view = inflater.inflate(R.layout.activity_book_list, container, false);
+      View view = inflater.inflate(R.layout.fragment_book_list, container, false);
       setHasOptionsMenu(true);
 
       fragmentManager = requireActivity().getSupportFragmentManager();
@@ -313,9 +284,7 @@ public class BookListFragment extends BaseFragment
 
       dbAdapter.open();
       if(isUpdated)
-      {
          setupRecyclerView(recyclerView, iOrderID);
-      }
       requireContext().getTheme()
                       .applyStyle(R.style.AppTheme, true);
    }
@@ -328,19 +297,10 @@ public class BookListFragment extends BaseFragment
       super.onPause();
    }
 
-
-
-//   @Override
-//   public void onActivityResult(int requestCode, int resultCode, Intent data)
-//   {
-//      super.onActivityResult(requestCode, resultCode, data);
-//
-//      bUpdate = resultCode == RESULT_OK;
-//   }
    @Override
    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater)
    {
-      inflater.inflate(R.menu.menu_main, menu);
+      inflater.inflate(R.menu.menu_book_list, menu);
 
       final MenuItem searchItem = menu.findItem(R.id.action_search);
       final SearchView searchView = (SearchView) searchItem.getActionView();
@@ -376,9 +336,7 @@ public class BookListFragment extends BaseFragment
    @SuppressWarnings("deprecation")
    private String getExportFolderAbsPath(String sExportFolder)
    {
-//      return requireContext().getExternalFilesDir(null) + File.separator + this.sExportFolder + File.separator;
       return Environment.getExternalStorageDirectory() + File.separator + sExportFolder + File.separator;
-
    }
 
    private void checkCreateExportFolder(String sExportFolderAbsPath)
@@ -411,12 +369,12 @@ public class BookListFragment extends BaseFragment
 
    private boolean optionsItemSelect(MenuItem item)
    {
-      unselectBookView();
+      deselectBookAndHideDetails();
+
       int itemId = item.getItemId();
       if(itemId == R.id.action_imp_db)
       {
          showImportDbDialog();
-
          return true;
       }
       else if(itemId == R.id.action_exp_db)
@@ -467,7 +425,6 @@ public class BookListFragment extends BaseFragment
 
    private void navigateToEditBook(View v, long iBookID, boolean isCopy)
    {
-//      NavDirections action = BookListFragmentDirections.actionBookListFragmentToEditBookFragment(iBookID, isCopy);
       BookListFragmentDirections.ActionBookListFragmentToEditBookFragment actionBookListFragmentToEditBookFragment = BookListFragmentDirections.actionBookListFragmentToEditBookFragment();
       actionBookListFragmentToEditBookFragment.setBookID(iBookID);
       actionBookListFragmentToEditBookFragment.setIsCopy(isCopy);
@@ -482,11 +439,15 @@ public class BookListFragment extends BaseFragment
       selectedBookView = v;
    }
 
-   private void unselectBookView()
+   private void deselectBookView()
    {
       if(selectedBookView != null)
          selectedBookView.setSelected(false);
+   }
 
+   private void deselectBookAndHideDetails()
+   {
+      deselectBookView();
       hideBookDetails();
    }
 
@@ -517,37 +478,25 @@ public class BookListFragment extends BaseFragment
 
    private void showImportDbDialog()
    {
-//      Environment.getExternalStorageDirectory()
-//      flCurrent = new File(requireContext().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
-//                                 + File.separator
-//                                 + sExportFolder);
-
       File importFolder = new File(sExportFolderAbsPath);
 
       fileSelectorDialog = FileSelectorDialog.newInstance(importFolder,
                                                           FileOperation.LOAD,
                                                           onLoadFileListener,
                                                           mFileFilter);
-      fileSelectorDialog.show(fragmentManager, "fragment_alert");
+      fileSelectorDialog.show(fragmentManager, null);
    }
 
    private void showExportDbDialog()
    {
       String sFileName = getFileName();
-//      Environment.getExternalStorageDirectory()
-//      File flCurrent = new File(Environment.getExternalStorageDirectory()
-//                                      + File.separator
-//                                      + sExportFolder
-//                                      + File.separator
-//                                      + sFileName);
-
       File exportFile = new File(sExportFolderAbsPath
                                        + sFileName);
       fileSelectorDialog = FileSelectorDialog.newInstance(exportFile,
                                                           FileOperation.SAVE,
                                                           onSaveFileListener,
                                                           mFileFilter);
-      fileSelectorDialog.show(fragmentManager, "fragment_alert");
+      fileSelectorDialog.show(fragmentManager, null);
    }
 
    private String getFileName()
@@ -592,15 +541,13 @@ public class BookListFragment extends BaseFragment
       booksAdapter.setBookLongClickListener(onBookLongClickListener);
       booksAdapter.setHeaderClickListener(onCategoryClickListener);
       if(isExpandAll)
-      {
          booksAdapter.expandAll();
-      }
       recyclerView.setAdapter(booksAdapter);
-      for(OrderItem oOrderItem : alOrderItems)
+      for(OrderItem orderItem : alOrderItems)
       {
-         if(oOrderItem.iID == iOrderID)
+         if(orderItem.iID == iOrderID)
          {
-            tvBooksOrder.setText(oOrderItem.sTitle);
+            tvBooksOrder.setText(orderItem.sTitle);
             tvBooksCount.setText(getResources().getQuantityString(R.plurals.books,
                                                                   booksAdapter.getAllChildrenCount(),
                                                                   booksAdapter.getAllChildrenCount()));
@@ -612,16 +559,13 @@ public class BookListFragment extends BaseFragment
    {
       iOrderID = preferences.getInt(PREF_ORDER_ID, DBAdapter.SRT_TTL);
       isExpandAll = preferences.getBoolean(PREF_EXPAND_ALL, false);
-//      sExportFolder = preferences.getString(PREF_EXPORT_FOLDER, getString(R.string.app_name));
       sExportFolderAbsPath = getExportFolderAbsPath(preferences.getString(PREF_EXPORT_FOLDER, getString(R.string.app_name)));
    }
 
    private void saveOrderID(int iOrderID)
    {
       SharedPreferences.Editor editor = preferences.edit();
-
       editor.putInt(PREF_ORDER_ID, iOrderID);
-
       editor.apply();
    }
    private static class OrderItem
@@ -635,6 +579,5 @@ public class BookListFragment extends BaseFragment
          this.iID = iID;
          this.sTitle = sTitle;
       }
-
    }
 }
