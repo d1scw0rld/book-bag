@@ -13,7 +13,7 @@ import androidx.navigation.ui.NavigationUI;
  * An activity representing a list of Books. this activity
  * has different presentations for handset and tablet-size devices. On
  * handsets, the activity presents a list of books, which when touched,
- * lead to a {@link BookDetailNewFragment} representing
+ * lead to a {@link BookFragment} representing
  * book details. On tablets, the activity presents the list of books and
  * book details side-by-side using two vertical panes.
  */

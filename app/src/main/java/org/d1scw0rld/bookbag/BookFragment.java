@@ -1,0 +1,178 @@
+package org.d1scw0rld.bookbag;
+
+import android.annotation.SuppressLint;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.NavigationUI;
+
+public class BookFragment extends BaseFragment implements IBackPressListener
+{
+   private static final String SAVED_BOOK_ID  = "saved_book_id";
+   private long iBookID = 0;
+   private ActionBar actionBar;
+
+   @SuppressLint("RestrictedApi")
+   @Override
+   public void onCreate(Bundle savedInstanceState)
+   {
+      super.onCreate(savedInstanceState);
+      actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
+      if(actionBar != null)
+         actionBar.setShowHideAnimationEnabled(false);
+   }
+
+   @Override
+   public void onStart()
+   {
+      super.onStart();
+      actionBar.hide();
+   }
+
+   @Override
+   public void onStop()
+   {
+      super.onStop();
+      actionBar.show();
+   }
+
+   @Nullable
+   @Override
+   public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
+   {
+      View view = inflater.inflate(R.layout.fragment_book, container, false);
+      setHasOptionsMenu(true);
+
+      if(savedInstanceState != null)
+         iBookID = savedInstanceState.getLong(SAVED_BOOK_ID);
+      else
+         iBookID = getBookID();
+
+      return view;
+   }
+
+   @Override
+   public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
+   {
+
+      Toolbar toolbar = view.findViewById(R.id.detail_toolbar);
+      toolbar.inflateMenu(R.menu.menu_details);
+      toolbar.setOnMenuItemClickListener(this::onOptionsItemSelected);
+      NavigationUI.setupWithNavController(toolbar, NavHostFragment.findNavController(this));
+
+      view.findViewById(R.id.fab_edit_book).setOnClickListener(v -> navigateToEditBook(v, iBookID));
+
+      if (savedInstanceState == null)
+         loadFragment(iBookID);
+   }
+
+   @Override
+   public void onSaveInstanceState(@NonNull Bundle outState)
+   {
+      super.onSaveInstanceState(outState);
+      outState.putLong(SAVED_BOOK_ID, iBookID);
+   }
+
+   @Override
+   public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater)
+   {
+      inflater.inflate(R.menu.menu_details, menu);
+   }
+
+   @Override
+   public boolean onOptionsItemSelected(MenuItem item)
+   {
+      int itemId = item.getItemId();
+      if(itemId == android.R.id.home)
+      {
+         // This ID represents the Home or Up button. In the case of this
+         // activity, the Up button is shown. Use NavUtils to allow users
+         // to navigate up one level in the application structure. For
+         // more details, see the Navigation pattern on Android Design:
+         //
+         // http://developer.android.com/design/patterns/navigation.html#up-vs-back
+         //
+         navigateToBookList(requireView());
+         return true;
+      }
+      else if(itemId == R.id.action_duplicate)
+      {
+         navigateToEditBook(requireView(), iBookID, true);
+         return true;
+      }
+      else if(itemId == R.id.action_delete)
+      {
+         deleteBook();
+         navigateToBookList(requireView());
+         return true;
+      }
+      return super.onOptionsItemSelected(item);
+   }
+
+   @Override
+   public boolean onBackPressed()
+   {
+      navigateToBookList(requireView());
+      return true;
+   }
+
+   private void loadFragment(long iBookID)
+   {
+      Bundle arguments = new Bundle();
+      arguments.putLong(BookDetailFragment.BOOK_ID, iBookID);
+      BookDetailFragment fragment = new BookDetailFragment();
+      fragment.setArguments(arguments);
+//      requireActivity().getSupportFragmentManager()
+      getChildFragmentManager().beginTransaction()
+                               .replace(R.id.book_detail_container, fragment)
+                               .commitAllowingStateLoss();
+   }
+
+   private void navigateToEditBook(View view, long iBookID)
+   {
+      BookFragmentDirections.ActionBookFragmentToEditBookFragment action = BookFragmentDirections.actionBookFragmentToEditBookFragment();
+      action.setBookID(iBookID);
+      Navigation.findNavController(view).navigate(action);
+   }
+
+   private void navigateToEditBook(View view, long iBookID, boolean isCopy)
+   {
+      BookFragmentDirections.ActionBookFragmentToEditBookFragment actionBookFragmentToEditBookFragment = BookFragmentDirections.actionBookFragmentToEditBookFragment();
+      actionBookFragmentToEditBookFragment.setBookID(iBookID);
+      actionBookFragmentToEditBookFragment.setIsCopy(isCopy);
+      Navigation.findNavController(view).navigate(actionBookFragmentToEditBookFragment);
+   }
+
+   private void navigateToBookList(View view)
+   {
+      Navigation.findNavController(view).navigateUp();
+   }
+
+   private long getBookID()
+   {
+//      return BookFragmentArgs.fromBundle(requireArguments()).getBookID();
+      if(getArguments() != null)
+         return BookFragmentArgs.fromBundle(getArguments()).getBookID();
+      return 0;
+   }
+
+   private void deleteBook()
+   {
+      DBAdapter dbAdapter = new DBAdapter(getContext());
+      dbAdapter.open();
+      dbAdapter.deleteBook(iBookID);
+      dbAdapter.close();
+   }
+}

@@ -1,5 +1,6 @@
 package org.d1scw0rld.bookbag;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -8,6 +9,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
@@ -24,8 +26,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 
 public class EditBookFragment extends Fragment implements IBackPressListener
@@ -46,7 +46,7 @@ public class EditBookFragment extends Fragment implements IBackPressListener
    @Override
    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
    {
-      View view = inflater.inflate(R.layout.activity_edit_book, container, false);
+      View view = inflater.inflate(R.layout.fragment_edit_book, container, false);
       setHasOptionsMenu(true);
 
       requireActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
@@ -54,7 +54,7 @@ public class EditBookFragment extends Fragment implements IBackPressListener
       actionBar = ((AppCompatActivity)requireActivity()).getSupportActionBar();
       if(actionBar != null)
       {
-         showHideHomeTitle(false);
+         showHomeTitle(false);
          actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
          actionBar.setCustomView(R.layout.actionbar_custom_view_done);
 
@@ -63,7 +63,7 @@ public class EditBookFragment extends Fragment implements IBackPressListener
                              .getParent()).setContentInsetsAbsolute(0, 0);
          actionBar.getCustomView()
                   .findViewById(R.id.actionbar_done)
-                  .setOnClickListener(v -> onBookSave(v));
+                  .setOnClickListener(this::onBookSave);
 
       }
 
@@ -112,6 +112,55 @@ public class EditBookFragment extends Fragment implements IBackPressListener
 
       return view;
 
+   }
+
+   @Override
+   public void onPause()
+   {
+      dbAdapter.close();
+
+      super.onPause();
+   }
+
+   @Override
+   public void onResume()
+   {
+      super.onResume();
+
+      dbAdapter.open();
+   }
+
+   @Override
+   public void onDestroy()
+   {
+      showHomeTitle(true);
+
+      super.onDestroy();
+   }
+
+   @Override
+   public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater)
+   {
+      inflater.inflate(R.menu.cancel, menu);
+   }
+
+   @Override
+   public boolean onOptionsItemSelected(MenuItem item)
+   {
+      if(item.getItemId() == R.id.cancel)
+      {
+         hideKeyboard();
+         navigateBack();
+         return true;
+      }
+      return super.onOptionsItemSelected(item);
+   }
+
+   @Override
+   public boolean onBackPressed()
+   {
+      navigateBack();
+      return true;
    }
 
    private boolean getIsCopy()
@@ -188,78 +237,21 @@ public class EditBookFragment extends Fragment implements IBackPressListener
    private void onBookSave(View v)
    {
       requireActivity().getCurrentFocus().clearFocus();
-
       v.requestFocus();
-      if(book.csTitle.value.trim()
-                           .isEmpty())
-      {
+
+      hideKeyboard();
+
+      if(book.csTitle.value.trim().isEmpty())
          fBookTitle.setError(getResources().getString(R.string.err_emp_ttl));
-      }
       else
       {
          fBookTitle.setError(null);
          saveBook();
-         returnOK();
+         if(book.iID == 0)
+            navigateToBookList();
+         else
+            navigateBack();
       }
-   }
-
-   // TODO Just test. Fix it.
-   private void returnOK()
-   {
-//      setResult(RESULT_OK, new Intent());
-//      finish();                  // "Done"
-      NavController navController = NavHostFragment.findNavController(this);
-      navController.getPreviousBackStackEntry().getSavedStateHandle().set("key", "result");
-      navController.navigateUp();
-   }
-
-
-   @Override
-   public void onPause()
-   {
-      dbAdapter.close();
-
-      super.onPause();
-   }
-
-   @Override
-   public void onResume()
-   {
-      super.onResume();
-
-      dbAdapter.open();
-   }
-
-   @Override
-   public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater)
-   {
-      inflater.inflate(R.menu.cancel, menu);
-   }
-
-   @Override
-   public boolean onOptionsItemSelected(MenuItem item)
-   {
-      if(item.getItemId() == R.id.cancel)
-      {
-         returnCancel();
-         return true;
-      }
-      return super.onOptionsItemSelected(item);
-   }
-
-   @Override
-   public boolean onBackPressed()
-   {
-      returnCancel();
-      return true;
-   }
-
-   // TODO Fix it
-   private void returnCancel()
-   {
-//      setResult(Activity.RESULT_CANCELED, new Intent());
-//      finish();
-      Navigation.findNavController(getView()).navigateUp();
    }
 
    private void saveBook()
@@ -276,21 +268,31 @@ public class EditBookFragment extends Fragment implements IBackPressListener
    {
       for(int i = book.alProperties.size() - 1; i >= 0; i--)
       {
-         if(book.alProperties.get(i).sValue.trim()
-                                           .isEmpty())
+         if(book.alProperties.get(i).sValue.trim().isEmpty())
             book.alProperties.remove(i);
       }
    }
 
-   @Override
-   public void onDestroy()
+   private void navigateToBookList()
    {
-      super.onDestroy();
-
-      showHideHomeTitle(true);
+      NavHostFragment.findNavController(this).navigate(R.id.action_to_book_list);
    }
 
-   private void showHideHomeTitle(boolean isShown)
+   private void navigateBack()
+   {
+      NavHostFragment.findNavController(this).navigateUp();
+   }
+
+   private void hideKeyboard()
+   {
+      View view = requireActivity().getCurrentFocus();
+      if (view != null) {
+         InputMethodManager imm = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+      }
+   }
+
+   private void showHomeTitle(boolean isShown)
    {
       actionBar.setDisplayShowHomeEnabled(isShown);
       actionBar.setDisplayShowTitleEnabled(isShown);

@@ -3,7 +3,7 @@
                                                  xmlns:tools="http://schemas.android.com/tools"
                                                  android:layout_width="match_parent"
                                                  android:layout_height="match_parent"
-                                                 tools:context="org.d1scw0rld.bookbag.BookDetailNewFragment"
+                                                 tools:context="org.d1scw0rld.bookbag.BookFragment"
                                                  tools:ignore="MergeRootFrame"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
     >

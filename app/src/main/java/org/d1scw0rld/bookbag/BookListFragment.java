@@ -270,11 +270,11 @@ public class BookListFragment extends BaseFragment
          isTwoPane = true;
       }
 
-      NavController navController = NavHostFragment.findNavController(this);
-      final MutableLiveData<Boolean> liveData = Objects.requireNonNull(navController.getCurrentBackStackEntry())
-                                                       .getSavedStateHandle()
-                                                       .getLiveData(IS_UPDATED);
-      liveData.observe(getViewLifecycleOwner(), b -> isUpdated = b);
+//      NavController navController = NavHostFragment.findNavController(this);
+//      final MutableLiveData<Boolean> liveData = Objects.requireNonNull(navController.getCurrentBackStackEntry())
+//                                                       .getSavedStateHandle()
+//                                                       .getLiveData(IS_UPDATED);
+//      liveData.observe(getViewLifecycleOwner(), b -> isUpdated = b);
    }
 
    @Override
@@ -411,7 +411,7 @@ public class BookListFragment extends BaseFragment
 
    private void navigateToBookDetails(View v)
    {
-      NavDirections action = BookListFragmentDirections.actionBookListFragmentToBookDetailNewFragment(bookID);
+      NavDirections action = BookListFragmentDirections.actionBookListFragmentToBookFragment(bookID);
       Navigation.findNavController(v)
                 .navigate(action);
    }
@@ -419,6 +419,7 @@ public class BookListFragment extends BaseFragment
    private void navigateToEditBook(View v)
    {
       NavDirections action = BookListFragmentDirections.actionBookListFragmentToEditBookFragment();
+      androidx.navigation.NavDestination i = Navigation.findNavController(v).getCurrentDestination();
       Navigation.findNavController(v)
                 .navigate(action);
    }
