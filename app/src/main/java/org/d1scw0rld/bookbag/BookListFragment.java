@@ -24,7 +24,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
-import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -32,11 +31,9 @@ import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.MutableLiveData;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DefaultItemAnimator;
@@ -46,8 +43,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class BookListFragment extends BaseFragment
 {
-   public final static String IS_UPDATED = "is_updated";
-
    private final static String PREF_ORDER_ID = "order_id",
                                PREF_EXPAND_ALL = "pref_expand_all",
                                PREF_EXPORT_FOLDER = "pref_export_folder";
@@ -57,13 +52,12 @@ public class BookListFragment extends BaseFragment
 
    private final ArrayList<OrderItem> alOrderItems = new ArrayList<>();
 
-   private boolean isExpandAll = false,
+   private boolean isExpandAll = false;
    /**
     * Whether or not the activity is in two-pane mode, i.e. running on a tablet
     * device.
     */
-                   isTwoPane,
-                   isUpdated = true;
+   private boolean isTwoPane;
 
    private int iOrderID  = DBAdapter.SRT_TTL,
                iClickedItemNdx = -1;
@@ -269,12 +263,6 @@ public class BookListFragment extends BaseFragment
          // activity should be in two-pane mode.
          isTwoPane = true;
       }
-
-//      NavController navController = NavHostFragment.findNavController(this);
-//      final MutableLiveData<Boolean> liveData = Objects.requireNonNull(navController.getCurrentBackStackEntry())
-//                                                       .getSavedStateHandle()
-//                                                       .getLiveData(IS_UPDATED);
-//      liveData.observe(getViewLifecycleOwner(), b -> isUpdated = b);
    }
 
    @Override
@@ -283,6 +271,7 @@ public class BookListFragment extends BaseFragment
       super.onResume();
 
       dbAdapter.open();
+      boolean isUpdated = true;
       if(isUpdated)
          setupRecyclerView(recyclerView, iOrderID);
       requireContext().getTheme()
@@ -419,7 +408,6 @@ public class BookListFragment extends BaseFragment
    private void navigateToEditBook(View v)
    {
       NavDirections action = BookListFragmentDirections.actionBookListFragmentToEditBookFragment();
-      androidx.navigation.NavDestination i = Navigation.findNavController(v).getCurrentDestination();
       Navigation.findNavController(v)
                 .navigate(action);
    }
