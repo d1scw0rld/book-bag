@@ -1,13 +1,15 @@
 package org.d1scw0rld.bookbag;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.v4.os.ConfigurationCompat;
+
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.core.os.ConfigurationCompat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -97,10 +99,6 @@ public class FilteredArrayAdapter<T> extends ArrayAdapter<T>
             notifyDataSetChanged();
             clear();
             addAll(filtered);
-//            for(Object o: filtered)
-//            {
-//               add((T) o);
-//            }
          }
          else
             notifyDataSetInvalidated();

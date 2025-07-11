@@ -6,13 +6,12 @@ import org.d1scw0rld.bookbag.R;
 import org.d1scw0rld.bookbag.dto.Date;
 
 import android.app.Activity;
-import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
-import com.wdullaer.materialdatetimepicker.date.DatePickerDialog.OnDateSetListener;
+//import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
+//import com.wdullaer.materialdatetimepicker.date.DatePickerDialog.OnDateSetListener;
 
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
-import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -20,7 +19,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
-public class FieldDate extends LinearLayout implements OnDateSetListener
+import androidx.core.content.ContextCompat;
+
+import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
+
+public class FieldDate extends LinearLayout implements DatePickerDialog.OnDateSetListener
 {
    private Title oTitle;
    private Button btnSpinner;
@@ -103,7 +106,7 @@ public class FieldDate extends LinearLayout implements OnDateSetListener
 
             datePickerDialog.setTitle("Select Date From DatePickerDialog");
 
-            datePickerDialog.show(activity.getFragmentManager(), "DatePickerDialog");
+//            datePickerDialog.show(activity.getFragmentManager(), "DatePickerDialog");
          }
       });
       

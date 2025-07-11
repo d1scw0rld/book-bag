@@ -1,15 +1,19 @@
 package org.d1scw0rld.bookbag;
 
+import static android.app.Activity.RESULT_CANCELED;
+
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.View;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.app.ActionBar;
-import android.support.v4.app.NavUtils;
 import android.view.MenuItem;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.NavUtils;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 /**
  * An activity representing a single Book detail screen. This
@@ -80,42 +84,36 @@ public class BookDetailActivity extends AppCompatActivity
    @Override
    public boolean onOptionsItemSelected(MenuItem item)
    {
-      switch(item.getItemId())
-      {
-         case android.R.id.home:
-            // This ID represents the Home or Up button. In the case of this
-            // activity, the Up button is shown. Use NavUtils to allow users
-            // to navigate up one level in the application structure. For
-            // more details, see the Navigation pattern on Android Design:
-            //
-            // http://developer.android.com/design/patterns/navigation.html#up-vs-back
-            //
-            NavUtils.navigateUpTo(this, new Intent(this, BookListActivity.class));
-            
-            return true;
-            
-         case R.id.action_duplicate:
-            Intent intent = new Intent(getApplicationContext(), EditBookActivity.class);
-            intent.putExtra(EditBookActivity.BOOK_ID, iBookID);
-            intent.putExtra(EditBookActivity.IS_COPY, true);
-            startActivityForResult(intent, BookListActivity.SHOW_EDIT_BOOK_COPY);
-            return true;
-            
-         case R.id.action_delete:
-            DBAdapter oDbAdapter = new DBAdapter(this);
-            oDbAdapter.open();
-            oDbAdapter.deleteBook(iBookID);
-            oDbAdapter.close();
-            
-            resultCode = RESULT_OK;
-            close();
-            
-            return true;
-            
-         default:
-            return super.onOptionsItemSelected(item);
-      }
-      
+       int itemId = item.getItemId();
+       if (itemId == android.R.id.home) {// This ID represents the Home or Up button. In the case of this
+           // activity, the Up button is shown. Use NavUtils to allow users
+           // to navigate up one level in the application structure. For
+           // more details, see the Navigation pattern on Android Design:
+           //
+           // http://developer.android.com/design/patterns/navigation.html#up-vs-back
+           //
+           NavUtils.navigateUpTo(this, new Intent(this, BookListActivity.class));
+
+           return true;
+       } else if (itemId == R.id.action_duplicate) {
+           Intent intent = new Intent(getApplicationContext(), EditBookActivity.class);
+           intent.putExtra(EditBookActivity.BOOK_ID, iBookID);
+           intent.putExtra(EditBookActivity.IS_COPY, true);
+           startActivityForResult(intent, BookListActivity.SHOW_EDIT_BOOK_COPY);
+           return true;
+       } else if (itemId == R.id.action_delete) {
+           DBAdapter oDbAdapter = new DBAdapter(this);
+           oDbAdapter.open();
+           oDbAdapter.deleteBook(iBookID);
+           oDbAdapter.close();
+
+           resultCode = RESULT_OK;
+           close();
+
+           return true;
+       }
+       return super.onOptionsItemSelected(item);
+
    }
 
    @Override

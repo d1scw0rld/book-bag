@@ -1,8 +1,6 @@
 package org.d1scw0rld.bookbag.dto;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -13,6 +11,9 @@ import android.view.ViewGroup;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 
 import org.d1scw0rld.bookbag.R;
 
@@ -288,9 +289,4 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
       if(visibleItems.get(visiblePosition-1).ItemType == TYPE_HEADER && (visiblePosition == visibleItems.size() || visibleItems.get(visiblePosition).ItemType == TYPE_HEADER))
          super.removeItemAt(visiblePosition-1);
    }
-   
-//   public boolean isExpandAll()
-//   {
-//      return visibleItems.size() == allItems.size();
-//   }
 }

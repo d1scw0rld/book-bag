@@ -59,9 +59,7 @@
     http://developer.android.com/training/multiscreen/screensizes.html#TaskUseAliasFilters
       -->
 
-      <android.support.v7.widget.RecyclerView
-         xmlns:android="http://schemas.android.com/apk/res/android"
-         xmlns:tools="http://schemas.android.com/tools"
+      <androidx.recyclerview.widget.RecyclerView
          android:id="@+id/book_list"
          android:name="org.d1scw0rld.bookbag.BookListFragment"
          android:layout_width="0dp"

@@ -5,23 +5,22 @@ import java.util.ArrayList;
 import org.d1scw0rld.bookbag.R;
 
 import android.app.Activity;
-import android.support.v7.app.AlertDialog;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.TypedArray;
 import android.graphics.Color;
-import android.support.v7.widget.AppCompatEditText;
-import android.support.v7.widget.PopupMenu;
-import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
+
+import androidx.appcompat.widget.AppCompatEditText;
+import androidx.appcompat.widget.PopupMenu;
 
 public class FieldMultiSpinner extends LinearLayout
 {
@@ -114,65 +113,60 @@ public class FieldMultiSpinner extends LinearLayout
       final PopupMenu popupMenu = new PopupMenu(context, anchorView);
       initPopupMenu(popupMenu, alItems);
 
-      popupMenu.setOnMenuItemClickListener(new OnMenuItemClickListener()
-      {
-         @Override
-         public boolean onMenuItemClick(MenuItem menuItem)
+      popupMenu.setOnMenuItemClickListener(menuItem -> {
+         if(menuItem.getOrder() < alItems.size())
          {
-            if(menuItem.getOrder() < alItems.size())
-            {
-               menuItem.setChecked(!menuItem.isChecked());
-               Item item = alItems.get(menuItem.getOrder());
-               item.setSelected(menuItem.isChecked()); 
+            menuItem.setChecked(!menuItem.isChecked());
+            Item item = alItems.get(menuItem.getOrder());
+            item.setSelected(menuItem.isChecked());
 
-               setButtonText((Button) anchorView, alItems);
-               onUpdateListener.onUpdate(item);
+            setButtonText((Button) anchorView, alItems);
+            onUpdateListener.onUpdate(item);
 
-               popupMenu.show();
-            } 
-            else
-            {
-               AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.AppCompatAlertDialogStyle);
-               builder.setTitle(R.string.add_new);
-               final AppCompatEditText etNewValue = new AppCompatEditText(context);
-               builder.setView(etNewValue);
-               builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
-               {
-                  public void onClick(DialogInterface dialog, int id)
-                  {
-                     String sNewValue = etNewValue.getText().toString().trim();
-                     Item item = new Item(sNewValue);
-                     item.setId(alItems.size());
-                     item.setSelected(true);
-                     alItems.add(item);
-                     setButtonText((Button) anchorView, alItems);
-                     onUpdateListener.onUpdate(item);
-                     popupMenu.dismiss();
-                     initPopupMenu(popupMenu, alItems);
-                     
-                     InputMethodManager imm = (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
-                     imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-                     dialog.cancel();
-                     popupMenu.show();
-                  }
-               });
-
-               builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener()
-               {
-                  public void onClick(DialogInterface dialog, int id)
-                  {
-                     InputMethodManager imm = (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
-                     imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-                     dialog.cancel();
-                     popupMenu.show();
-                  }
-               });
-
-               builder.show();
-
-            }
-            return true;
+            popupMenu.show();
          }
+         else
+         {
+            AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.AppCompatAlertDialogStyle);
+            builder.setTitle(R.string.add_new);
+            final AppCompatEditText etNewValue = new AppCompatEditText(context);
+            builder.setView(etNewValue);
+            builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
+            {
+               public void onClick(DialogInterface dialog, int id)
+               {
+                  String sNewValue = etNewValue.getText().toString().trim();
+                  Item item = new Item(sNewValue);
+                  item.setId(alItems.size());
+                  item.setSelected(true);
+                  alItems.add(item);
+                  setButtonText((Button) anchorView, alItems);
+                  onUpdateListener.onUpdate(item);
+                  popupMenu.dismiss();
+                  initPopupMenu(popupMenu, alItems);
+
+                  InputMethodManager imm = (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
+                  imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+                  dialog.cancel();
+                  popupMenu.show();
+               }
+            });
+
+            builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener()
+            {
+               public void onClick(DialogInterface dialog, int id)
+               {
+                  InputMethodManager imm = (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
+                  imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+                  dialog.cancel();
+                  popupMenu.show();
+               }
+            });
+
+            builder.show();
+
+         }
+         return true;
       });
 
       popupMenu.show();

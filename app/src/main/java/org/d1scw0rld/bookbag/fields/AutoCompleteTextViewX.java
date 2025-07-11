@@ -17,7 +17,8 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.TextView;
 
-public class AutoCompleteTextViewX extends android.support.v7.widget.AppCompatAutoCompleteTextView
+public class AutoCompleteTextViewX extends androidx.appcompat.widget.AppCompatAutoCompleteTextView
+
 {
    private Context oContext;
    

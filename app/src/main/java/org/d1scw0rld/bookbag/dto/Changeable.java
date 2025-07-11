@@ -1,6 +1,6 @@
 package org.d1scw0rld.bookbag.dto;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 public class Changeable<T>
 {

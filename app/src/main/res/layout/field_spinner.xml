@@ -13,7 +13,7 @@
       custom:text="@string/et_title"
       custom:color="@color/primary" />
 
-   <android.support.v7.widget.AppCompatSpinner
+   <androidx.appcompat.widget.AppCompatSpinner
       android:id="@+id/action_select_type"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"

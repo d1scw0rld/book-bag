@@ -9,7 +9,8 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 import android.widget.RatingBar.OnRatingBarChangeListener;
-import android.support.v7.widget.AppCompatRatingBar;
+
+import androidx.appcompat.widget.AppCompatRatingBar;
 
 public class FieldRating extends LinearLayout
 {

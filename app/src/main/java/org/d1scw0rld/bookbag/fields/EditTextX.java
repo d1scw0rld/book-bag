@@ -16,7 +16,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
-public class EditTextX extends android.support.v7.widget.AppCompatEditText
+public class EditTextX extends androidx.appcompat.widget.AppCompatEditText
 {
    private Context oContext;
    
@@ -24,7 +24,7 @@ public class EditTextX extends android.support.v7.widget.AppCompatEditText
 
    private Callback oCallback = null;
    
-   private OnEditorActionListener onEditorActionListener = new OnEditorActionListener()
+   private TextView.OnEditorActionListener onEditorActionListener = new TextView.OnEditorActionListener()
    {
       @Override
       public boolean onEditorAction(TextView v, int actionId, KeyEvent event)
@@ -47,23 +47,14 @@ public class EditTextX extends android.support.v7.widget.AppCompatEditText
       }
    };
    
-   private OnFocusChangeListener onFocusChangeListener = new OnFocusChangeListener()
-   {
-      @Override
-      public void onFocusChange(View v, boolean hasFocus)
+   private View.OnFocusChangeListener onFocusChangeListener = (v, hasFocus) -> {
+      updateDeleteIcon(hasFocus);
+
+      if(!hasFocus && onUpdateListener != null)
       {
-         updateDeleteIcon(hasFocus);
-         
-         if(!hasFocus && onUpdateListener != null)
-         {
-            onUpdateListener.onUpdate((EditText) v);
-         }
-//         else
-//         {
-//            ((EditText)v).setHint("");
-//         }
+         onUpdateListener.onUpdate((EditText) v);
       }
-   };   
+   };
    
    private TextWatcher textWatcher = new TextWatcher() 
    {

@@ -10,19 +10,6 @@ import java.util.Calendar;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.view.ActionMode;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.PopupMenu;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SearchView;
-import android.support.v7.widget.SearchView.OnQueryTextListener;
-import android.support.v7.widget.Toolbar;
-import android.support.design.widget.FloatingActionButton;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -30,8 +17,21 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.ActionMode;
+import androidx.appcompat.widget.PopupMenu;
+import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import org.d1scw0rld.bookbag.dto.BooksAdapter;
-//import org.d1scw0rld.bookbag.dto.DividerItemDecoration;
 import org.d1scw0rld.bookbag.dto.FileUtils;
 import org.d1scw0rld.bookbag.fileselector.FileOperation;
 import org.d1scw0rld.bookbag.fileselector.FileSelectorDialog;
@@ -198,37 +198,33 @@ public class BookListActivity extends AppCompatActivity
       @Override
       public boolean onActionItemClicked(ActionMode mode, MenuItem item) 
       {
-         switch (item.getItemId())
-         {
-            case R.id.action_edit:
-               Intent intent = new Intent(getApplicationContext(), EditBookActivity.class);
-               intent.putExtra(EditBookActivity.BOOK_ID, sel_id);
-               startActivityForResult(intent, SHOW_EDIT_BOOK);
-               
-               mode.finish();
-               return true;
+          int itemId = item.getItemId();
 
-            case R.id.action_duplicate:
-               Intent ntDuplicateBook = new Intent(getApplicationContext(), EditBookActivity.class);
-               ntDuplicateBook.putExtra(EditBookActivity.BOOK_ID, sel_id);
-               ntDuplicateBook.putExtra(EditBookActivity.IS_COPY, true);
-               startActivityForResult(ntDuplicateBook, SHOW_EDIT_BOOK_COPY);
-               
-               mode.finish();
-               return true;
-               
-            case R.id.action_delete:
-               assert oDbAdapter != null;
-               oDbAdapter.deleteBook(sel_id);
-               oBooksAdapter.removeAt(iClickedItemNdx);
-               tvBooksCount.setText(getResources().getQuantityString(R.plurals.books, oBooksAdapter.getAllChildrenCount(), oBooksAdapter.getAllChildrenCount()));
+          if (itemId == R.id.action_edit) {
+              Intent intent = new Intent(getApplicationContext(), EditBookActivity.class);
+              intent.putExtra(EditBookActivity.BOOK_ID, sel_id);
+              startActivityForResult(intent, SHOW_EDIT_BOOK);
 
-               mode.finish(); // Action picked, so close the CAB
-               return true;
+              mode.finish();
+              return true;
+          } else if (itemId == R.id.action_duplicate) {
+              Intent ntDuplicateBook = new Intent(getApplicationContext(), EditBookActivity.class);
+              ntDuplicateBook.putExtra(EditBookActivity.BOOK_ID, sel_id);
+              ntDuplicateBook.putExtra(EditBookActivity.IS_COPY, true);
+              startActivityForResult(ntDuplicateBook, SHOW_EDIT_BOOK_COPY);
 
-            default:
-               return false;
-         }
+              mode.finish();
+              return true;
+          } else if (itemId == R.id.action_delete) {
+              assert oDbAdapter != null;
+              oDbAdapter.deleteBook(sel_id);
+              oBooksAdapter.removeAt(iClickedItemNdx);
+              tvBooksCount.setText(getResources().getQuantityString(R.plurals.books, oBooksAdapter.getAllChildrenCount(), oBooksAdapter.getAllChildrenCount()));
+
+              mode.finish(); // Action picked, so close the CAB
+              return true;
+          }
+          return false;
       }
    
       // Called when the user exits the action mode
@@ -316,7 +312,6 @@ public class BookListActivity extends AppCompatActivity
       
       recyclerView = findViewById(R.id.book_list);
       assert recyclerView != null;
-//      recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST));
       recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
       recyclerView.setItemAnimator(new DefaultItemAnimator());
       recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -373,7 +368,7 @@ public class BookListActivity extends AppCompatActivity
 //      final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
       final SearchView searchView = (SearchView) searchItem.getActionView();
       
-      searchView.setOnQueryTextListener(new OnQueryTextListener()
+      searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
       {
          
          @Override
@@ -397,80 +392,73 @@ public class BookListActivity extends AppCompatActivity
    @Override
    public boolean onOptionsItemSelected(MenuItem item)
    {
-      switch(item.getItemId())
-      {
-         case R.id.action_settings:
-            Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
-            startActivity(intent);
-            return true;
+       int itemId = item.getItemId();
 
-         case R.id.action_imp_db:
-            flCurrent = new File(Environment.getExternalStorageDirectory()
-                                      + File.separator
-                                      + sExportFolder);
-            oFileSelectorDialog = FileSelectorDialog.newInstance(flCurrent,
-                                                                 FileOperation.LOAD,
-                                                                 mLoadFileListener,
-                                                                 mFileFilter);
-            oFileSelectorDialog.show(fm, "fragment_alert");
+       if (itemId == R.id.action_settings) {
+           Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
+           startActivity(intent);
+           return true;
+       } else if (itemId == R.id.action_imp_db) {
+           flCurrent = new File(Environment.getExternalStorageDirectory()
+                   + File.separator
+                   + sExportFolder);
+           oFileSelectorDialog = FileSelectorDialog.newInstance(flCurrent,
+                   FileOperation.LOAD,
+                   mLoadFileListener,
+                   mFileFilter);
+           oFileSelectorDialog.show(fm, "fragment_alert");
 
-            return true;
-            
-         case R.id.action_exp_db:
-            Calendar calendar = Calendar.getInstance(Locale.getDefault());
-            int iExtNdx = DBAdapter.DATABASE_NAME.lastIndexOf(".");
-            String sFileName = String.format(getString(R.string.fmt_fl_nm), 
-                                             DBAdapter.DATABASE_NAME.substring(0, iExtNdx),
-                                             calendar.get(Calendar.YEAR),
-                                             calendar.get(Calendar.MONTH) + 1,
-                                             calendar.get(Calendar.DAY_OF_MONTH),
-                                             calendar.get(Calendar.HOUR_OF_DAY),
-                                             calendar.get(Calendar.MINUTE),
-                                             DBAdapter.DATABASE_NAME.substring(iExtNdx+1));
-            File flCurrent = new File(Environment.getExternalStorageDirectory() 
-                                      + File.separator 
-                                      + sExportFolder 
-                                      + File.separator 
-                                      + sFileName);
-            
-            oFileSelectorDialog = FileSelectorDialog.newInstance(flCurrent,
-                                                                 FileOperation.SAVE,
-                                                                 mSaveFileListener,
-                                                                 mFileFilter);
-            oFileSelectorDialog.show(fm, "fragment_alert");
-            return true;            
-            
-         case R.id.action_exp_all:
-            oBooksAdapter.expandAll();
-            return true;
-         
-         case R.id.action_clp_all:
-            oBooksAdapter.collapseAll();
-            return true;
-            
-         case R.id.action_sort:
-            View menuItemView = findViewById(R.id.action_sort); // SAME ID AS MENU ID
-            PopupMenu popupMenu = new PopupMenu(this, menuItemView);
-            for(OrderItem oItem: alOrderItems)
+           return true;
+       } else if (itemId == R.id.action_exp_db) {
+           Calendar calendar = Calendar.getInstance(Locale.getDefault());
+           int iExtNdx = DBAdapter.DATABASE_NAME.lastIndexOf(".");
+           String sFileName = String.format(getString(R.string.fmt_fl_nm),
+                   DBAdapter.DATABASE_NAME.substring(0, iExtNdx),
+                   calendar.get(Calendar.YEAR),
+                   calendar.get(Calendar.MONTH) + 1,
+                   calendar.get(Calendar.DAY_OF_MONTH),
+                   calendar.get(Calendar.HOUR_OF_DAY),
+                   calendar.get(Calendar.MINUTE),
+                   DBAdapter.DATABASE_NAME.substring(iExtNdx + 1));
+           File flCurrent = new File(Environment.getExternalStorageDirectory()
+                   + File.separator
+                   + sExportFolder
+                   + File.separator
+                   + sFileName);
+
+           oFileSelectorDialog = FileSelectorDialog.newInstance(flCurrent,
+                   FileOperation.SAVE,
+                   mSaveFileListener,
+                   mFileFilter);
+           oFileSelectorDialog.show(fm, "fragment_alert");
+           return true;
+       } else if (itemId == R.id.action_exp_all) {
+           oBooksAdapter.expandAll();
+           return true;
+       } else if (itemId == R.id.action_clp_all) {
+           oBooksAdapter.collapseAll();
+           return true;
+       } else if (itemId == R.id.action_sort) {
+           View menuItemView = findViewById(R.id.action_sort); // SAME ID AS MENU ID
+           PopupMenu popupMenu = new PopupMenu(this, menuItemView);
+           for (OrderItem oItem : alOrderItems)
                popupMenu.getMenu().add(1, oItem.iID, 0, oItem.sTitle).setCheckable(true).setChecked(oItem.iID == iOrderID);
-            popupMenu.getMenu().setGroupCheckable(1, true, true);
-            popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
-            {
+           popupMenu.getMenu().setGroupCheckable(1, true, true);
+           popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                @Override
-               public boolean onMenuItemClick(MenuItem menuItem)
-               {
-                  iOrderID = menuItem.getItemId();
-                  saveOrderID(iOrderID);
-                  setupRecyclerView(recyclerView, iOrderID);
-                  return true;
+               public boolean onMenuItemClick(MenuItem menuItem) {
+                   iOrderID = menuItem.getItemId();
+                   saveOrderID(iOrderID);
+                   setupRecyclerView(recyclerView, iOrderID);
+                   return true;
                }
-            });
-            popupMenu.show();
-            return true;
-            
-         default:
-            return true;
-      }
+           });
+           popupMenu.show();
+           return true;
+       }
+       {
+           return true;
+       }
    }
 
    @Override
