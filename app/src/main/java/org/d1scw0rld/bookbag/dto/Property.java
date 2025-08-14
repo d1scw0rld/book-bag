@@ -41,13 +41,6 @@ public class Property
       return sValue;
    }
 
-
-//   @Override
-//   public String getValue()
-//   {
-//      return sValue;
-//   }
-
    @Override
    public boolean equals(Object o)
    {

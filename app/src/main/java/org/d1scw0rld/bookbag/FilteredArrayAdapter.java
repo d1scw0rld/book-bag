@@ -16,8 +16,8 @@ import java.util.List;
 
 public class FilteredArrayAdapter<T> extends ArrayAdapter<T>
 {
-   private Context context;
-   private ArrayList<T> items;
+   private final Context context;
+   private final ArrayList<T> items;
    private FieldFilter  nameFilter;
 
    public FilteredArrayAdapter(Context context, int viewResourceId, ArrayList<T> items)
@@ -49,7 +49,7 @@ public class FilteredArrayAdapter<T> extends ArrayAdapter<T>
 
    private class FieldFilter extends Filter
    {
-      private ArrayList<T> suggestions;
+      private final ArrayList<T> suggestions;
 
       FieldFilter(List<T> objects)
       {

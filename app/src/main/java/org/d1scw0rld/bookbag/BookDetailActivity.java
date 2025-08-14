@@ -1,11 +1,8 @@
 package org.d1scw0rld.bookbag;
 
-import static android.app.Activity.RESULT_CANCELED;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
-import android.view.View;
 import android.view.MenuItem;
 
 import androidx.appcompat.app.ActionBar;
@@ -38,15 +35,10 @@ public class BookDetailActivity extends AppCompatActivity
       setSupportActionBar(toolbar);
 
       FloatingActionButton fab = findViewById(R.id.fab);
-      fab.setOnClickListener(new View.OnClickListener()
-      {
-         @Override
-         public void onClick(View view)
-         {
-            Intent intent = new Intent(getApplicationContext(), EditBookActivity.class);
-            intent.putExtra(EditBookActivity.BOOK_ID, iBookID);
-            startActivityForResult(intent, BookListActivity.SHOW_EDIT_BOOK);
-         }
+      fab.setOnClickListener(view -> {
+         Intent intent = new Intent(getApplicationContext(), EditBookActivity.class);
+         intent.putExtra(EditBookActivity.BOOK_ID, iBookID);
+         startActivityForResult(intent, BookListActivity.SHOW_EDIT_BOOK);
       });
 
       // Show the Up button in the action bar.
@@ -119,6 +111,7 @@ public class BookDetailActivity extends AppCompatActivity
    @Override
    protected void onActivityResult(int requestCode, int resultCode, Intent data)
    {
+      super.onActivityResult(requestCode, resultCode, data);
       if(resultCode == RESULT_OK)
       {
          loadFragment(iBookID);
@@ -145,8 +138,8 @@ public class BookDetailActivity extends AppCompatActivity
    @Override
    public void onBackPressed()
    {
+      super.onBackPressed();
       close();
-//      super.onBackPressed();
    }
    
    private void close()

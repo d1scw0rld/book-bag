@@ -41,7 +41,6 @@ public class BookDetailFragment extends Fragment
    /**
     * The dummy content this fragment is presenting.
     */
-//   private DummyContent.DummyItem mItem;
    private final static String SEP = ", ";
    
    private Book oBook;
@@ -133,10 +132,6 @@ public class BookDetailFragment extends Fragment
                   {
                      switch(field.iID)
                      {
-                        case DBAdapter.FLD_TITLE:
-                           sValue = oBook.csTitle.value;
-                        break;
-                        
                         case DBAdapter.FLD_DESCRIPTION:
                            sValue = oBook.csDescription.value;
                         break;
@@ -231,7 +226,7 @@ public class BookDetailFragment extends Fragment
                      {
                         case Field.TYPE_MULTIFIELD:
                         case Field.TYPE_MULTI_SPINNER:
-                           String tsNames[] = field.sName.split("\\|");
+                           String[] tsNames = field.sName.split("\\|");
                            if(tsNames.length > 1)
                               sName = tsNames[1];
                            sValue += (!sValue.trim().isEmpty() ? SEP : "") + oProperty.sValue;

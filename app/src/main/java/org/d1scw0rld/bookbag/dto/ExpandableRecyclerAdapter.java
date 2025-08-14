@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdapter.ListItem> extends RecyclerView.Adapter<ExpandableRecyclerAdapter<T>.ViewHolder>
+public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdapter.ListItem> extends RecyclerView.Adapter<ExpandableRecyclerAdapter.ViewHolder>
 {
    Context mContext;
    List<T> allItems = new ArrayList<>();
@@ -20,7 +20,7 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
    private List<Integer> indexList = new ArrayList<>();
    private SparseIntArray expandMap = new SparseIntArray();
    private int mode;
-   
+
    static final int TYPE_HEADER = 1000,
                     TYPE_ITEM = 1001;
 
@@ -61,7 +61,7 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
       return LayoutInflater.from(mContext).inflate(resourceID, viewGroup, false);
    }
 
-   class ViewHolder extends RecyclerView.ViewHolder
+   static class ViewHolder extends RecyclerView.ViewHolder
    {
       ViewHolder(View view)
       {
@@ -75,14 +75,7 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
       {
          super(view);
 
-         view.setOnClickListener(new View.OnClickListener()
-         {
-            @Override
-            public void onClick(View v)
-            {
-               handleClick();
-            }
-         });
+         view.setOnClickListener(v -> handleClick());
       }
 
       void handleClick()

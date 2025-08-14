@@ -9,14 +9,11 @@ import org.d1scw0rld.bookbag.R;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.Gravity;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -53,7 +50,6 @@ public class FileSelectorDialog extends DialogFragment
    /**
     * The file selector dialog.
     */
-   // private final Dialog mDialog;
    private Context mContext;
 
    private String[] fileFilters;
@@ -111,7 +107,6 @@ public class FileSelectorDialog extends DialogFragment
       AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.AppCompatAlertDialogStyle);
       mContext = getContext();
 
-//      LayoutInflater inflater = getActivity().getLayoutInflater();
       v = View.inflate(mContext, R.layout.dialog_file, null);
       builder.setView(v);
 
@@ -121,19 +116,14 @@ public class FileSelectorDialog extends DialogFragment
       
       toolbar = v.findViewById(R.id.dlg_toolbar);
       toolbar.setTitle(mCurrentLocation.getName());
-      toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener()
-      {
-         @Override
-         public boolean onMenuItemClick(MenuItem item)
+      toolbar.setOnMenuItemClickListener(item -> {
+         if(item.getItemId() == R.id.action_new_folder)
          {
-            if(item.getItemId() == R.id.action_new_folder)
-            {
-               openNewFolderDialog();
-               return true;
-            }
-            
-            return false;
+            openNewFolderDialog();
+            return true;
          }
+
+         return false;
       });
 
       int str_id = 0;
@@ -149,63 +139,53 @@ public class FileSelectorDialog extends DialogFragment
             etFileName.setEnabled(false);
          break;
       }
-      builder.setPositiveButton(str_id, new DialogInterface.OnClickListener()
-      {
-         public void onClick(DialogInterface dialog, int id)
+      builder.setPositiveButton(str_id, (dialog, id) -> {
+         final String text = getSelectedFileName();
+         if(checkFileName(text))
          {
-            final String text = getSelectedFileName();
-            if(checkFileName(text))
+            final String filePath = getCurrentLocation().getAbsolutePath()
+                                    + File.separator
+                                    + text;
+            final File file = new File(filePath);
+            int messageText = 0;
+            // Check file access rights.
+            switch (operation)
             {
-               final String filePath = getCurrentLocation().getAbsolutePath()
-                                       + File.separator
-                                       + text;
-               final File file = new File(filePath);
-               int messageText = 0;
-               // Check file access rights.
-               switch (operation)
-               {
-                  case SAVE:
-                     if((file.exists()) && (!file.canWrite()))
-                     {
-                        messageText = R.string.msg_cnt_sv_fl;
-                     }
-                  break;
-                  case LOAD:
-                     if(!file.exists())
-                     {
-                        messageText = R.string.msg_msn_fl;
-                     }
-                     else if(!file.canRead())
-                     {
-                        messageText = R.string.msg_acc_dnd;
-                     }
-                  break;
-               }
-               if(messageText != 0)
-               {
-                  // Access denied.
-                  final Toast t = Toast.makeText(mContext,
-                                                 messageText,
-                                                 Toast.LENGTH_SHORT);
-                  t.setGravity(Gravity.CENTER, 0, 0);
-                  t.show();
-               }
-               else
-               {
-                  // Access granted.
-                  mOnHandleFileListener.handleFile(filePath);
-                  dismiss();
-               }
-            }     
+               case SAVE:
+                  if((file.exists()) && (!file.canWrite()))
+                  {
+                     messageText = R.string.msg_cnt_sv_fl;
+                  }
+               break;
+               case LOAD:
+                  if(!file.exists())
+                  {
+                     messageText = R.string.msg_msn_fl;
+                  }
+                  else if(!file.canRead())
+                  {
+                     messageText = R.string.msg_acc_dnd;
+                  }
+               break;
+            }
+            if(messageText != 0)
+            {
+               // Access denied.
+               final Toast t = Toast.makeText(mContext,
+                                              messageText,
+                                              Toast.LENGTH_SHORT);
+               t.setGravity(Gravity.CENTER, 0, 0);
+               t.show();
+            }
+            else
+            {
+               // Access granted.
+               mOnHandleFileListener.handleFile(filePath);
+               dismiss();
+            }
          }
       });
-      builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener()
-      {
-         public void onClick(DialogInterface dialog, int id)
-         {
-            dismiss();
-         }
-      });
+      builder.setNegativeButton(android.R.string.cancel, (dialog, id) -> dismiss());
       
       prepareFilterSpinner(fileFilters);
       prepareFilesList();
@@ -223,7 +203,6 @@ public class FileSelectorDialog extends DialogFragment
     */
    private void prepareFilterSpinner(String[] aFilesFilter)
    {
-//       mFilterSpinner = (Spinner) v.findViewById(R.id.fileFilter);
       mFilterSpinner = toolbar.findViewById(R.id.action_select_type);
       if(aFilesFilter == null || aFilesFilter.length == 0)
       {
@@ -247,8 +226,8 @@ public class FileSelectorDialog extends DialogFragment
                                     long arg3)
          {
             TextView textViewItem = (TextView) aView;
-            String filtr = textViewItem.getText().toString();
-            makeList(mCurrentLocation, filtr);
+            String filter = textViewItem.getText().toString();
+            makeList(mCurrentLocation, filter);
             toolbar.setTitle(mCurrentLocation.getName());
 
          }
@@ -268,41 +247,31 @@ public class FileSelectorDialog extends DialogFragment
    {
       mFileListView = v.findViewById(R.id.fileList);
    
-      mFileListView.setOnItemClickListener(new OnItemClickListener()
-      {
-   
-         @Override
-         public void onItemClick(final AdapterView<?> parent,
-                                 final View view,
-                                 final int position,
-                                 final long id)
+      mFileListView.setOnItemClickListener((parent, view, position, id) -> {
+         // Check if "../" item should be added.
+         if(id == 0)
          {
-            // Check if "../" item should be added.
-//            etFileName.setText("");
-            if(id == 0)
-            {
-               final String parentLocation = mCurrentLocation.getParent();
-               if(parentLocation != null)
-               { // text == "../"
-                  String fileFilter = ((TextView) mFilterSpinner.getSelectedView()).getText()
-                                                                                   .toString();
-                  mCurrentLocation = new File(parentLocation);
-                  makeList(mCurrentLocation, fileFilter);
-                  toolbar.setTitle(mCurrentLocation.getName());
-               }
-               else
-               {
-                  onItemSelect(parent, position);
-               }
+            final String parentLocation = mCurrentLocation.getParent();
+            if(parentLocation != null)
+            { // text == "../"
+               String fileFilter = ((TextView) mFilterSpinner.getSelectedView()).getText()
+                                                                                .toString();
+               mCurrentLocation = new File(parentLocation);
+               makeList(mCurrentLocation, fileFilter);
+               toolbar.setTitle(mCurrentLocation.getName());
             }
             else
             {
                onItemSelect(parent, position);
             }
          }
+         else
+         {
+            onItemSelect(parent, position);
+         }
       });
-      String filtr = mFilterSpinner.getSelectedItem().toString();
-      makeList(mCurrentLocation, filtr);
+      String filter = mFilterSpinner.getSelectedItem().toString();
+      makeList(mCurrentLocation, filter);
    
    }
 
@@ -314,33 +283,28 @@ public class FileSelectorDialog extends DialogFragment
       alert.setMessage(" ");
       final AppCompatEditText input = new AppCompatEditText(mContext);
       alert.setView(input);
-      alert.setPositiveButton(R.string.create, new DialogInterface.OnClickListener()
-      {
-         @Override
-         public void onClick(final DialogInterface dialog, final int whichButton)
+      alert.setPositiveButton(R.string.create, (dialog, whichButton) -> {
+         File file = new File(mCurrentLocation.getAbsolutePath()
+                              + File.separator
+                              + input.getText().toString());
+         if(file.mkdir())
          {
-            File file = new File(mCurrentLocation.getAbsolutePath()
-                                 + File.separator
-                                 + input.getText().toString());
-            if(file.mkdir())
-            {
-               Toast t = Toast.makeText(mContext,
-                                        R.string.msg_fld_crt_ok,
-                                        Toast.LENGTH_SHORT);
-               t.setGravity(Gravity.CENTER, 0, 0);
-               t.show();
-            }
-            else
-            {
-               Toast t = Toast.makeText(mContext,
-                                        R.string.msg_fld_crt_err,
-                                        Toast.LENGTH_SHORT);
-               t.setGravity(Gravity.CENTER, 0, 0);
-               t.show();
-            }
-            String fileFilter = ((TextView) mFilterSpinner.getSelectedView()).getText().toString();
-            makeList(mCurrentLocation, fileFilter);
+            Toast t = Toast.makeText(mContext,
+                                     R.string.msg_fld_crt_ok,
+                                     Toast.LENGTH_SHORT);
+            t.setGravity(Gravity.CENTER, 0, 0);
+            t.show();
          }
+         else
+         {
+            Toast t = Toast.makeText(mContext,
+                                     R.string.msg_fld_crt_err,
+                                     Toast.LENGTH_SHORT);
+            t.setGravity(Gravity.CENTER, 0, 0);
+            t.show();
+         }
+         String fileFilter = ((TextView) mFilterSpinner.getSelectedView()).getText().toString();
+         makeList(mCurrentLocation, fileFilter);
       });
       alert.show();
    }
@@ -353,7 +317,7 @@ public class FileSelectorDialog extends DialogFragment
 
    /**
     * Handle the file list item selection.
-    * 
+    * <p>
     * Change the directory on the list or change the name of the saved file
     * if the user selected a file.
     * 
@@ -402,10 +366,10 @@ public class FileSelectorDialog extends DialogFragment
     * @param location
     *           Indicates the directory whose contents should be displayed in
     *           the dialog.
-    * @param fitlesFilter
+    * @param filesFilter
     *           The filter specifies the type of file to be displayed
     */
-   private void makeList(final File location, final String fitlesFilter)
+   private void makeList(final File location, final String filesFilter)
    {
       final ArrayList<FileData> fileList = new ArrayList<>();
       final String parentLocation = location.getParent();
@@ -414,13 +378,13 @@ public class FileSelectorDialog extends DialogFragment
          // First item on the list.
          fileList.add(new FileData("../", FileData.UP_FOLDER));
       }
-      File listFiles[] = location.listFiles();
+      File[] listFiles = location.listFiles();
       if(listFiles != null)
       {
          ArrayList<FileData> fileDataList = new ArrayList<>();
          for(File tempFile : listFiles)
          {
-            if(FileUtils.accept(tempFile, fitlesFilter))
+            if(FileUtils.accept(tempFile, filesFilter))
             {
                int type = tempFile.isDirectory() ? FileData.FOLDER : FileData.FILE;
                fileDataList.add(new FileData(tempFile.getName(),
@@ -445,7 +409,7 @@ public class FileSelectorDialog extends DialogFragment
     */
    boolean checkFileName(String text)
    {
-      if(text.length() == 0)
+      if(text.isEmpty())
       {
          final AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
          builder.setTitle(R.string.information);

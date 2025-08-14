@@ -105,8 +105,6 @@ public class FieldDate extends LinearLayout implements DatePickerDialog.OnDateSe
             datePickerDialog.setOkColor(ContextCompat.getColor(activity, R.color.accent));
 
             datePickerDialog.setTitle("Select Date From DatePickerDialog");
-
-//            datePickerDialog.show(activity.getFragmentManager(), "DatePickerDialog");
          }
       });
       

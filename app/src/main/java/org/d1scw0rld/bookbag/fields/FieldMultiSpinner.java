@@ -24,12 +24,12 @@ import androidx.appcompat.widget.PopupMenu;
 
 public class FieldMultiSpinner extends LinearLayout
 {
-   private Title              oTitle;
-   private Button             btnSpinner;
-   private String             hint               = "";
-   private Context            context;
-   private ArrayList<Item>    alItems            = new ArrayList<>();
-   private OnUpdateListener   onUpdateListener   = null;
+   private Title oTitle;
+   private Button btnSpinner;
+   private String hint = "";
+   private Context context;
+   private ArrayList<Item> alItems = new ArrayList<>();
+   private OnUpdateListener onUpdateListener = null;
 
    public FieldMultiSpinner(Context context)
    {
@@ -99,7 +99,8 @@ public class FieldMultiSpinner extends LinearLayout
       {
          oButton.setText(sButtonText.toString());
          oButton.setTextColor(Color.BLACK);
-      } else
+      }
+      else
       {
          oButton.setText(hint);
          oButton.setTextColor(Color.GRAY);

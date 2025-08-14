@@ -40,8 +40,8 @@ dependencies {
     implementation 'com.android.support:support-v4:28.0.0'
     implementation 'com.android.support:design:28.0.0'
     implementation 'com.android.support:preference-v14:27.1.1' // Keep this lower version, because of ugly preferences screen look
-//    implementation 'com.wdullaer:materialdatetimepicker:3.6.4'
-    implementation 'com.wdullaer:materialdatetimepicker:4.2.3'
+    implementation 'com.wdullaer:materialdatetimepicker:3.6.4'
+//    implementation 'com.wdullaer:materialdatetimepicker:4.2.3'
     implementation 'com.google.android.material:material:1.12.0'
-    implementation 'androidx.core:core:1.15.0'
+    implementation 'androidx.core:core:1.16.0'
 }
