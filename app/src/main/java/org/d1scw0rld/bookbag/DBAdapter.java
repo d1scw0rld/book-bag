@@ -183,7 +183,7 @@ public class DBAdapter
 		FIELDS.add(new Field(FLD_EDITION, r.getString(R.string.fld_edition), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
 		FIELDS.add(new Field(FLD_PRICE, r.getString(R.string.fld_price), Field.TYPE_MONEY).setInputType(InputType.TYPE_CLASS_NUMBER|InputType.TYPE_NUMBER_FLAG_DECIMAL));
       FIELDS.add(new Field(FLD_VALUE, r.getString(R.string.fld_value), Field.TYPE_MONEY).setInputType(InputType.TYPE_CLASS_NUMBER|InputType.TYPE_NUMBER_FLAG_DECIMAL));
-		FIELDS.add(new Field(FLD_STATUS, r.getString(R.string.fld_status), Field.TYPE_SPINNER));
+      FIELDS.add(new Field(FLD_STATUS, r.getString(R.string.fld_status), Field.TYPE_SPINNER));
 		FIELDS.add(new Field(FLD_LOANED_TO, r.getString(R.string.fld_loaned_to), Field.TYPE_TEXT_AUTOCOMPLETE));
 		FIELDS.add(new Field(FLD_READ, r.getString(R.string.fld_read), Field.TYPE_CHECK_BOX));
 		FIELDS.add(new Field(FLD_READ_DATE, r.getString(R.string.fld_read_date), Field.TYPE_DATE));
@@ -212,36 +212,6 @@ public class DBAdapter
 	{
 		db.close();
 	}
-
-//   public ArrayList<Result> getBooksOrderedBy(String query)
-//   {
-//      if(Debug.ON)
-//      {
-//         return null;
-//      }
-//      else
-//      {
-//         ArrayList<Result> alResults = new ArrayList<Result>();
-//
-//         Cursor cursor = db.rawQuery(query, null);
-//         Result result;
-//
-//         if(cursor.moveToFirst())
-//         {
-//            do
-//            {
-//
-//               result = new Result();
-//               result.id = Integer.parseInt(cursor.getString(0));
-//               result.content = cursor.getString(1);
-//               alResults.add(result);
-//            } while (cursor.moveToNext());
-//         }
-//         cursor.close();
-//
-//         return alResults;
-//      }
-//   }
 
    private ArrayList<ParentResult> getBooksOrderedBy(String query)
    {
@@ -621,6 +591,7 @@ public class DBAdapter
                    + " FROM " + TABLE_BOOK_FIELDS + " as bf LEFT JOIN " + TABLE_FIELDS + " AS f ON bf." + KEY_FLD_ID + " = f." + KEY_ID
                    + " WHERE bf." + KEY_BK_ID + " = " + iBookID;
 
+      cursor.close();
       cursor = db.rawQuery(sql, null);
 
       Property oProperty;
@@ -641,10 +612,8 @@ public class DBAdapter
       return oBook;
    }
 
-   boolean deleteBook(long iBookID)
+   void deleteBook(long iBookID)
    {
-      boolean result = true;
-
       db.beginTransaction();
       try
       {
@@ -656,7 +625,6 @@ public class DBAdapter
       catch(Exception e)
       {
          Log.e(TAG, e.getMessage());
-         result = false;
       }
       finally
       {
@@ -664,13 +632,11 @@ public class DBAdapter
          shrink();
       }
 
-      return result;
    }
 
-   boolean updateBook(Book oBook)
+   void updateBook(Book oBook)
    {
       ContentValues oValues;
-      boolean result = true;
 
       db.beginTransaction();
       try
@@ -716,14 +682,12 @@ public class DBAdapter
       catch(Exception e)
       {
          Log.e(TAG, e.getMessage());
-         result = false;
       }
       finally
       {
          db.endTransaction();
          shrink();
       }
-      return result;
    }
 
    private void shrink()
@@ -755,10 +719,10 @@ public class DBAdapter
 	             iValuesID,
                 iFieldID;
 
-	         String sFieldName, 
-	                tsValues[];
+	         String sFieldName;
+            String[] tsValues;
 
-	         TypedArray taField;
+            TypedArray taField;
 	         
 	         ContentValues values;
 	         

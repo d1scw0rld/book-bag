@@ -1,13 +1,11 @@
 package org.d1scw0rld.bookbag;
 
 import android.content.Context;
-import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
@@ -17,9 +15,6 @@ import org.d1scw0rld.bookbag.dto.Date;
 import org.d1scw0rld.bookbag.dto.Field;
 import org.d1scw0rld.bookbag.dto.Price;
 import org.d1scw0rld.bookbag.dto.Property;
-import org.d1scw0rld.bookbag.dto.Utils;
-import org.d1scw0rld.bookbag.fields.AutoCompleteTextViewX;
-import org.d1scw0rld.bookbag.fields.EditTextX;
 import org.d1scw0rld.bookbag.fields.FieldAutoCompleteTextView;
 import org.d1scw0rld.bookbag.fields.FieldCheckBox;
 import org.d1scw0rld.bookbag.fields.FieldDate;
@@ -40,7 +35,7 @@ import androidx.core.content.res.ResourcesCompat;
 public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
 {
    private final Context context;
-   private       Book    book;
+   private final Book book;
    private final DBAdapter dbAdapter;
 
    private View vPrevious = null;
@@ -58,7 +53,6 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
       {
          case DBAdapter.FLD_TITLE:
             addFieldText(rootView, field, book.csTitle);
-//            fBookTitle = (FieldEditTextUpdatableClearable) rootView.getChildAt(rootView.getChildCount()-1);
             break;
 
          case DBAdapter.FLD_DESCRIPTION:
@@ -100,52 +94,34 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
       fieldEditTextUpdatableClearable.setInputType(field.iInputType);
       if(field.iID == DBAdapter.FLD_TITLE)
       {
-//         fBookTitle = fieldEditTextUpdatableClearable;
          vPrevious = fieldEditTextUpdatableClearable.findViewById(R.id.editTextX);
       }
-      fieldEditTextUpdatableClearable.setUpdateListener(new EditTextX.OnUpdateListener()
-      {
-         @Override
-         public void onUpdate(EditText et)
+      fieldEditTextUpdatableClearable.setUpdateListener(editText -> {
+         Class<?> c = cValue.getGenericType();
+         Class<?> clazz;
+         Object object;
+         try
          {
-            Class<?> c = cValue.getGenericType();
-            Class<?> clazz;
-            Object object;
-            try
-            {
-               clazz = Class.forName(c.getName());
-               Constructor<?> ctor = clazz.getConstructor(String.class);
-               object = ctor.newInstance(et.getText()
-                                           .toString()
-                                           .trim());
+            clazz = Class.forName(c.getName());
+            Constructor<?> ctor = clazz.getConstructor(String.class);
+            object = ctor.newInstance(editText.getText()
+                                        .toString()
+                                        .trim());
 
-            }
-            catch(ClassNotFoundException
-                  | NoSuchMethodException
-                  | SecurityException
-                  | InstantiationException
-                  | IllegalAccessException
-                  | IllegalArgumentException
-                  | InvocationTargetException e)
-            {
-               e.printStackTrace();
-               return;
-            }
-
-            cValue.value = (T) object;
-
-//            if(t instanceof Integer)
-//            {
-//               t = (T) Integer.valueOf(et.getText().toString());
-//               cValue.value = t;
-//            }
-//            else if(t instanceof String)
-//            {
-//               t = (T) et.getText().toString().trim();
-//               cValue.value = t;
-//
-//            }
          }
+         catch(ClassNotFoundException
+               | NoSuchMethodException
+               | SecurityException
+               | InstantiationException
+               | IllegalAccessException
+               | IllegalArgumentException
+               | InvocationTargetException e)
+         {
+            e.printStackTrace();
+            return;
+         }
+
+         cValue.value = (T) object;
       });
       rootView.addView(fieldEditTextUpdatableClearable);
       if(!field.isVisible && cValue.isEmpty())
@@ -179,38 +155,29 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
 
       FilteredArrayAdapter<Property> filteredArrayAdapter = new FilteredArrayAdapter<>(context, R.layout.dropdown, propertyValues);
       fieldAutoCompleteTextView.setAdapter(filteredArrayAdapter);
-      fieldAutoCompleteTextView.setOnItemClickListener(new AdapterView.OnItemClickListener()
-      {
-         public void onItemClick(AdapterView<?> adapter, View view, int position, long rowId)
-         {
-            Property fldSelected = (Property) adapter.getItemAtPosition(position);
-            ((Property) fieldAutoCompleteTextView.getTag()).copy(fldSelected);
-         }
+      fieldAutoCompleteTextView.setOnItemClickListener((adapter, view1, position, rowId) -> {
+         Property fldSelected = (Property) adapter.getItemAtPosition(position);
+         ((Property) fieldAutoCompleteTextView.getTag()).copy(fldSelected);
       });
-      fieldAutoCompleteTextView.setUpdateListener(new AutoCompleteTextViewX.OnUpdateListener()
-      {
-         @Override
-         public void onUpdate(EditText et)
+      fieldAutoCompleteTextView.setUpdateListener(editText -> {
+         boolean isFound = false;
+         for(Property p : propertyValues)
          {
-            boolean isFound = false;
-            for(Property p : propertyValues)
+            if(editText.getText()
+                 .toString()
+                 .trim()
+                 .equalsIgnoreCase(p.sValue))
             {
-               if(et.getText()
-                    .toString()
-                    .trim()
-                    .equalsIgnoreCase(p.sValue))
-               {
-                  isFound = true;
-                  ((Property) fieldAutoCompleteTextView.getTag()).copy(p);
-                  break;
-               }
+               isFound = true;
+               ((Property) fieldAutoCompleteTextView.getTag()).copy(p);
+               break;
             }
-            if(!isFound)
-            {
-               ((Property) fieldAutoCompleteTextView.getTag()).iID = 0;
-               ((Property) fieldAutoCompleteTextView.getTag()).sValue = et.getText()
-                                                                          .toString();
-            }
+         }
+         if(!isFound)
+         {
+            ((Property) fieldAutoCompleteTextView.getTag()).iID = 0;
+            ((Property) fieldAutoCompleteTextView.getTag()).sValue = editText.getText()
+                                                                       .toString();
          }
       });
 
@@ -238,7 +205,7 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
       if(property.iID == 0) // The book has not such a property
          book.alProperties.add(property);
 
-      ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(context, R.layout.spinner_item)
+      ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(context, R.layout.spinner_item)
       {
          @NonNull
          @Override
@@ -246,7 +213,7 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
          {
             View view = super.getView(position, convertView, parent);
             view.setPadding(0, view.getPaddingTop(), view.getPaddingRight(), view.getPaddingBottom()); // Removing leading pad
-            if(position == 0)
+            if (position == 0)
                ((TextView) view.findViewById(android.R.id.text1)).setTextColor(ResourcesCompat.getColor(context.getResources(), R.color.text, null));
             return view;
          }
@@ -255,7 +222,7 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
          public View getDropDownView(int position, View convertView, @NonNull ViewGroup parent)
          {
             View view;
-            if(position == 0)
+            if (position == 0)
             {
                TextView textView = new TextView(getContext());
                textView.setHeight(0);
@@ -309,10 +276,7 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
    public void addFieldMultiText(ViewGroup rootView, final Field field)
    {
       final FieldMultiText fieldMultiText = new FieldMultiText(context);
-      if(Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1)
-         fieldMultiText.setId(Utils.generateViewId());
-      else
-         fieldMultiText.setId(View.generateViewId());
+      fieldMultiText.setId(View.generateViewId());
       if(vPrevious != null)
          vPrevious.setNextFocusDownId(R.id.et_author_1);
       String[] tsNames = field.sName.split("\\|");
@@ -396,30 +360,25 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
       }
 
       fieldMultiSpinner.setItems(alItems);
-      fieldMultiSpinner.setOnUpdateListener(new FieldMultiSpinner.OnUpdateListener()
-      {
-         @Override
-         public void onUpdate(FieldMultiSpinner.Item item)
+      fieldMultiSpinner.setOnUpdateListener(item -> {
+         boolean isFound = false;
+         for(Property propertyValue : propertyValues)
          {
-            boolean isFound = false;
-            for(Property propertyValue : propertyValues)
+            if(propertyValue.sValue.equalsIgnoreCase(item.getTitle()))
             {
-               if(propertyValue.sValue.equalsIgnoreCase(item.getTitle()))
-               {
-                  isFound = true;
-                  if(item.isSelected())
-                     book.alProperties.add(propertyValue);
-                  else
-                     book.alProperties.remove(propertyValue);
-                  break;
-               }
+               isFound = true;
+               if(item.isSelected())
+                  book.alProperties.add(propertyValue);
+               else
+                  book.alProperties.remove(propertyValue);
+               break;
             }
-            if(!isFound)
-            {
-               Property newPropertyValue = new Property(field.iID, item.getTitle());
-               propertyValues.add(newPropertyValue);
-               book.alProperties.add(newPropertyValue);
-            }
+         }
+         if(!isFound)
+         {
+            Property newPropertyValue = new Property(field.iID, item.getTitle());
+            propertyValues.add(newPropertyValue);
+            book.alProperties.add(newPropertyValue);
          }
       });
 
@@ -484,30 +443,24 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
          }
       });
 
-      fieldMoney.setUpdateListener(new EditTextX.OnUpdateListener()
-      {
-
-         @Override
-         public void onUpdate(EditText et)
+      fieldMoney.setUpdateListener(editText -> {
+         String sValue = editText.getText()
+                           .toString();
+         int iValue;
+         if(sValue.isEmpty() || sValue.matches("-|,|-,"))
+            iValue = 0;
+         else
          {
-            String sValue = et.getText()
-                              .toString();
-            int iValue;
-            if(sValue.isEmpty() || sValue.matches("-|,|-,"))
-               iValue = 0;
-            else
-            {
-               String[] tsValue = sValue.split(String.format("\\%s", DBAdapter.separator));
+            String[] tsValue = sValue.split(String.format("\\%s", DBAdapter.separator));
 //               String [] tsValue = sValue.split("\\.");
 
-               iValue = (tsValue[0].isEmpty() ? 0 : Integer.valueOf(tsValue[0]) * 100) + (tsValue.length == 2 ?
-                     (sValue.contains("-") ? -1 : 1) * (tsValue[1].length() == 1 ? 10 : 1) * Integer.valueOf(tsValue[1]) : 0);
-            }
-
-            price.iValue = iValue;
-            ((Changeable<String>) fieldMoney.getTag()).value = price.toString();
-
+            iValue = (tsValue[0].isEmpty() ? 0 : Integer.valueOf(tsValue[0]) * 100) + (tsValue.length == 2 ?
+                  (sValue.contains("-") ? -1 : 1) * (tsValue[1].length() == 1 ? 10 : 1) * Integer.valueOf(tsValue[1]) : 0);
          }
+
+         price.iValue = iValue;
+         ((Changeable<String>) fieldMoney.getTag()).value = price.toString();
+
       });
 
       rootView.addView(fieldMoney);

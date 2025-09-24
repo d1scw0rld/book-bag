@@ -22,31 +22,6 @@ public class BookFragment extends BaseFragment implements IBackPressListener
 {
    private static final String SAVED_BOOK_ID  = "saved_book_id";
    private long iBookID = 0;
-   private ActionBar actionBar;
-
-   @SuppressLint("RestrictedApi")
-   @Override
-   public void onCreate(Bundle savedInstanceState)
-   {
-      super.onCreate(savedInstanceState);
-      actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
-      if(actionBar != null)
-         actionBar.setShowHideAnimationEnabled(false);
-   }
-
-   @Override
-   public void onStart()
-   {
-      super.onStart();
-      actionBar.hide();
-   }
-
-   @Override
-   public void onStop()
-   {
-      super.onStop();
-      actionBar.show();
-   }
 
    @Nullable
    @Override
@@ -54,6 +29,16 @@ public class BookFragment extends BaseFragment implements IBackPressListener
    {
       View view = inflater.inflate(R.layout.fragment_book, container, false);
       setHasOptionsMenu(true);
+
+      Toolbar toolbar = view.findViewById(R.id.detail_toolbar);
+      AppCompatActivity activity = (AppCompatActivity) requireActivity();
+      if (toolbar != null)
+      {
+         activity.setSupportActionBar(toolbar);
+         activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+         activity.getSupportActionBar().setHomeButtonEnabled(true);
+      }
+
 
       if(savedInstanceState != null)
          iBookID = savedInstanceState.getLong(SAVED_BOOK_ID);
@@ -66,12 +51,6 @@ public class BookFragment extends BaseFragment implements IBackPressListener
    @Override
    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
    {
-
-      Toolbar toolbar = view.findViewById(R.id.detail_toolbar);
-      toolbar.inflateMenu(R.menu.menu_details);
-      toolbar.setOnMenuItemClickListener(this::onOptionsItemSelected);
-      NavigationUI.setupWithNavController(toolbar, NavHostFragment.findNavController(this));
-
       view.findViewById(R.id.fab_edit_book).setOnClickListener(v -> navigateToEditBook(v, iBookID));
 
       if (savedInstanceState == null)
@@ -134,7 +113,6 @@ public class BookFragment extends BaseFragment implements IBackPressListener
       arguments.putLong(BookDetailFragment.BOOK_ID, iBookID);
       BookDetailFragment fragment = new BookDetailFragment();
       fragment.setArguments(arguments);
-//      requireActivity().getSupportFragmentManager()
       getChildFragmentManager().beginTransaction()
                                .replace(R.id.book_detail_container, fragment)
                                .commitAllowingStateLoss();
@@ -162,7 +140,6 @@ public class BookFragment extends BaseFragment implements IBackPressListener
 
    private long getBookID()
    {
-//      return BookFragmentArgs.fromBundle(requireArguments()).getBookID();
       if(getArguments() != null)
          return BookFragmentArgs.fromBundle(getArguments()).getBookID();
       return 0;

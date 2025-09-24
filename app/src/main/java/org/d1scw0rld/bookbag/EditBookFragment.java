@@ -51,6 +51,10 @@ public class EditBookFragment extends Fragment implements IBackPressListener
 
       requireActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
+
+      Toolbar toolbar = view.findViewById(R.id.toolbar);
+      ((AppCompatActivity)requireActivity()).setSupportActionBar(toolbar);
+
       actionBar = ((AppCompatActivity)requireActivity()).getSupportActionBar();
       if(actionBar != null)
       {
@@ -236,7 +240,9 @@ public class EditBookFragment extends Fragment implements IBackPressListener
 
    private void onBookSave(View v)
    {
-      requireActivity().getCurrentFocus().clearFocus();
+      View currentFocus = requireActivity().getCurrentFocus();
+      if(currentFocus != null)
+         currentFocus.clearFocus();
       v.requestFocus();
 
       hideKeyboard();

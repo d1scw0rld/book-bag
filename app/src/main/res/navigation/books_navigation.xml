@@ -12,8 +12,7 @@
     <fragment
         android:id="@+id/fragment_book_list"
         android:name="org.d1scw0rld.bookbag.BookListFragment"
-        android:label="@string/app_name"
-        >
+        android:label="@string/app_name">
         <action
             android:id="@+id/action_bookListFragment_to_bookFragment"
             app:destination="@id/fragment_book" />

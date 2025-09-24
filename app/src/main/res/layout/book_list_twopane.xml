@@ -48,7 +48,7 @@
         android:divider="?android:attr/dividerHorizontal"
         android:orientation="horizontal"
         android:showDividers="middle"
-        tools:context="org.d1scw0rld.bookbag.BookListActivity">
+        tools:context="org.d1scw0rld.bookbag.MainActivity">
 
         <!--
       This layout is a two-pane layout for the Books

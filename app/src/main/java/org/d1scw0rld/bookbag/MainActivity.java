@@ -1,6 +1,7 @@
 package org.d1scw0rld.bookbag;
 
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -17,11 +18,11 @@ import androidx.navigation.ui.NavigationUI;
  * book details. On tablets, the activity presents the list of books and
  * book details side-by-side using two vertical panes.
  */
-public class BookListActivity extends AppCompatActivity
+public class MainActivity extends AppCompatActivity
 {
-   public final static int SHOW_EDIT_BOOK_COPY = 102;
-
-   private NavController navController;
+//   public final static int SHOW_EDIT_BOOK_COPY = 102;
+//
+//   private NavController navController;
 
    @Override
    protected void onCreate(Bundle savedInstanceState)
@@ -30,9 +31,10 @@ public class BookListActivity extends AppCompatActivity
 //      setContentView(R.layout.activity_frame_content);
 //      setContentView(R.layout.activity_navhost);
       setContentView(R.layout.activity_main);
+      getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE );
 
-      navController = Navigation.findNavController(this, R.id.fragment);
-      NavigationUI.setupActionBarWithNavController(this, navController);
+//      navController = Navigation.findNavController(this, R.id.fragment);
+//      NavigationUI.setupActionBarWithNavController(this, navController);
 
 
       if(savedInstanceState == null)
@@ -46,9 +48,9 @@ public class BookListActivity extends AppCompatActivity
       }
    }
 
-   @Override
-   public boolean onSupportNavigateUp()
-   {
-      return NavigationUI.navigateUp(navController, (DrawerLayout) null);
-   }
+//   @Override
+//   public boolean onSupportNavigateUp()
+//   {
+//      return NavigationUI.navigateUp(navController, (DrawerLayout) null);
+//   }
 }

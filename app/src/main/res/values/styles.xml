@@ -3,9 +3,13 @@
     <!-- Base application theme. -->
 
 <!--    <style name="AppTheme" parent="Base.Theme.AppCompat.Light.DarkActionBar">-->
-    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
 
         <!-- Customize your theme here. -->
+<!--        <item name="android:windowNoTitle">true</item>-->
+<!--        <item name="android:windowFullscreen">true</item>-->
 
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
@@ -19,7 +23,7 @@
         <!-- <item name="actionOverflowMenuStyle">@style/CMOptionsMenu</item> -->
         <item name="actionModeStyle">@style/LStyled.ActionMode</item>
 <!--         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item> -->
-<!--        <item name="preferenceTheme">@style/SettingsTheme</item>-->
+        <item name="preferenceTheme">@style/SettingsTheme</item>
     </style>
 
     <style name="SettingsTheme" parent="@style/PreferenceThemeOverlay.v14.Material">
@@ -37,7 +41,7 @@
         <item name="divider">?android:dividerHorizontal</item>
         <item name="iconSpaceReserved">false</item>
         <item name="android:activatedBackgroundIndicator">@drawable/listitem_backround</item>
-<!--        <item name="android:layout">@layout/pref_template</item>-->
+        <item name="android:layout">@layout/pref_template</item>
     </style>
 
     <style name="CustomRatingBar" parent="Theme.AppCompat.Light.DarkActionBar">

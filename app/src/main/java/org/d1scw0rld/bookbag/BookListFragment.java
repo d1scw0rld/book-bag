@@ -1,5 +1,6 @@
 package org.d1scw0rld.bookbag;
 
+import android.app.ActionBar;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Environment;
@@ -27,8 +28,10 @@ import java.util.Locale;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.navigation.NavController;
@@ -221,6 +224,15 @@ public class BookListFragment extends BaseFragment
       View view = inflater.inflate(R.layout.fragment_book_list, container, false);
       setHasOptionsMenu(true);
 
+      ActionBar actionBar = requireActivity().getActionBar();
+      if(actionBar !=null)
+      {
+         actionBar.hide();
+      }
+      Toolbar toolbar = view.findViewById(R.id.toolbar);
+      toolbar.setTitle(requireActivity().getTitle());
+      ((AppCompatActivity)requireActivity()).setSupportActionBar(toolbar);
+
       fragmentManager = requireActivity().getSupportFragmentManager();
 
       FileUtils.verifyStoragePermissions(getActivity());
@@ -274,8 +286,8 @@ public class BookListFragment extends BaseFragment
       boolean isUpdated = true;
       if(isUpdated)
          setupRecyclerView(recyclerView, iOrderID);
-      requireContext().getTheme()
-                      .applyStyle(R.style.AppTheme, true);
+//      requireContext().getTheme()
+//                      .applyStyle(R.style.AppTheme, true);
    }
 
    @Override
@@ -335,6 +347,7 @@ public class BookListFragment extends BaseFragment
       {
          if(!file.mkdirs())
          {
+            // TODO Fix it
             throw new RuntimeException("Can't create export folder");
          }
       }

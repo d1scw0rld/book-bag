@@ -16,7 +16,7 @@ import androidx.fragment.app.Fragment;
 
 /**
  * A fragment representing a single book detail screen.
- * This fragment is either contained in a {@link BookListActivity}
+ * This fragment is either contained in a {@link MainActivity}
  * in two-pane mode (on tablets) or a {@link BookFragment}
  * on handsets.
  */
