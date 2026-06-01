@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -63,6 +64,13 @@ public class BookDetailActivity extends AppCompatActivity
          // using a fragment transaction.
          loadFragment(iBookID);
       }
+
+      getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+         @Override
+         public void handleOnBackPressed() {
+            close();
+         }
+      });
    }
 
    @Override
@@ -135,13 +143,6 @@ public class BookDetailActivity extends AppCompatActivity
                                  .commitAllowingStateLoss();
    }
 
-   @Override
-   public void onBackPressed()
-   {
-      super.onBackPressed();
-      close();
-   }
-   
    private void close()
    {
       setResult(resultCode, new Intent());

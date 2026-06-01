@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -185,6 +186,14 @@ public class EditBookActivity extends AppCompatActivity
                break;
          }
       }
+
+      getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+         @Override
+         public void handleOnBackPressed() {
+            setResult(RESULT_CANCELED, new Intent());
+            finish();
+         }
+      });
    }
 
    @Override
@@ -224,14 +233,6 @@ public class EditBookActivity extends AppCompatActivity
       return super.onOptionsItemSelected(item);
    }
    // END_INCLUDE (handle_cancel)
-
-   @Override
-   public void onBackPressed()
-   {
-      super.onBackPressed();
-      setResult(RESULT_CANCELED, new Intent());
-      finish();
-   }
 
    private void saveBook()
    {
