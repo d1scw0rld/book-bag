@@ -15,7 +15,7 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.txt'
             applicationVariants.all { variant ->
                 variant.outputs.all {
                     println("new filename" + outputFileName )
@@ -29,7 +29,7 @@ android {
                     matcherVersionNumber.find()
 
                     newName = newName.replace("-release", '-' + matcherVersionNumber.group(1) + '.' + matcherVersionNumber.group(2) + '.' + matcherVersionNumber.group(3))
-                    outputFileName = new File("", newName)
+                    outputFileName = newName
                 }
             }
         }
