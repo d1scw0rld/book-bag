@@ -1,14 +1,6 @@
 package org.d1scw0rld.bookbag;
 
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.v4.content.res.ResourcesCompat;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.PopupMenu;
-import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
-import android.support.v7.widget.Toolbar;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,16 +8,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.RatingBar;
-import android.widget.RatingBar.OnRatingBarChangeListener;
 import android.widget.TextView;
+
+import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.res.ResourcesCompat;
 
 import org.d1scw0rld.bookbag.dto.Book;
 import org.d1scw0rld.bookbag.dto.Changeable;
@@ -33,9 +27,6 @@ import org.d1scw0rld.bookbag.dto.Date;
 import org.d1scw0rld.bookbag.dto.Property;
 import org.d1scw0rld.bookbag.dto.Field;
 import org.d1scw0rld.bookbag.dto.Price;
-import org.d1scw0rld.bookbag.dto.Utils;
-import org.d1scw0rld.bookbag.fields.AutoCompleteTextViewX;
-import org.d1scw0rld.bookbag.fields.EditTextX;
 import org.d1scw0rld.bookbag.fields.FieldAutoCompleteTextView;
 import org.d1scw0rld.bookbag.fields.FieldCheckBox;
 import org.d1scw0rld.bookbag.fields.FieldDate;
@@ -67,7 +58,7 @@ public class EditBookActivity extends AppCompatActivity
 
    private View vPrevious = null;
 
-   HashMap<MenuItem, View> hmHiddenFileds = new HashMap<>();
+   HashMap<MenuItem, View> hmHiddenFields = new HashMap<>();
 
    @Override
    protected void onCreate(Bundle savedInstanceState)
@@ -92,27 +83,22 @@ public class EditBookActivity extends AppCompatActivity
                           .getParent()).setContentInsetsAbsolute(0, 0);
       actionBar.getCustomView()
                .findViewById(R.id.actionbar_done)
-               .setOnClickListener(new View.OnClickListener()
-               {
-                  @Override
-                  public void onClick(View v)
+               .setOnClickListener(v -> {
+                  assert getCurrentFocus() != null;
+                  getCurrentFocus().clearFocus();
+                  v.requestFocus();
+                  if(book.csTitle.value.trim()
+                                       .isEmpty())
                   {
-                     assert getCurrentFocus() != null;
-                     getCurrentFocus().clearFocus();
-                     v.requestFocus();
-                     if(book.csTitle.value.trim()
-                                          .isEmpty())
-                     {
-                        fBookTitle.setError(getResources().getString(R.string.err_emp_ttl));
-                     }
-                     else
-                     {
-                        fBookTitle.setError(null);
+                     fBookTitle.setError(getResources().getString(R.string.err_emp_ttl));
+                  }
+                  else
+                  {
+                     fBookTitle.setError(null);
 
-                        saveBook();
-                        setResult(RESULT_OK, new Intent());
-                        finish();                  // "Done"
-                     }
+                     saveBook();
+                     setResult(RESULT_OK, new Intent());
+                     finish();                  // "Done"
                   }
                });
       // END_INCLUDE (inflate_set_custom_view)
@@ -137,24 +123,16 @@ public class EditBookActivity extends AppCompatActivity
          book = new Book();
 
       Button btnAddField = findViewById(R.id.btn_add_field);
-      btnAddField.setOnClickListener(new View.OnClickListener()
-      {
-
-         @Override
-         public void onClick(View v)
-         {
-            pmHiddenFields.show();
-         }
-      });
+      btnAddField.setOnClickListener(v -> pmHiddenFields.show());
 
       pmHiddenFields = new PopupMenu(this, btnAddField);
-      pmHiddenFields.setOnMenuItemClickListener(new OnMenuItemClickListener()
+      pmHiddenFields.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
       {
 
          @Override
          public boolean onMenuItemClick(MenuItem menuItem)
          {
-            View view = hmHiddenFileds.get(menuItem);
+            View view = hmHiddenFields.get(menuItem);
             assert view != null;
             view.setVisibility(View.VISIBLE);
             view.requestFocus();
@@ -208,6 +186,14 @@ public class EditBookActivity extends AppCompatActivity
                break;
          }
       }
+
+      getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+         @Override
+         public void handleOnBackPressed() {
+            setResult(RESULT_CANCELED, new Intent());
+            finish();
+         }
+      });
    }
 
    @Override
@@ -247,13 +233,6 @@ public class EditBookActivity extends AppCompatActivity
       return super.onOptionsItemSelected(item);
    }
    // END_INCLUDE (handle_cancel)
-
-   @Override
-   public void onBackPressed()
-   {
-      setResult(RESULT_CANCELED, new Intent());
-      finish();
-   }
 
    private void saveBook()
    {
@@ -321,49 +300,33 @@ public class EditBookActivity extends AppCompatActivity
          fBookTitle = fieldEditTextUpdatableClearable;
          vPrevious = fieldEditTextUpdatableClearable.findViewById(R.id.editTextX);
       }
-      fieldEditTextUpdatableClearable.setUpdateListener(new EditTextX.OnUpdateListener()
-      {
-         @Override
-         public void onUpdate(EditText et)
+      fieldEditTextUpdatableClearable.setUpdateListener(editText -> {
+         Class<?> c = cValue.getGenericType();
+         Class<?> clazz;
+         Object object;
+         try
          {
-            Class<?> c = cValue.getGenericType();
-            Class<?> clazz;
-            Object object;
-            try
-            {
-               clazz = Class.forName(c.getName());
-               Constructor<?> ctor = clazz.getConstructor(String.class);
-               object = ctor.newInstance(et.getText()
-                                           .toString()
-                                           .trim());
+            clazz = Class.forName(c.getName());
+            Constructor<?> constructor = clazz.getConstructor(String.class);
+            object = constructor.newInstance(editText.getText()
+                                              .toString()
+                                               .trim());
 
-            }
-            catch(ClassNotFoundException
-                  | NoSuchMethodException
-                  | SecurityException
-                  | InstantiationException
-                  | IllegalAccessException
-                  | IllegalArgumentException
-                  | InvocationTargetException e)
-            {
-               e.printStackTrace();
-               return;
-            }
-
-            cValue.value = (T) object;
-
-//            if(t instanceof Integer)
-//            {
-//               t = (T) Integer.valueOf(et.getText().toString());
-//               cValue.value = t;
-//            }
-//            else if(t instanceof String)
-//            {
-//               t = (T) et.getText().toString().trim();
-//               cValue.value = t;
-//               
-//            }
          }
+         catch(ClassNotFoundException
+               | NoSuchMethodException
+               | SecurityException
+               | InstantiationException
+               | IllegalAccessException
+               | IllegalArgumentException
+               | InvocationTargetException e)
+         {
+            e.printStackTrace();
+            return;
+         }
+
+         cValue.value = (T) object;
+
       });
       rootView.addView(fieldEditTextUpdatableClearable);
       if(!field.isVisible && cValue.isEmpty())
@@ -395,42 +358,31 @@ public class EditBookActivity extends AppCompatActivity
 
       fieldAutoCompleteTextView.setTag(property);
 
-//      FilteredArrayAdapter filteredArrayAdapter = new FilteredArrayAdapter(this, android.R.layout.select_dialog_item, propertyValues);
       FilteredArrayAdapter<Property> filteredArrayAdapter = new FilteredArrayAdapter<>(this, R.layout.dropdown, propertyValues);
-//      FilteredArrayAdapter filteredArrayAdapter = new FilteredArrayAdapter(this, android.R.layout.simple_expandable_list_item_2, propertyValues);
       fieldAutoCompleteTextView.setAdapter(filteredArrayAdapter);
-      fieldAutoCompleteTextView.setOnItemClickListener(new OnItemClickListener()
-      {
-         public void onItemClick(AdapterView<?> adapter, View view, int position, long rowId)
-         {
-            Property fldSelected = (Property) adapter.getItemAtPosition(position);
-            ((Property) fieldAutoCompleteTextView.getTag()).copy(fldSelected);
-         }
+      fieldAutoCompleteTextView.setOnItemClickListener((adapter, view1, position, rowId) -> {
+         Property fldSelected = (Property) adapter.getItemAtPosition(position);
+         ((Property) fieldAutoCompleteTextView.getTag()).copy(fldSelected);
       });
-      fieldAutoCompleteTextView.setUpdateListener(new AutoCompleteTextViewX.OnUpdateListener()
-      {
-         @Override
-         public void onUpdate(EditText et)
+      fieldAutoCompleteTextView.setUpdateListener(editText -> {
+         boolean isFound = false;
+         for(Property p : propertyValues)
          {
-            boolean isFound = false;
-            for(Property p : propertyValues)
+            if(editText.getText()
+                 .toString()
+                 .trim()
+                 .equalsIgnoreCase(p.sValue))
             {
-               if(et.getText()
-                    .toString()
-                    .trim()
-                    .equalsIgnoreCase(p.sValue))
-               {
-                  isFound = true;
-                  ((Property) fieldAutoCompleteTextView.getTag()).copy(p);
-                  break;
-               }
+               isFound = true;
+               ((Property) fieldAutoCompleteTextView.getTag()).copy(p);
+               break;
             }
-            if(!isFound)
-            {
-               ((Property) fieldAutoCompleteTextView.getTag()).iID = 0;
-               ((Property) fieldAutoCompleteTextView.getTag()).sValue = et.getText()
-                                                                          .toString();
-            }
+         }
+         if(!isFound)
+         {
+            ((Property) fieldAutoCompleteTextView.getTag()).iID = 0;
+            ((Property) fieldAutoCompleteTextView.getTag()).sValue = editText.getText()
+                                                                       .toString();
          }
       });
 
@@ -458,8 +410,42 @@ public class EditBookActivity extends AppCompatActivity
       if(property.iID == 0) // The book has not such a property
          book.alProperties.add(property);
 
+      ArrayAdapter<String> arrayAdapter = getStringArrayAdapter(field, propertyValues);
+
+      fieldSpinner.setAdapter(arrayAdapter);
+      int iSelected = 0;
+      for(int i = 0; i < propertyValues.size(); i++)
+      {
+         if(propertyValues.get(i)
+                         .equals(property))
+            iSelected = i + 1;
+      }
+      fieldSpinner.setSelection(iSelected);
+      fieldSpinner.setTag(property);
+      fieldSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+      {
+         @Override
+         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id)
+         {
+            if(pos > 0)
+               ((Property) fieldSpinner.getTag()).copy(propertyValues.get(pos - 1));
+         }
+
+         @Override
+         public void onNothingSelected(AdapterView<?> parent)
+         {
+         }
+      });
+
+      rootView.addView(fieldSpinner);
+      if(!field.isVisible && property.iID == 0)
+         hideField(fieldSpinner, field.sName);
+   }
+
+   @NonNull
+   private ArrayAdapter<String> getStringArrayAdapter(Field field, ArrayList<Property> propertyValues)
+   {
       ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item)
-//      ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String> (this, R.layout.dropdown)
       {
          @NonNull
          @Override
@@ -497,44 +483,13 @@ public class EditBookActivity extends AppCompatActivity
       {
          arrayAdapter.add(propertyOfType.sValue);
       }
-
-      fieldSpinner.setAdapter(arrayAdapter);
-      int iSelected = 0;
-      for(int i = 0; i < propertyValues.size(); i++)
-      {
-         if(propertyValues.get(i)
-                         .equals(property))
-            iSelected = i + 1;
-      }
-      fieldSpinner.setSelection(iSelected);
-      fieldSpinner.setTag(property);
-      fieldSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
-      {
-         @Override
-         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id)
-         {
-            if(pos > 0)
-               ((Property) fieldSpinner.getTag()).copy(propertyValues.get(pos - 1));
-         }
-
-         @Override
-         public void onNothingSelected(AdapterView<?> parent)
-         {
-         }
-      });
-
-      rootView.addView(fieldSpinner);
-      if(!field.isVisible && property.iID == 0)
-         hideField(fieldSpinner, field.sName);
+      return arrayAdapter;
    }
 
    private void addFieldMultiText(ViewGroup rootView, final Field field)
    {
       final FieldMultiText fieldMultiText = new FieldMultiText(this);
-      if(Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1)
-         fieldMultiText.setId(Utils.generateViewId());
-      else
-         fieldMultiText.setId(View.generateViewId());
+      fieldMultiText.setId(View.generateViewId());
       if(vPrevious != null)
          vPrevious.setNextFocusDownId(R.id.et_author_1);
       String[] tsNames = field.sName.split("\\|");
@@ -545,7 +500,6 @@ public class EditBookActivity extends AppCompatActivity
       final ArrayList<Property> propertyValues = dbAdapter.getPropertyValues(field.iID, true);
       final ArrayList<Property> alItemsValues = new ArrayList<>(propertyValues);
 
-//      final ArrayItemsAdapter filteredArrayAdapter = new ArrayItemsAdapter(this, R.layout.dropdown, alItemsValues);
       final FilteredArrayAdapter<Property> filteredArrayAdapter = new FilteredArrayAdapter<>(this, R.layout.dropdown, alItemsValues);
 
       fieldMultiText.setOnAddRemoveListener(new FieldMultiText.OnAddRemoveFieldListener()
@@ -619,30 +573,25 @@ public class EditBookActivity extends AppCompatActivity
       }
 
       fieldMultiSpinner.setItems(alItems);
-      fieldMultiSpinner.setOnUpdateListener(new FieldMultiSpinner.OnUpdateListener()
-      {
-         @Override
-         public void onUpdate(Item item)
+      fieldMultiSpinner.setOnUpdateListener(item -> {
+         boolean isFound = false;
+         for(Property propertyValue : propertyValues)
          {
-            boolean isFound = false;
-            for(Property propertyValue : propertyValues)
+            if(propertyValue.sValue.equalsIgnoreCase(item.getTitle()))
             {
-               if(propertyValue.sValue.equalsIgnoreCase(item.getTitle()))
-               {
-                  isFound = true;
-                  if(item.isSelected())
-                     book.alProperties.add(propertyValue);
-                  else
-                     book.alProperties.remove(propertyValue);
-                  break;
-               }
+               isFound = true;
+               if(item.isSelected())
+                  book.alProperties.add(propertyValue);
+               else
+                  book.alProperties.remove(propertyValue);
+               break;
             }
-            if(!isFound)
-            {
-               Property newPropertyValue = new Property(field.iID, item.getTitle());
-               propertyValues.add(newPropertyValue);
-               book.alProperties.add(newPropertyValue);
-            }
+         }
+         if(!isFound)
+         {
+            Property newPropertyValue = new Property(field.iID, item.getTitle());
+            propertyValues.add(newPropertyValue);
+            book.alProperties.add(newPropertyValue);
          }
       });
 
@@ -707,30 +656,23 @@ public class EditBookActivity extends AppCompatActivity
          }
       });
 
-      fieldMoney.setUpdateListener(new EditTextX.OnUpdateListener()
-      {
-
-         @Override
-         public void onUpdate(EditText et)
+      fieldMoney.setUpdateListener(editText -> {
+         String sValue = editText.getText()
+                           .toString();
+         int iValue;
+         if(sValue.isEmpty() || sValue.matches("-|,|-,"))
+            iValue = 0;
+         else
          {
-            String sValue = et.getText()
-                              .toString();
-            int iValue;
-            if(sValue.isEmpty() || sValue.matches("-|,|-,"))
-               iValue = 0;
-            else
-            {
-               String[] tsValue = sValue.split(String.format("\\%s", DBAdapter.separator));
-//               String [] tsValue = sValue.split("\\.");
+            String[] tsValue = sValue.split(String.format("\\%s", DBAdapter.separator));
 
-               iValue = (tsValue[0].isEmpty() ? 0 : Integer.valueOf(tsValue[0]) * 100) + (tsValue.length == 2 ?
-                     (sValue.contains("-") ? -1 : 1) * (tsValue[1].length() == 1 ? 10 : 1) * Integer.valueOf(tsValue[1]) : 0);
-            }
-
-            price.iValue = iValue;
-            ((Changeable<String>) fieldMoney.getTag()).value = price.toString();
-
+            iValue = (tsValue[0].isEmpty() ? 0 : Integer.parseInt(tsValue[0]) * 100) + (tsValue.length == 2 ?
+                  (sValue.contains("-") ? -1 : 1) * (tsValue[1].length() == 1 ? 10 : 1) * Integer.parseInt(tsValue[1]) : 0);
          }
+
+         price.iValue = iValue;
+         ((Changeable<String>) fieldMoney.getTag()).value = price.toString();
+
       });
 
       rootView.addView(fieldMoney);
@@ -818,29 +760,22 @@ public class EditBookActivity extends AppCompatActivity
       }
       fieldRating.setTag(property);
 
-      fieldRating.setOnRatingBarChangeListener(new OnRatingBarChangeListener()
-      {
-         @Override
-         public void onRatingChanged(RatingBar ratingBar,
-                                     float rating,
-                                     boolean fromUser)
+      fieldRating.setOnRatingBarChangeListener((ratingBar, rating, fromUser) -> {
+         String sValue = String.valueOf(rating);
+         boolean isFound = false;
+         for(Property propertyOfType : propertyValues)
          {
-            String sValue = String.valueOf(rating);
-            boolean isFound = false;
-            for(Property propertyOfType : propertyValues)
+            if(propertyOfType.sValue.equalsIgnoreCase(sValue))
             {
-               if(propertyOfType.sValue.equalsIgnoreCase(sValue))
-               {
-                  isFound = true;
-                  ((Property) fieldRating.getTag()).copy(propertyOfType);
-                  break;
-               }
+               isFound = true;
+               ((Property) fieldRating.getTag()).copy(propertyOfType);
+               break;
             }
-            if(!isFound)
-            {
-               ((Property) fieldRating.getTag()).iID = 0;
-               ((Property) fieldRating.getTag()).sValue = sValue;
-            }
+         }
+         if(!isFound)
+         {
+            ((Property) fieldRating.getTag()).iID = 0;
+            ((Property) fieldRating.getTag()).sValue = sValue;
          }
       });
 
@@ -876,28 +811,22 @@ public class EditBookActivity extends AppCompatActivity
       }
       fieldCheckBox.setTag(property);
 
-      fieldCheckBox.setOnCheckedChangeListener(new OnCheckedChangeListener()
-      {
-
-         @Override
-         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+      fieldCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+         String sValue = String.valueOf(isChecked);
+         boolean isFound = false;
+         for(Property propertyValue : propertyValues)
          {
-            String sValue = String.valueOf(isChecked);
-            boolean isFound = false;
-            for(Property propertyValue : propertyValues)
+            if(propertyValue.sValue.equalsIgnoreCase(sValue))
             {
-               if(propertyValue.sValue.equalsIgnoreCase(sValue))
-               {
-                  isFound = true;
-                  ((Property) fieldCheckBox.getTag()).copy(propertyValue);
-                  break;
-               }
+               isFound = true;
+               ((Property) fieldCheckBox.getTag()).copy(propertyValue);
+               break;
             }
-            if(!isFound)
-            {
-               ((Property) fieldCheckBox.getTag()).iID = 0;
-               ((Property) fieldCheckBox.getTag()).sValue = sValue;
-            }
+         }
+         if(!isFound)
+         {
+            ((Property) fieldCheckBox.getTag()).iID = 0;
+            ((Property) fieldCheckBox.getTag()).sValue = sValue;
          }
       });
 
@@ -914,20 +843,20 @@ public class EditBookActivity extends AppCompatActivity
 
       pmHiddenFields.getMenu()
                     .add(Menu.NONE, pmHiddenFields.getMenu().size(),0, sName);
-      hmHiddenFileds.put(pmHiddenFields.getMenu().getItem(pmHiddenFields.getMenu().size() - 1), view);
+      hmHiddenFields.put(pmHiddenFields.getMenu().getItem(pmHiddenFields.getMenu().size() - 1), view);
    }
 
    private boolean hasNotPropertiesOfType(int iTypeID)
    {
-      boolean hasProperitesOfType = false;
+      boolean hasPropertiesOfType = false;
       for(Property property : book.alProperties)
       {
          if(property.iFieldTypeID == iTypeID)
          {
-            hasProperitesOfType = true;
+            hasPropertiesOfType = true;
             break;
          }
       }
-      return !hasProperitesOfType;
+      return !hasPropertiesOfType;
    }
 }

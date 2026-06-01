@@ -34,14 +34,13 @@ public class FieldMultiText extends LinearLayout
       void onItemSelect(View view, Property selection);
    }
 
-   private LayoutInflater                 inflater;
-   private Title                          title;
-   private LinearLayout                   llFields;
-   private String                         hint = "";
-   private String                         contentDescription = "";
-//   private ArrayAdapter<IItem> adapter;
+   private LayoutInflater inflater;
+   private Title title;
+   private LinearLayout llFields;
+   private String hint = "";
+   private String contentDescription = "";
    private FilteredArrayAdapter<Property> adapter;
-   private OnAddRemoveFieldListener       onAddRemoveFieldListener;
+   private OnAddRemoveFieldListener onAddRemoveFieldListener;
 
    public FieldMultiText(Context context)
    {
@@ -208,11 +207,6 @@ public class FieldMultiText extends LinearLayout
       this.onAddRemoveFieldListener = onAddRemoveFieldListener;
    }   
 
-//   public interface Item extends IItem
-//   {
-//      String getValue();
-//   }
-   
    public void setItems(FilteredArrayAdapter<Property> adapter, ArrayList<Property> alItems)
    {
       this.adapter = adapter;

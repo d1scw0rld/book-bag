@@ -22,5 +22,3 @@
         android:layout_margin="@dimen/text_margin"
         android:textAppearance="?attr/textAppearanceListItem"/>
 </LinearLayout>
-<!-- android:background="@drawable/background_selector_accent" -->
-<!--         android:textColor="@drawable/text_selector_white" -->

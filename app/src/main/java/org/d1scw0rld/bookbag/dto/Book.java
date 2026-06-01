@@ -50,8 +50,6 @@ public class Book
                int iVolume,
                int iPublicationDate,
                int iPages,
-//               int iPrice,
-//               int iValue,
                String sPrice,
                String sValue,
                int iDueDate,
@@ -74,24 +72,4 @@ public class Book
       csISBN = new Changeable<>(sISBN);
       csWeb = new Changeable<>(sWeb);
    }
-
-//   public void addProperty(Property property)
-//   {
-//      alProperties.add(property);
-//   }
-//
-//   public Property getProperty(int i)
-//   {
-//      return alProperties.get(i);
-//   }
-//
-//   public void removeProperty(int i)
-//   {
-//      alProperties.remove(i);
-//   }
-//
-//   public int getPropertiesSize()
-//   {
-//      return alProperties.size();
-//   }
 }

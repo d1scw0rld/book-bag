@@ -4,10 +4,7 @@ import java.util.ArrayList;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +12,11 @@ import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+
+import com.google.android.material.appbar.CollapsingToolbarLayout;
 
 import org.d1scw0rld.bookbag.dto.Book;
 import org.d1scw0rld.bookbag.dto.Date;
@@ -39,7 +41,6 @@ public class BookDetailFragment extends Fragment
    /**
     * The dummy content this fragment is presenting.
     */
-//   private DummyContent.DummyItem mItem;
    private final static String SEP = ", ";
    
    private Book oBook;
@@ -131,10 +132,6 @@ public class BookDetailFragment extends Fragment
                   {
                      switch(field.iID)
                      {
-                        case DBAdapter.FLD_TITLE:
-                           sValue = oBook.csTitle.value;
-                        break;
-                        
                         case DBAdapter.FLD_DESCRIPTION:
                            sValue = oBook.csDescription.value;
                         break;
@@ -229,7 +226,7 @@ public class BookDetailFragment extends Fragment
                      {
                         case Field.TYPE_MULTIFIELD:
                         case Field.TYPE_MULTI_SPINNER:
-                           String tsNames[] = field.sName.split("\\|");
+                           String[] tsNames = field.sName.split("\\|");
                            if(tsNames.length > 1)
                               sName = tsNames[1];
                            sValue += (!sValue.trim().isEmpty() ? SEP : "") + oProperty.sValue;

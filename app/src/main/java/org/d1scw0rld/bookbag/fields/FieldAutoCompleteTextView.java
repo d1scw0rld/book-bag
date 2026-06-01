@@ -117,7 +117,6 @@ public class FieldAutoCompleteTextView extends LinearLayout
       if(oProperty != null && !oProperty.sValue.isEmpty())
          oAutoCompleteTextViewX.setText(oProperty.sValue);
 
-//      ArrayItemsAdapter oArrayAdapter = new ArrayItemsAdapter(context, android.R.layout.select_dialog_item, alPropertyValues);
       FilteredArrayAdapter<Property> oArrayAdapter = new FilteredArrayAdapter<>(context, android.R.layout.select_dialog_item, alPropertyValues);
       oAutoCompleteTextViewX.setAdapter(oArrayAdapter);
    }
@@ -186,12 +185,7 @@ public class FieldAutoCompleteTextView extends LinearLayout
    {
       oAutoCompleteTextViewX.setOnUpdateListener(onUpdateListener);
    }
-   
-//   public void setUpdateListener(OnUpdateListener onUpdateListener)
-//   {
-//      this.onUpdateListener = onUpdateListener;
-//   }
-   
+
    public void setCallback(Callback callback)
    {
       oAutoCompleteTextViewX.setCallback(callback);
@@ -206,10 +200,4 @@ public class FieldAutoCompleteTextView extends LinearLayout
    {
       oAutoCompleteTextViewX.setOnItemClickListener(l);
    }
- 
-//   public interface OnUpdateListener
-//   {
-//      public void onUpdate(FieldAutoCompleteTextView oFieldAutoCompleteTextView, int position);
-//      public void onUpdate(EditText et);
-//   }
 }

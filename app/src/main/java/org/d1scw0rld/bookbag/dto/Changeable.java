@@ -1,6 +1,6 @@
 package org.d1scw0rld.bookbag.dto;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 public class Changeable<T>
 {
@@ -21,16 +21,11 @@ public class Changeable<T>
    {
       return value.getClass();
    }
-   
-//   public void set(T value)
-//   {
-//      this.value = value;
-//   }
 
    public boolean equals(Object other) 
    {
       if (other instanceof Changeable) 
-         return value.equals(((Changeable)other).value);
+         return value.equals(((Changeable<?>)other).value);
       else 
          return value.equals(other);
    }

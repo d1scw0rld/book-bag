@@ -8,7 +8,7 @@ public class ParentResult implements Parent<Result>
    
    private String sName;
    
-   private List<Result> lsChildren;
+   private final List<Result> lsChildren;
 
    /**
     * Your constructor and any other accessor

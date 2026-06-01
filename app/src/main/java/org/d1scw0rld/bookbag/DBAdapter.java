@@ -113,7 +113,7 @@ public class DBAdapter
    
 	private SQLiteDatabase db;
 	private final Context context;
-	private DBOpenHelper dbHelper;
+	private final DBOpenHelper dbHelper;
 	
 	public final static char separator = DecimalFormatSymbols.getInstance().getDecimalSeparator();
 
@@ -210,36 +210,6 @@ public class DBAdapter
 	{
 		db.close();
 	}
-
-//   public ArrayList<Result> getBooksOrderedBy(String query)
-//   {
-//      if(Debug.ON)
-//      {
-//         return null;
-//      }
-//      else
-//      {
-//         ArrayList<Result> alResults = new ArrayList<Result>();
-//
-//         Cursor cursor = db.rawQuery(query, null);
-//         Result result;
-//
-//         if(cursor.moveToFirst())
-//         {
-//            do
-//            {
-//
-//               result = new Result();
-//               result.id = Integer.parseInt(cursor.getString(0));
-//               result.content = cursor.getString(1);
-//               alResults.add(result);
-//            } while (cursor.moveToNext());
-//         }
-//         cursor.close();
-//
-//         return alResults;
-//      }
-//   }
 
    private ArrayList<ParentResult> getBooksOrderedBy(String query)
    {
@@ -604,8 +574,6 @@ public class DBAdapter
                           Integer.parseInt(cursor.getString(ID_KEY_VLM)),
                           Integer.parseInt(cursor.getString(ID_KEY_PBL_DT)),
                           Integer.parseInt(cursor.getString(ID_KEY_PGS)),
-                          // Integer.parseInt(cursor.getString(ID_KEY_PRC)),
-                          // Integer.parseInt(cursor.getString(ID_KEY_VL)),
                           cursor.getString(ID_KEY_PRC),
                           cursor.getString(ID_KEY_VL),
                           Integer.parseInt(cursor.getString(ID_KEY_DUE_DT)),
@@ -639,9 +607,8 @@ public class DBAdapter
       return oBook;
    }
 
-   boolean deleteBook(long iBookID)
+   void deleteBook(long iBookID)
    {
-      boolean result = true;
 
       db.beginTransaction();
       try
@@ -654,7 +621,6 @@ public class DBAdapter
       catch(Exception e)
       {
          Log.e(TAG, e.getMessage());
-         result = false;
       }
       finally
       {
@@ -662,13 +628,11 @@ public class DBAdapter
          shrink();
       }
 
-      return result;
    }
 
-   boolean updateBook(Book oBook)
+   void updateBook(Book oBook)
    {
       ContentValues oValues;
-      boolean result = true;
 
       db.beginTransaction();
       try
@@ -714,14 +678,12 @@ public class DBAdapter
       catch(Exception e)
       {
          Log.e(TAG, e.getMessage());
-         result = false;
       }
       finally
       {
          db.endTransaction();
          shrink();
       }
-      return result;
    }
 
    private void shrink()
@@ -731,7 +693,7 @@ public class DBAdapter
 
    private static class DBOpenHelper extends SQLiteOpenHelper
 	{
-      private Context context;
+      private final Context context;
 		
       DBOpenHelper(Context context, String name, CursorFactory factory, int version)
 		{
@@ -753,10 +715,10 @@ public class DBAdapter
 	             iValuesID,
                 iFieldID;
 
-	         String sFieldName, 
-	                tsValues[];
+	         String sFieldName;
+            String[] tsValues;
 
-	         TypedArray taField;
+            TypedArray taField;
 	         
 	         ContentValues values;
 	         

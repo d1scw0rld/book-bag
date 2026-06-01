@@ -110,17 +110,6 @@ public class FieldMoney extends LinearLayout
       oEditTextX.setHint(hint);
    }
    
-//   public Price getPrice()
-//   {
-//      return oPrice;
-//   }
-//
-//   public void setPrice(Price oPrice)
-//   {
-//      this.oPrice = oPrice;
-//      setValue(oPrice.iValue);
-//   }
-
    public void setAdapter(ArrayAdapter<?> adapter)
    {
       oSpinner.setAdapter(adapter);
@@ -148,10 +137,7 @@ public class FieldMoney extends LinearLayout
 
       DecimalDigitsInputFilter()
       {
-//          mPattern = Pattern.compile("([-1-9]{1}[0-9]{0,2}([0-9]{3})*(\\.[0-9]{0,2})?|[1-9]{1}[0-9]{0,}(\\.[0-9]{0,2})?|0(\\.[0-9]{0,2})?|(\\.[0-9]{1,2})?) \u20ac");
-//          mPattern = Pattern.compile("((([\\-1-9]?\\d{0,3}))|([\\-1-9]?\\d{0,3}(\\.\\d?)?)|([\\-1-9]?\\d{0,3}(\\.\\d{0,2})?))");
           mPattern = Pattern.compile("0*[1-9]?\\d{0,3}(\\" + DBAdapter.separator + "\\d{0,2})?");
-//          mPattern = Pattern.compile("((((\\-\\d)?\\d{0,6}))|([\\-1-9]?\\d{0,4}(\\.\\d?)?)|([\\-1-9]?\\d{0,3}(\\.\\d{0,2})?)) \u20ac");
       }
 
       @Override
@@ -166,7 +152,6 @@ public class FieldMoney extends LinearLayout
          String result = destPrefix + formatedSource + destSuffix;
 
          result = result.replace(",", ".");
-//         result = result.replace(".", ",");
 
          Matcher matcher = mPattern.matcher(result);
 

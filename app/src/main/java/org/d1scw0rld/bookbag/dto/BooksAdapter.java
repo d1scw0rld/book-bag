@@ -1,8 +1,6 @@
 package org.d1scw0rld.bookbag.dto;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -13,6 +11,9 @@ import android.view.ViewGroup;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 
 import org.d1scw0rld.bookbag.R;
 
@@ -28,7 +29,7 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
    
    private String sFilter = "";
    
-   private ArrayList<BookListItem> alListItemsNotFiltered; 
+   private final ArrayList<BookListItem> alListItemsNotFiltered;
    
    private OnClickListener onClickListener = null;
 
@@ -40,7 +41,6 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
 
       setItems(generateItems(alParentsResults));
       alListItemsNotFiltered = new ArrayList<>(allItems);
-//      alListItemsNotFiltered.addAll(allItems);
    }
 
    @Override
@@ -85,7 +85,7 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
    {
       TextView name;
 
-      private ImageView arrow;
+      private final ImageView arrow;
 
       HeaderViewHolder(View view)
       {
@@ -106,47 +106,43 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
       public void setExpanded(boolean expanded)
       {
          super.setExpanded(expanded);
-//         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
          arrow.setRotation(expanded ? ROTATED_POSITION : INITIAL_POSITION);
       }      
       
       @Override
       public void onExpansionToggled(boolean expanded)
       {
-//         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-//         {
-            RotateAnimation rotateAnimation;
-            if(expanded)
-            { 
-               // rotate counterclockwise
-               rotateAnimation = new RotateAnimation(ROTATED_POSITION,
-                                                     INITIAL_POSITION,
-                                                     RotateAnimation.RELATIVE_TO_SELF,
-                                                     0.5f,
-                                                     RotateAnimation.RELATIVE_TO_SELF,
-                                                     0.5f);
+         RotateAnimation rotateAnimation;
+         if(expanded)
+         {
+            // rotate counterclockwise
+            rotateAnimation = new RotateAnimation(ROTATED_POSITION,
+                                                  INITIAL_POSITION,
+                                                  RotateAnimation.RELATIVE_TO_SELF,
+                                                  0.5f,
+                                                  RotateAnimation.RELATIVE_TO_SELF,
+                                                  0.5f);
 
-            }
-            else
-            {
-               // rotate clockwise
-               rotateAnimation = new RotateAnimation(-1 * ROTATED_POSITION,
-                                                     INITIAL_POSITION,
-                                                     RotateAnimation.RELATIVE_TO_SELF,
-                                                     0.5f,
-                                                     RotateAnimation.RELATIVE_TO_SELF,
-                                                     0.5f);
-
-            }
-
-            rotateAnimation.setDuration(200);
-            rotateAnimation.setFillAfter(true);
-            arrow.startAnimation(rotateAnimation);
          }
-//      }
+         else
+         {
+            // rotate clockwise
+            rotateAnimation = new RotateAnimation(-1 * ROTATED_POSITION,
+                                                  INITIAL_POSITION,
+                                                  RotateAnimation.RELATIVE_TO_SELF,
+                                                  0.5f,
+                                                  RotateAnimation.RELATIVE_TO_SELF,
+                                                  0.5f);
+
+         }
+
+         rotateAnimation.setDuration(200);
+         rotateAnimation.setFillAfter(true);
+         arrow.startAnimation(rotateAnimation);
+      }
    }
 
-   public class ItemViewHolder extends ExpandableRecyclerAdapter<BookListItem>.ViewHolder
+   public class ItemViewHolder extends ExpandableRecyclerAdapter.ViewHolder
    {
       public View view;
       
@@ -196,7 +192,7 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
    }
 
    @Override
-   public void onBindViewHolder(@NonNull ExpandableRecyclerAdapter<BookListItem>.ViewHolder holder,
+   public void onBindViewHolder(@NonNull ExpandableRecyclerAdapter.ViewHolder holder,
                                 int position)
    {
       switch (getItemViewType(position))
@@ -222,7 +218,7 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
       ArrayList<BookListItem> alBookListItemsTmp = new ArrayList<>();
       sFilter = charText;
       visibleItems.clear();
-      if(charText.length() == 0)
+      if(charText.isEmpty())
       {
          setItems(alListItemsNotFiltered);
          for(ListItem oListItem : alListItemsNotFiltered)
@@ -240,7 +236,7 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
                 */
                
                if(oBookListItem.ItemType == TYPE_HEADER 
-                  && alBookListItemsTmp.size() > 0 
+                  && !alBookListItemsTmp.isEmpty()
                   && alBookListItemsTmp.get(alBookListItemsTmp.size()-1).ItemType == TYPE_HEADER)
                   alBookListItemsTmp.remove(alBookListItemsTmp.size()-1);
                if(oBookListItem.ItemType == TYPE_ITEM)
@@ -248,15 +244,13 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
                alBookListItemsTmp.add(oBookListItem);
             }
          }
-         if(alBookListItemsTmp.size() > 0 
+         if(!alBookListItemsTmp.isEmpty()
             && alBookListItemsTmp.get(alBookListItemsTmp.size()-1).ItemType == TYPE_HEADER)
             alBookListItemsTmp.remove(alBookListItemsTmp.size()-1);
          setItems(alBookListItemsTmp);
       }
       
       expandAll();
-      
-//      notifyDataSetChanged();
    }
 
    public int getAllChildrenCount()
@@ -288,9 +282,4 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
       if(visibleItems.get(visiblePosition-1).ItemType == TYPE_HEADER && (visiblePosition == visibleItems.size() || visibleItems.get(visiblePosition).ItemType == TYPE_HEADER))
          super.removeItemAt(visiblePosition-1);
    }
-   
-//   public boolean isExpandAll()
-//   {
-//      return visibleItems.size() == allItems.size();
-//   }
 }

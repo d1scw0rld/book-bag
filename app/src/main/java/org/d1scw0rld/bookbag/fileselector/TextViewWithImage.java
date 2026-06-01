@@ -17,9 +17,9 @@ public class TextViewWithImage extends LinearLayout
     * Image - in this project will be used to display icon representing the file
     * type
     */
-   private ImageView mImage;
+   private final ImageView mImage;
    /** Text - in this project will be used to display the file name */
-   private TextView mText;
+   private final TextView mText;
 
    public TextViewWithImage(Context context)
    {
