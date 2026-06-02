@@ -41,16 +41,4 @@
       android:orderInCategory="7"
       android:title="@string/action_sort"
       app:showAsAction="always|collapseActionView"/>
-<!--    <item -->
-<!--       android:id="@+id/action_imp_db_test" -->
-<!--       android:orderInCategory="8" -->
-<!--       android:title="Import test" -->
-<!--       app:showAsAction="never"/> -->
-
-<!--       <item -->
-<!--       android:id="@+id/action_exp_db_test" -->
-<!--       android:orderInCategory="9" -->
-<!--       android:title="Export test" -->
-<!--       app:showAsAction="never"/> -->
-   
 </menu>

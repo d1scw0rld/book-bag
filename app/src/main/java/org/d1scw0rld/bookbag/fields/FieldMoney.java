@@ -164,7 +164,6 @@ public class FieldMoney extends LinearLayout implements Field
          String result = destPrefix + formatedSource + destSuffix;
 
          result = result.replace(",", ".");
-//         result = result.replace(".", ",");
 
          Matcher matcher = mPattern.matcher(result);
 

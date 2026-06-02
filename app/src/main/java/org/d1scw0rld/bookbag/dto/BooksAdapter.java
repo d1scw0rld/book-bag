@@ -16,6 +16,9 @@ import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+
 import org.d1scw0rld.bookbag.R;
 
 import java.util.ArrayList;
@@ -154,7 +157,7 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
       }
    }
 
-   public class ItemViewHolder extends ExpandableRecyclerAdapter<BookListItem>.ViewHolder
+   public class ItemViewHolder extends ExpandableRecyclerAdapter.ViewHolder
    {
       public View view;
 
@@ -207,7 +210,7 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
    }
 
    @Override
-   public void onBindViewHolder(@NonNull ExpandableRecyclerAdapter<BookListItem>.ViewHolder holder,
+   public void onBindViewHolder(@NonNull ExpandableRecyclerAdapter.ViewHolder holder,
                                 int position)
    {
       switch(getItemViewType(position))
@@ -236,7 +239,7 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
       ArrayList<BookListItem> alBookListItemsTmp = new ArrayList<>();
       sFilter = charText;
       visibleItems.clear();
-      if(charText.length() == 0)
+      if(charText.isEmpty())
       {
          setItems(alListItemsNotFiltered);
          for(ListItem listItem : alListItemsNotFiltered)
@@ -259,7 +262,7 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
                 */
 
                if(bookListItem.ItemType == TYPE_HEADER
-                     && alBookListItemsTmp.size() > 0
+                     && !alBookListItemsTmp.isEmpty()
                      && alBookListItemsTmp.get(alBookListItemsTmp.size() - 1).ItemType == TYPE_HEADER)
                {
                   alBookListItemsTmp.remove(alBookListItemsTmp.size() - 1);
@@ -271,7 +274,7 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
                alBookListItemsTmp.add(bookListItem);
             }
          }
-         if(alBookListItemsTmp.size() > 0
+         if(!alBookListItemsTmp.isEmpty()
                && alBookListItemsTmp.get(alBookListItemsTmp.size() - 1).ItemType == TYPE_HEADER)
          {
             alBookListItemsTmp.remove(alBookListItemsTmp.size() - 1);

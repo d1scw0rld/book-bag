@@ -10,5 +10,4 @@
    android:paddingEnd="15dip"
    android:textAppearance="?android:attr/textAppearanceMedium"
    android:textColor="?android:attr/textColorPrimary" />
-<!--    android:paddingStart="14dip" -->
 

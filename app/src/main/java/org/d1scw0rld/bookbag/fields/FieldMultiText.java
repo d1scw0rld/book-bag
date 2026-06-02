@@ -34,13 +34,13 @@ public class FieldMultiText extends LinearLayout implements Field
       void onItemSelect(View view, Property selection);
    }
 
-   private LayoutInflater                 inflater;
-   private Title                          title;
-   private LinearLayout                   llFields;
-   private String                         hint = "";
-   private String                         contentDescription = "";
+    private LayoutInflater inflater;
+    private Title title;
+    private LinearLayout llFields;
+    private String hint = "";
+    private String contentDescription = "";
    private FilteredArrayAdapter<Property> adapter;
-   private OnAddRemoveFieldListener       onAddRemoveFieldListener;
+    private OnAddRemoveFieldListener onAddRemoveFieldListener;
 
    public FieldMultiText(Context context)
    {
@@ -176,13 +176,7 @@ public class FieldMultiText extends LinearLayout implements Field
    {
       title.setText(resid);
    }
-
-   @Override
-   public String getTitle()
-   {
-      return title.getTitle();
-   }
-
+   
    public void setTitleColor(int valueColor)
    {
       title.setColor(valueColor);

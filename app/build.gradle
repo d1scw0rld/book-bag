@@ -4,41 +4,23 @@ apply plugin: 'com.android.application'
 apply plugin: 'androidx.navigation.safeargs'
 
 android {
-    compileSdkVersion 35
+    namespace "org.d1scw0rld.bookbag"
+    compileSdkVersion 37
 
     defaultConfig {
         applicationId "org.d1scw0rld.bookbag"
         minSdkVersion 21
-        targetSdkVersion 35
-//        compileOptions {
-//            sourceCompatibility JavaVersion.VERSION_1_7
-//            targetCompatibility JavaVersion.VERSION_1_7
-//        }
+        targetSdkVersion 37
     }
 
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.txt'
             applicationVariants.all { variant ->
-//                variant.outputs.each { output ->
-//                    println("new filename" +outputFileName )
-//                    def projectName = 'BookBag'
-//                    def newName = output.outputFile.name
-//                    newName = newName.replace("app-", projectName + '-')
-//                    def manifestFile = file("src/main/AndroidManifest.xml")
-//                    def patternVersionNumber = Pattern.compile("versionName=\"(\\d+)\\.(\\d+)\\.(\\d+)\"")
-//                    def manifestText = manifestFile.getText()
-//                    def matcherVersionNumber = patternVersionNumber.matcher(manifestText)
-//                    matcherVersionNumber.find()
-//
-//                    newName = newName.replace("-release", '-' + matcherVersionNumber.group(1) + '.' + matcherVersionNumber.group(2) + '.' + matcherVersionNumber.group(3))
-//                    output.outputFileName = new File("", newName)
-//                }
                 variant.outputs.all {
                     println("new filename" + outputFileName )
                     def projectName = 'BookBag'
-//                    project.ext { appName = 'my_app' }
                     def newName = outputFileName
                     newName = newName.replace("app-", projectName + '-')
                     def manifestFile = file("src/main/AndroidManifest.xml")
@@ -48,14 +30,12 @@ android {
                     matcherVersionNumber.find()
 
                     newName = newName.replace("-release", '-' + matcherVersionNumber.group(1) + '.' + matcherVersionNumber.group(2) + '.' + matcherVersionNumber.group(3))
-                    outputFileName = new File("", newName)
+                    outputFileName = newName
                 }
             }
         }
     }
     compileOptions {
-//        sourceCompatibility JavaVersion.VERSION_1_8
-//        targetCompatibility JavaVersion.VERSION_1_8
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
@@ -65,8 +45,6 @@ android {
 dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'com.google.android.material:material:1.12.0'
-//    implementation 'androidx.legacy:legacy-preference-v14:1.0.0'
-//    implementation 'com.android.support:preference-v14:30.0.0'
     implementation "androidx.preference:preference:1.2.1"
     // Keep this lower version, because of ugly preferences screen look
     implementation 'com.wdullaer:materialdatetimepicker:3.6.4'
@@ -76,4 +54,7 @@ dependencies {
 
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'org.jetbrains:annotations:23.0.0'
+//    implementation 'com.wdullaer:materialdatetimepicker:4.2.3'
+    implementation 'com.google.android.material:material:1.13.0'
+    implementation 'androidx.core:core:1.15.0'
 }

@@ -8,10 +8,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.UiThread;
+import androidx.recyclerview.widget.RecyclerView;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdapter.ListItem> extends RecyclerView.Adapter<ExpandableRecyclerAdapter<T>.ViewHolder>
+public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdapter.ListItem> extends RecyclerView.Adapter<ExpandableRecyclerAdapter.ViewHolder>
 {
    Context mContext;
    List<T> allItems = new ArrayList<>();
@@ -60,7 +63,7 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
       return LayoutInflater.from(mContext).inflate(resourceID, viewGroup, false);
    }
 
-   class ViewHolder extends RecyclerView.ViewHolder
+   static class ViewHolder extends RecyclerView.ViewHolder
    {
       ViewHolder(View view)
       {

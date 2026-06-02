@@ -2,6 +2,7 @@ package org.d1scw0rld.bookbag.fields;
 
 import org.d1scw0rld.bookbag.R;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.text.Editable;
@@ -24,7 +25,7 @@ public class EditTextX extends androidx.appcompat.widget.AppCompatEditText
 
    private Callback oCallback = null;
    
-   private OnEditorActionListener onEditorActionListener = new OnEditorActionListener()
+   private final TextView.OnEditorActionListener onEditorActionListener = new TextView.OnEditorActionListener()
    {
       @Override
       public boolean onEditorAction(TextView v, int actionId, KeyEvent event)
@@ -47,25 +48,16 @@ public class EditTextX extends androidx.appcompat.widget.AppCompatEditText
       }
    };
    
-   private OnFocusChangeListener onFocusChangeListener = new OnFocusChangeListener()
-   {
-      @Override
-      public void onFocusChange(View v, boolean hasFocus)
+   private final View.OnFocusChangeListener onFocusChangeListener = (v, hasFocus) -> {
+      updateDeleteIcon(hasFocus);
+
+      if(!hasFocus && onUpdateListener != null)
       {
-         updateDeleteIcon(hasFocus);
-         
-         if(!hasFocus && onUpdateListener != null)
-         {
-            onUpdateListener.onUpdate((EditText) v);
-         }
-//         else
-//         {
-//            ((EditText)v).setHint("");
-//         }
+         onUpdateListener.onUpdate((EditText) v);
       }
-   };   
+   };
    
-   private TextWatcher textWatcher = new TextWatcher() 
+   private final TextWatcher textWatcher = new TextWatcher()
    {
        @Override
        public void beforeTextChanged(CharSequence s, int start, int count, int after) 
@@ -84,29 +76,25 @@ public class EditTextX extends androidx.appcompat.widget.AppCompatEditText
        }
    };
    
-   private OnTouchListener onTouchListener =  new OnTouchListener() 
-   {
-       @Override
-       public boolean onTouch(View v, MotionEvent event) 
-       {
-           final int DRAWABLE_RIGHT = 2;
+   @SuppressLint("ClickableViewAccessibility")
+   private final OnTouchListener onTouchListener = (v, event) -> {
+       final int DRAWABLE_RIGHT = 2;
 
-           if (event.getAction() == MotionEvent.ACTION_UP) 
+       if (event.getAction() == MotionEvent.ACTION_UP)
+       {
+           final Drawable rightDrawable = getCompoundDrawables()[DRAWABLE_RIGHT];
+           if (rightDrawable != null && event.getRawX() >= (getRight() - rightDrawable.getBounds().width()))
            {
-               final Drawable rightDrawable = getCompoundDrawables()[DRAWABLE_RIGHT];
-               if (rightDrawable != null && event.getRawX() >= (getRight() - rightDrawable.getBounds().width())) 
-               {
-                   if (oCallback != null) oCallback.beforeClear(EditTextX.this);
-                   setText("");
-                   requestFocus();
-                   if(onUpdateListener != null)
-                      onUpdateListener.onUpdate((EditText) v);                   
-                   if (oCallback != null) oCallback.afterClear(EditTextX.this);
-                   return false; // New
-               }
+               if (oCallback != null) oCallback.beforeClear(EditTextX.this);
+               setText("");
+               requestFocus();
+               if(onUpdateListener != null)
+                  onUpdateListener.onUpdate((EditText) v);
+               if (oCallback != null) oCallback.afterClear(EditTextX.this);
+               return false; // New
            }
-           return false;
        }
+       return false;
    };
    
    public EditTextX(final Context context)
@@ -162,11 +150,6 @@ public class EditTextX extends androidx.appcompat.widget.AppCompatEditText
       this.onUpdateListener = onUpdateListener;
    }
 
-   public OnUpdateListener getOnUpdateListener()
-   {
-      return onUpdateListener;
-   }
-
    public interface OnUpdateListener
    {
       void onUpdate(EditText et);
@@ -185,20 +168,15 @@ public class EditTextX extends androidx.appcompat.widget.AppCompatEditText
    private void updateDeleteIcon(final String text, final boolean focused) 
    {
       final String currentText = (text != null) ? text : getText().toString();
-      post(new Runnable() 
-      {
-          @Override
-          public void run() 
-          {
-             if (TextUtils.isEmpty(currentText) || !focused) 
-             {
-                setCompoundDrawables(null, null, null, null);
-             } 
-             else 
-             {
-                setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_clear_search_api_holo_light, 0);
-             }
-          }
+      post(() -> {
+         if (TextUtils.isEmpty(currentText) || !focused)
+         {
+            setCompoundDrawables(null, null, null, null);
+         }
+         else
+         {
+            setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_clear_search_api_holo_light, 0);
+         }
       });
    }
    

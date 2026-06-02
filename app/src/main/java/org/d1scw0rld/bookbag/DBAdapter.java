@@ -113,9 +113,9 @@ public class DBAdapter
          + KEY_FLD_ID + " INTEGER)";
 //         + KEY_TP_ID + " INTEGER)";
    
-	private       SQLiteDatabase db;
-	private final Context        context;
-	private final DBOpenHelper   dbHelper;
+	private SQLiteDatabase db;
+	private final Context context;
+	private final DBOpenHelper dbHelper;
 	
 	public final static char separator = DecimalFormatSymbols.getInstance().getDecimalSeparator();
 

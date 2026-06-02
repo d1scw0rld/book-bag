@@ -10,7 +10,6 @@ import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
@@ -25,7 +24,7 @@ public class AutoCompleteTextViewX extends androidx.appcompat.widget.AppCompatAu
 
    private Callback oCallback = null;
 
-   private OnEditorActionListener onEditorActionListener = new OnEditorActionListener()
+   private final OnEditorActionListener onEditorActionListener = new OnEditorActionListener()
    {
       @Override
       public boolean onEditorAction(TextView v, int actionId, KeyEvent event)
@@ -46,25 +45,16 @@ public class AutoCompleteTextViewX extends androidx.appcompat.widget.AppCompatAu
       }
    };
    
-   private OnFocusChangeListener onFocusChangeListener = new OnFocusChangeListener()
-   {
-      @Override
-      public void onFocusChange(View v, boolean hasFocus)
+   private final OnFocusChangeListener onFocusChangeListener = (view, hasFocus) -> {
+      updateDeleteIcon(hasFocus);
+
+      if(!hasFocus && onUpdateListener != null)
       {
-         updateDeleteIcon(hasFocus);
-         
-         if(!hasFocus && onUpdateListener != null)
-         {
-            onUpdateListener.onUpdate((EditText) v);
-         }
-//         else
-//         {
-//            ((EditText)v).setHint("");
-//         }
+         onUpdateListener.onUpdate((EditText) view);
       }
-   };   
+   };
       
-   private TextWatcher textWatcher = new TextWatcher() 
+   private final TextWatcher textWatcher = new TextWatcher()
    {
        @Override
        public void beforeTextChanged(CharSequence s, int start, int count, int after) 
@@ -83,31 +73,26 @@ public class AutoCompleteTextViewX extends androidx.appcompat.widget.AppCompatAu
        }
    };
    
-   private OnTouchListener onTouchListener =  new OnTouchListener() 
-   {
-       @Override
-       public boolean onTouch(View v, MotionEvent event) 
-       {
-           final int DRAWABLE_RIGHT = 2;
-           
-           // Only for warning disposal
-           v.performClick();
+   private final OnTouchListener onTouchListener = (v, event) -> {
+       final int DRAWABLE_RIGHT = 2;
 
-           if (event.getAction() == MotionEvent.ACTION_UP) 
+       // Only for warning disposal
+       v.performClick();
+
+       if (event.getAction() == MotionEvent.ACTION_UP)
+       {
+           final Drawable rightDrawable = getCompoundDrawables()[DRAWABLE_RIGHT];
+           if (rightDrawable != null && event.getRawX() >= (getRight() - rightDrawable.getBounds().width()))
            {
-               final Drawable rightDrawable = getCompoundDrawables()[DRAWABLE_RIGHT];
-               if (rightDrawable != null && event.getRawX() >= (getRight() - rightDrawable.getBounds().width())) 
-               {
-                   if (oCallback != null) oCallback.beforeClear(AutoCompleteTextViewX.this);
-                   setText("");
-                   requestFocus();
-                  ((ArrayAdapter)getAdapter()).getFilter().filter("");
-                   if (oCallback != null) oCallback.afterClear(AutoCompleteTextViewX.this);
-                   return false;
-               }
+               if (oCallback != null) oCallback.beforeClear(AutoCompleteTextViewX.this);
+               setText("");
+               requestFocus();
+              ((ArrayAdapter<?>)getAdapter()).getFilter().filter("");
+               if (oCallback != null) oCallback.afterClear(AutoCompleteTextViewX.this);
+               return false;
            }
-           return false;
        }
+       return false;
    };
    
    public AutoCompleteTextViewX(final Context context)
@@ -193,19 +178,14 @@ public class AutoCompleteTextViewX extends androidx.appcompat.widget.AppCompatAu
    private void updateDeleteIcon(final String text, final boolean focused) 
    {
       final String currentText = (text != null) ? text : getText().toString();
-      post(new Runnable() 
-      {
-          @Override
-          public void run() 
+      post(() -> {
+          if (TextUtils.isEmpty(currentText) || !focused)
           {
-              if (TextUtils.isEmpty(currentText) || !focused) 
-              {
-                  setCompoundDrawables(null, null, null, null);
-              } 
-              else 
-              {
-                  setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_clear_search_api_holo_light, 0);
-              }
+              setCompoundDrawables(null, null, null, null);
+          }
+          else
+          {
+              setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_clear_search_api_holo_light, 0);
           }
       });
    }

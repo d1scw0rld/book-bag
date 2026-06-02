@@ -100,7 +100,8 @@ public class FieldMultiSpinner extends LinearLayout implements Field
       {
          oButton.setText(sButtonText.toString());
          oButton.setTextColor(Color.BLACK);
-      } else
+      }
+      else
       {
          oButton.setText(hint);
          oButton.setTextColor(Color.GRAY);
@@ -114,65 +115,60 @@ public class FieldMultiSpinner extends LinearLayout implements Field
       final PopupMenu popupMenu = new PopupMenu(context, anchorView);
       initPopupMenu(popupMenu, alItems);
 
-      popupMenu.setOnMenuItemClickListener(new OnMenuItemClickListener()
-      {
-         @Override
-         public boolean onMenuItemClick(MenuItem menuItem)
+      popupMenu.setOnMenuItemClickListener(menuItem -> {
+         if(menuItem.getOrder() < alItems.size())
          {
-            if(menuItem.getOrder() < alItems.size())
-            {
-               menuItem.setChecked(!menuItem.isChecked());
-               Item item = alItems.get(menuItem.getOrder());
-               item.setSelected(menuItem.isChecked()); 
+            menuItem.setChecked(!menuItem.isChecked());
+            Item item = alItems.get(menuItem.getOrder());
+            item.setSelected(menuItem.isChecked());
 
-               setButtonText((Button) anchorView, alItems);
-               onUpdateListener.onUpdate(item);
+            setButtonText((Button) anchorView, alItems);
+            onUpdateListener.onUpdate(item);
 
-               popupMenu.show();
-            } 
-            else
-            {
-               AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.AppCompatAlertDialogStyle);
-               builder.setTitle(R.string.add_new);
-               final AppCompatEditText etNewValue = new AppCompatEditText(context);
-               builder.setView(etNewValue);
-               builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
-               {
-                  public void onClick(DialogInterface dialog, int id)
-                  {
-                     String sNewValue = etNewValue.getText().toString().trim();
-                     Item item = new Item(sNewValue);
-                     item.setId(alItems.size());
-                     item.setSelected(true);
-                     alItems.add(item);
-                     setButtonText((Button) anchorView, alItems);
-                     onUpdateListener.onUpdate(item);
-                     popupMenu.dismiss();
-                     initPopupMenu(popupMenu, alItems);
-                     
-                     InputMethodManager imm = (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
-                     imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-                     dialog.cancel();
-                     popupMenu.show();
-                  }
-               });
-
-               builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener()
-               {
-                  public void onClick(DialogInterface dialog, int id)
-                  {
-                     InputMethodManager imm = (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
-                     imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-                     dialog.cancel();
-                     popupMenu.show();
-                  }
-               });
-
-               builder.show();
-
-            }
-            return true;
+            popupMenu.show();
          }
+         else
+         {
+            AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.AppCompatAlertDialogStyle);
+            builder.setTitle(R.string.add_new);
+            final AppCompatEditText etNewValue = new AppCompatEditText(context);
+            builder.setView(etNewValue);
+            builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
+            {
+               public void onClick(DialogInterface dialog, int id)
+               {
+                  String sNewValue = etNewValue.getText().toString().trim();
+                  Item item = new Item(sNewValue);
+                  item.setId(alItems.size());
+                  item.setSelected(true);
+                  alItems.add(item);
+                  setButtonText((Button) anchorView, alItems);
+                  onUpdateListener.onUpdate(item);
+                  popupMenu.dismiss();
+                  initPopupMenu(popupMenu, alItems);
+
+                  InputMethodManager imm = (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
+                  imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+                  dialog.cancel();
+                  popupMenu.show();
+               }
+            });
+
+            builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener()
+            {
+               public void onClick(DialogInterface dialog, int id)
+               {
+                  InputMethodManager imm = (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
+                  imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+                  dialog.cancel();
+                  popupMenu.show();
+               }
+            });
+
+            builder.show();
+
+         }
+         return true;
       });
 
       popupMenu.show();

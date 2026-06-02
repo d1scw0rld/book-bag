@@ -1,5 +1,6 @@
 package org.d1scw0rld.bookbag.dto;
 
+
 import androidx.annotation.NonNull;
 
 public class Property
@@ -39,13 +40,6 @@ public class Property
    {
       return sValue;
    }
-
-
-//   @Override
-//   public String getValue()
-//   {
-//      return sValue;
-//   }
 
    @Override
    public boolean equals(Object o)
