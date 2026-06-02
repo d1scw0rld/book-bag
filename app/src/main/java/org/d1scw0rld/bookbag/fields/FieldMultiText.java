@@ -172,6 +172,12 @@ public class FieldMultiText extends LinearLayout implements Field
       this.title.setText(title);
    }
    
+   @Override
+   public String getTitle()
+   {
+      return title.getTitle();
+   }
+   
    public void setTitle(int resid)
    {
       title.setText(resid);

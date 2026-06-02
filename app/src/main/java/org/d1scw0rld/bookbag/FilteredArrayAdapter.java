@@ -1,8 +1,7 @@
 package org.d1scw0rld.bookbag;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.v4.os.ConfigurationCompat;
+
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -45,7 +44,6 @@ public class FilteredArrayAdapter<T> extends ArrayAdapter<T>
       if(nameFilter == null)
          nameFilter = new FieldFilter(items);
       return nameFilter;
-//          return nameFilter;
    }
 
    private class FieldFilter extends Filter
