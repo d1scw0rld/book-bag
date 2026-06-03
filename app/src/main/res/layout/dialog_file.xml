@@ -1,15 +1,14 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
    xmlns:app="http://schemas.android.com/apk/res-auto"
    android:id="@+id/saveFileDialog"
-   android:layout_width="fill_parent"
-   android:layout_height="fill_parent"
+   android:layout_width="match_parent"
+   android:layout_height="match_parent"
    android:orientation="vertical" >
 
    <androidx.appcompat.widget.Toolbar
       android:id="@+id/dlg_toolbar"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_alignParentTop="true"
       android:background="?attr/colorPrimary"
       android:minHeight="?attr/actionBarSize"
       android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
@@ -17,17 +16,15 @@
 
    <ListView
       android:id="@+id/fileList"
-      android:layout_width="fill_parent"
-      android:layout_height="wrap_content"
-      android:layout_above="@+id/fileLinearLayout2"
-      android:layout_below="@id/dlg_toolbar"
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:layout_weight="1"
       android:padding="10dp" />
 
    <LinearLayout
       android:id="@+id/fileLinearLayout2"
-      android:layout_width="fill_parent"
+      android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_alignParentBottom="true"
       android:orientation="vertical"
       android:padding="10dp" >
 
@@ -40,7 +37,7 @@
 
       <EditText
          android:id="@+id/fileName"
-         android:layout_width="fill_parent"
+         android:layout_width="match_parent"
          android:layout_height="wrap_content"
          android:contentDescription="@string/lbl_ent_fl_nm"
          android:inputType="text" >
@@ -49,4 +46,4 @@
       </EditText>
    </LinearLayout>
 
-</RelativeLayout>
+</LinearLayout>
