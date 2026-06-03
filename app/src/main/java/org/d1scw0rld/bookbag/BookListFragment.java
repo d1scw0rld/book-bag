@@ -1,9 +1,13 @@
 package org.d1scw0rld.bookbag;
 
 import android.app.ActionBar;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.Settings;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -16,7 +20,6 @@ import android.widget.TextView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.d1scw0rld.bookbag.dto.BooksAdapter;
-import org.d1scw0rld.bookbag.dto.FileUtils;
 import org.d1scw0rld.bookbag.fileselector.FileOperation;
 import org.d1scw0rld.bookbag.fileselector.FileSelectorDialog;
 import org.d1scw0rld.bookbag.fileselector.OnHandleFileListener;
@@ -26,8 +29,14 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.SearchView;
@@ -54,6 +63,15 @@ public class BookListFragment extends BaseFragment
                                          ".db"};
 
    private final ArrayList<OrderItem> alOrderItems = new ArrayList<>();
+
+   private enum PendingAction
+   {
+      NONE,
+      IMPORT,
+      EXPORT
+   }
+
+   private PendingAction pendingAction = PendingAction.NONE;
 
    private boolean isExpandAll = false;
    /**
@@ -87,6 +105,50 @@ public class BookListFragment extends BaseFragment
    private FragmentManager fragmentManager;
 
    private FileSelectorDialog fileSelectorDialog;
+
+   private final ActivityResultLauncher<String> requestPermissionLauncher =
+         registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+            if (isGranted)
+            {
+               checkCreateExportFolder(sExportFolderAbsPath);
+               executePendingAction();
+            }
+            else
+            {
+               showToast(R.string.msg_acc_dnd);
+               pendingAction = PendingAction.NONE;
+            }
+         });
+
+   private final ActivityResultLauncher<Intent> manageStorageLauncher =
+         registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R)
+            {
+               if (android.os.Environment.isExternalStorageManager())
+               {
+                  checkCreateExportFolder(sExportFolderAbsPath);
+                  executePendingAction();
+               }
+               else
+               {
+                  showToast(R.string.msg_acc_dnd);
+                  pendingAction = PendingAction.NONE;
+               }
+            }
+         });
+
+   private void executePendingAction()
+   {
+      if (pendingAction == PendingAction.IMPORT)
+      {
+         showImportDbDialog();
+      }
+      else if (pendingAction == PendingAction.EXPORT)
+      {
+         showExportDbDialog();
+      }
+      pendingAction = PendingAction.NONE;
+   }
 
    private final View.OnClickListener onCategoryClickListener = v -> deselectBookView();
 
@@ -235,8 +297,6 @@ public class BookListFragment extends BaseFragment
 
       fragmentManager = requireActivity().getSupportFragmentManager();
 
-      FileUtils.verifyStoragePermissions(getActivity());
-
       preferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
       preferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
       loadPreferences();
@@ -283,11 +343,7 @@ public class BookListFragment extends BaseFragment
       super.onResume();
 
       dbAdapter.open();
-      boolean isUpdated = true;
-      if(isUpdated)
-         setupRecyclerView(recyclerView, iOrderID);
-//      requireContext().getTheme()
-//                      .applyStyle(R.style.AppTheme, true);
+      setupRecyclerView(recyclerView, iOrderID);
    }
 
    @Override
@@ -340,6 +396,56 @@ public class BookListFragment extends BaseFragment
       return Environment.getExternalStorageDirectory() + File.separator + sExportFolder + File.separator;
    }
 
+   private boolean checkAndRequestPermissions(PendingAction action)
+   {
+      pendingAction = action;
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
+      {
+         if (!android.os.Environment.isExternalStorageManager())
+         {
+            showRationaleDialog(() -> {
+               Intent intent = null;
+               try
+               {
+                  intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+                        Uri.fromParts("package", requireContext().getPackageName(), null));
+               }
+               catch (Exception e)
+               {
+                  // fallback to general manage permission settings if package specific settings fail
+               }
+               if (intent == null)
+               {
+                  intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+               }
+               manageStorageLauncher.launch(intent);
+            });
+            return false;
+         }
+      }
+      else
+      {
+         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+               != PackageManager.PERMISSION_GRANTED)
+         {
+            showRationaleDialog(() -> requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE));
+            return false;
+         }
+      }
+       pendingAction = PendingAction.NONE;
+       return true;
+   }
+
+   private void showRationaleDialog(Runnable onConfirm)
+   {
+      new AlertDialog.Builder(requireContext(), R.style.AppCompatAlertDialogStyle)
+            .setTitle(R.string.permission_required_title)
+            .setMessage(R.string.permission_required_message)
+            .setPositiveButton(R.string.permission_required_button, (dialog, which) -> onConfirm.run())
+            .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss())
+            .show();
+   }
+
    private void checkCreateExportFolder(String sExportFolderAbsPath)
    {
       File file = new File(sExportFolderAbsPath);
@@ -347,8 +453,7 @@ public class BookListFragment extends BaseFragment
       {
          if(!file.mkdirs())
          {
-            // TODO Fix it
-            throw new RuntimeException("Can't create export folder");
+            android.util.Log.w("BookListFragment", "Can't create export folder: " + sExportFolderAbsPath);
          }
       }
    }
@@ -376,12 +481,18 @@ public class BookListFragment extends BaseFragment
       int itemId = item.getItemId();
       if(itemId == R.id.action_imp_db)
       {
-         showImportDbDialog();
+         if (checkAndRequestPermissions(PendingAction.IMPORT))
+         {
+            showImportDbDialog();
+         }
          return true;
       }
       else if(itemId == R.id.action_exp_db)
       {
-         showExportDbDialog();
+         if (checkAndRequestPermissions(PendingAction.EXPORT))
+         {
+            showExportDbDialog();
+         }
          return true;
       }
       else if(itemId == R.id.action_exp_all)

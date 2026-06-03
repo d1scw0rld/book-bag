@@ -155,5 +155,8 @@
    <string name="gnr_yng_adt">Young Adult</string>
    <string name="err_emp_ttl">The title is required</string>
    <string name="smp_fl_nm">file name</string>
+   <string name="permission_required_title">Permission Required</string>
+   <string name="permission_required_message">This app needs access to your device\'s storage in order to import or export databases. Please grant the requested permission.</string>
+   <string name="permission_required_button">Grant</string>
 
 </resources>
