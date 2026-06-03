@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -59,10 +60,10 @@ public class BookListFragment extends BaseFragment
                                PREF_EXPAND_ALL = "pref_expand_all",
                                PREF_EXPORT_FOLDER = "pref_export_folder";
 
-   private final String[] mFileFilter = {"*.*",
+   private final String[] fileFilter = {"*.*",
                                          ".db"};
 
-   private final ArrayList<OrderItem> alOrderItems = new ArrayList<>();
+   private final ArrayList<OrderItem> orderItems = new ArrayList<>();
 
    private enum PendingAction
    {
@@ -80,15 +81,15 @@ public class BookListFragment extends BaseFragment
     */
    private boolean isTwoPane;
 
-   private int iOrderID  = DBAdapter.SRT_TTL,
-               iClickedItemNdx = -1;
+   private int orderId  = DBAdapter.SRT_TTL,
+               clickedItemIndex = -1;
 
-   private long bookID;
+   private long bookId;
 
-   private String sExportFolderAbsPath;
+   private String exportFolderAbsPath;
 
-   private TextView tvBooksOrder,
-         tvBooksCount;
+   private TextView booksOrderTextView,
+         booksCountTextView;
 
    private DBAdapter dbAdapter = null;
 
@@ -110,7 +111,7 @@ public class BookListFragment extends BaseFragment
          registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
             if (isGranted)
             {
-               checkCreateExportFolder(sExportFolderAbsPath);
+               checkCreateExportFolder(exportFolderAbsPath);
                executePendingAction();
             }
             else
@@ -126,7 +127,7 @@ public class BookListFragment extends BaseFragment
             {
                if (android.os.Environment.isExternalStorageManager())
                {
-                  checkCreateExportFolder(sExportFolderAbsPath);
+                  checkCreateExportFolder(exportFolderAbsPath);
                   executePendingAction();
                }
                else
@@ -215,9 +216,9 @@ public class BookListFragment extends BaseFragment
       {
          int itemId = item.getItemId();
          if(itemId == R.id.action_edit)
-            navigateToEditBook(requireView(), bookID, false);
+            navigateToEditBook(requireView(), bookId, false);
          else if(itemId == R.id.action_duplicate)
-            navigateToEditBook(requireView(), bookID, true);
+            navigateToEditBook(requireView(), bookId, true);
          else if(itemId == R.id.action_delete)
             deleteBook();
          else
@@ -237,9 +238,9 @@ public class BookListFragment extends BaseFragment
 
    private void deleteBook()
    {
-      dbAdapter.deleteBook(bookID);
-      booksAdapter.removeAt(iClickedItemNdx);
-      tvBooksCount.setText(getResources().getQuantityString(R.plurals.books,
+      dbAdapter.deleteBook(bookId);
+      booksAdapter.removeAt(clickedItemIndex);
+      booksCountTextView.setText(getResources().getQuantityString(R.plurals.books,
                                                             booksAdapter.getAllChildrenCount(),
                                                             booksAdapter.getAllChildrenCount()));
       deselectBookAndHideDetails();
@@ -254,7 +255,7 @@ public class BookListFragment extends BaseFragment
          if(dbAdapter.importDatabase(filePath))
             showToast(R.string.prf_imp_db_scs);
          dbAdapter.open();
-         setupRecyclerView(recyclerView, iOrderID);
+         setupRecyclerView(recyclerView, orderId);
       }
    };
 
@@ -274,8 +275,8 @@ public class BookListFragment extends BaseFragment
       }
       if(key.equalsIgnoreCase(PREF_EXPORT_FOLDER))
       {
-         sExportFolderAbsPath = getExportFolderAbsPath(preferences.getString(PREF_EXPORT_FOLDER, getString(R.string.app_name)));
-         checkCreateExportFolder(sExportFolderAbsPath);
+         exportFolderAbsPath = getExportFolderAbsPath(preferences.getString(PREF_EXPORT_FOLDER, getString(R.string.app_name)));
+         checkCreateExportFolder(exportFolderAbsPath);
       }
    };
 
@@ -300,7 +301,7 @@ public class BookListFragment extends BaseFragment
       preferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
       preferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
       loadPreferences();
-      checkCreateExportFolder(sExportFolderAbsPath);
+      checkCreateExportFolder(exportFolderAbsPath);
 
       dbAdapter = new DBAdapter(getContext());
 
@@ -314,8 +315,8 @@ public class BookListFragment extends BaseFragment
    {
       super.onViewCreated(view, savedInstanceState);
 
-      tvBooksOrder = view.findViewById(R.id.tv_books_order);
-      tvBooksCount = view.findViewById(R.id.tv_books_count);
+      booksOrderTextView = view.findViewById(R.id.tv_books_order);
+      booksCountTextView = view.findViewById(R.id.tv_books_count);
 
       FloatingActionButton fab = view.findViewById(R.id.fab_add_book);
       fab.setOnClickListener(this::navigateToEditBook);
@@ -343,7 +344,7 @@ public class BookListFragment extends BaseFragment
       super.onResume();
 
       dbAdapter.open();
-      setupRecyclerView(recyclerView, iOrderID);
+      setupRecyclerView(recyclerView, orderId);
    }
 
    @Override
@@ -375,7 +376,7 @@ public class BookListFragment extends BaseFragment
          {
             booksAdapter.expandAll();
             booksAdapter.filter(arg0);
-            tvBooksCount.setText(getResources().getQuantityString(R.plurals.books,
+            booksCountTextView.setText(getResources().getQuantityString(R.plurals.books,
                                                                   booksAdapter.getAllChildrenCount(),
                                                                   booksAdapter.getAllChildrenCount()));
             return true;
@@ -391,9 +392,9 @@ public class BookListFragment extends BaseFragment
             || optionsItemSelect(item);
    }
    @SuppressWarnings("deprecation")
-   private String getExportFolderAbsPath(String sExportFolder)
+   private String getExportFolderAbsPath(String exportFolder)
    {
-      return Environment.getExternalStorageDirectory() + File.separator + sExportFolder + File.separator;
+      return Environment.getExternalStorageDirectory() + File.separator + exportFolder + File.separator;
    }
 
    private boolean checkAndRequestPermissions(PendingAction action)
@@ -446,32 +447,32 @@ public class BookListFragment extends BaseFragment
             .show();
    }
 
-   private void checkCreateExportFolder(String sExportFolderAbsPath)
+   private void checkCreateExportFolder(String exportFolderAbsPath)
    {
-      File file = new File(sExportFolderAbsPath);
+      File file = new File(exportFolderAbsPath);
       if(!file.isDirectory())
       {
          if(!file.mkdirs())
          {
-            android.util.Log.w("BookListFragment", "Can't create export folder: " + sExportFolderAbsPath);
+            Log.w("BookListFragment", "Can't create export folder: " + exportFolderAbsPath);
          }
       }
    }
 
    private void getOrderItems()
    {
-      alOrderItems.add(new OrderItem(DBAdapter.SRT_TTL, getString(R.string.srt_title)));
-      alOrderItems.add(new OrderItem(DBAdapter.SRT_AUT, getString(R.string.srt_author)));
-      alOrderItems.add(new OrderItem(DBAdapter.SRT_WNT_PBL_TTL, getString(R.string.srt_wanted_pbl_ttl)));
-      alOrderItems.add(new OrderItem(DBAdapter.SRT_WNT_PBL_AUT, getString(R.string.srt_wanted_pbl_aut)));
-      alOrderItems.add(new OrderItem(DBAdapter.SRT_RD_AUT, getString(R.string.srt_read_aut)));
-      alOrderItems.add(new OrderItem(DBAdapter.SRT_RD_TTL, getString(R.string.srt_read_ttl)));
-      alOrderItems.add(new OrderItem(DBAdapter.SRT_NOT_RD_AUT, getString(R.string.srt_not_read_aut)));
-      alOrderItems.add(new OrderItem(DBAdapter.SRT_NOT_RD_TTL, getString(R.string.srt_not_read_ttl)));
-      alOrderItems.add(new OrderItem(DBAdapter.SRT_PBL_AUT, getString(R.string.srt_pbl_aut)));
-      alOrderItems.add(new OrderItem(DBAdapter.SRT_PBL_TTL, getString(R.string.srt_pbl_ttl)));
-      alOrderItems.add(new OrderItem(DBAdapter.SRT_LND_TTL, getString(R.string.srt_lnd_ttl)));
-      alOrderItems.add(new OrderItem(DBAdapter.SRT_LND_BRW, getString(R.string.srt_lnd_brw)));
+      orderItems.add(new OrderItem(DBAdapter.SRT_TTL, getString(R.string.srt_title)));
+      orderItems.add(new OrderItem(DBAdapter.SRT_AUT, getString(R.string.srt_author)));
+      orderItems.add(new OrderItem(DBAdapter.SRT_WNT_PBL_TTL, getString(R.string.srt_wanted_pbl_ttl)));
+      orderItems.add(new OrderItem(DBAdapter.SRT_WNT_PBL_AUT, getString(R.string.srt_wanted_pbl_aut)));
+      orderItems.add(new OrderItem(DBAdapter.SRT_RD_AUT, getString(R.string.srt_read_aut)));
+      orderItems.add(new OrderItem(DBAdapter.SRT_RD_TTL, getString(R.string.srt_read_ttl)));
+      orderItems.add(new OrderItem(DBAdapter.SRT_NOT_RD_AUT, getString(R.string.srt_not_read_aut)));
+      orderItems.add(new OrderItem(DBAdapter.SRT_NOT_RD_TTL, getString(R.string.srt_not_read_ttl)));
+      orderItems.add(new OrderItem(DBAdapter.SRT_PBL_AUT, getString(R.string.srt_pbl_aut)));
+      orderItems.add(new OrderItem(DBAdapter.SRT_PBL_TTL, getString(R.string.srt_pbl_ttl)));
+      orderItems.add(new OrderItem(DBAdapter.SRT_LND_TTL, getString(R.string.srt_lnd_ttl)));
+      orderItems.add(new OrderItem(DBAdapter.SRT_LND_BRW, getString(R.string.srt_lnd_brw)));
    }
 
    private boolean optionsItemSelect(MenuItem item)
@@ -517,14 +518,14 @@ public class BookListFragment extends BaseFragment
 
    private void getSelectedBook(View v)
    {
-      iClickedItemNdx = recyclerView.getChildLayoutPosition(v);
-      bookID = booksAdapter.getItemId(iClickedItemNdx);
+      clickedItemIndex = recyclerView.getChildLayoutPosition(v);
+      bookId = booksAdapter.getItemId(clickedItemIndex);
       v.setSelected(true);
    }
 
    private void navigateToBookDetails(View v)
    {
-      NavDirections action = BookListFragmentDirections.actionBookListFragmentToBookFragment(bookID);
+      NavDirections action = BookListFragmentDirections.actionBookListFragmentToBookFragment(bookId);
       Navigation.findNavController(v)
                 .navigate(action);
    }
@@ -536,10 +537,10 @@ public class BookListFragment extends BaseFragment
                 .navigate(action);
    }
 
-   private void navigateToEditBook(View v, long iBookID, boolean isCopy)
+   private void navigateToEditBook(View v, long bookId, boolean isCopy)
    {
       BookListFragmentDirections.ActionBookListFragmentToEditBookFragment actionBookListFragmentToEditBookFragment = BookListFragmentDirections.actionBookListFragmentToEditBookFragment();
-      actionBookListFragmentToEditBookFragment.setBookID(iBookID);
+      actionBookListFragmentToEditBookFragment.setBookID(bookId);
       actionBookListFragmentToEditBookFragment.setIsCopy(isCopy);
       Navigation.findNavController(v)
                 .navigate(actionBookListFragmentToEditBookFragment);
@@ -567,7 +568,7 @@ public class BookListFragment extends BaseFragment
    private void showBookDetails()
    {
       Bundle arguments = new Bundle();
-      arguments.putLong(BookDetailFragment.BOOK_ID, bookID);
+      arguments.putLong(BookDetailFragment.BOOK_ID, bookId);
       BookDetailFragment fragment = new BookDetailFragment();
       fragment.setArguments(arguments);
       requireActivity().getSupportFragmentManager()
@@ -591,77 +592,77 @@ public class BookListFragment extends BaseFragment
 
    private void showImportDbDialog()
    {
-      File importFolder = new File(sExportFolderAbsPath);
+      File importFolder = new File(exportFolderAbsPath);
 
       fileSelectorDialog = FileSelectorDialog.newInstance(importFolder,
                                                           FileOperation.LOAD,
                                                           onLoadFileListener,
-                                                          mFileFilter);
+                                                          fileFilter);
       fileSelectorDialog.show(fragmentManager, null);
    }
 
    private void showExportDbDialog()
    {
-      String sFileName = getFileName();
-      File exportFile = new File(sExportFolderAbsPath
-                                       + sFileName);
+      String fileName = getFileName();
+      File exportFile = new File(exportFolderAbsPath
+                                       + fileName);
       fileSelectorDialog = FileSelectorDialog.newInstance(exportFile,
                                                           FileOperation.SAVE,
                                                           onSaveFileListener,
-                                                          mFileFilter);
+                                                          fileFilter);
       fileSelectorDialog.show(fragmentManager, null);
    }
 
    private String getFileName()
    {
       Calendar calendar = Calendar.getInstance(Locale.getDefault());
-      int iExtNdx = DBAdapter.DATABASE_NAME.lastIndexOf(".");
+      int extIndex = DBAdapter.DATABASE_NAME.lastIndexOf(".");
       return String.format(getString(R.string.fmt_fl_nm),
-                           DBAdapter.DATABASE_NAME.substring(0, iExtNdx),
+                           DBAdapter.DATABASE_NAME.substring(0, extIndex),
                            calendar.get(Calendar.YEAR),
                            calendar.get(Calendar.MONTH) + 1,
                            calendar.get(Calendar.DAY_OF_MONTH),
                            calendar.get(Calendar.HOUR_OF_DAY),
                            calendar.get(Calendar.MINUTE),
-                           DBAdapter.DATABASE_NAME.substring(iExtNdx + 1));
+                           DBAdapter.DATABASE_NAME.substring(extIndex + 1));
    }
 
    private void showOrderPopupMenu(View view)
    {
       PopupMenu popupMenu = new PopupMenu(requireContext(), view);
-      for(OrderItem orderItem : alOrderItems)
+      for(OrderItem orderItem : orderItems)
       {
          popupMenu.getMenu()
-                  .add(1, orderItem.iID, 0, orderItem.sTitle)
+                  .add(1, orderItem.id, 0, orderItem.title)
                   .setCheckable(true)
-                  .setChecked(orderItem.iID == iOrderID);
+                  .setChecked(orderItem.id == orderId);
       }
       popupMenu.getMenu()
                .setGroupCheckable(1, true, true);
       popupMenu.setOnMenuItemClickListener(menuItem -> {
-         iOrderID = menuItem.getItemId();
-         saveOrderID(iOrderID);
-         setupRecyclerView(recyclerView, iOrderID);
+         orderId = menuItem.getItemId();
+         saveOrderID(orderId);
+         setupRecyclerView(recyclerView, orderId);
          return true;
       });
       popupMenu.show();
    }
 
-   private void setupRecyclerView(@NonNull RecyclerView recyclerView, int iOrderID)
+   private void setupRecyclerView(@NonNull RecyclerView recyclerView, int orderId)
    {
-      booksAdapter = new BooksAdapter(getContext(), dbAdapter.getBooks(iOrderID));
+      booksAdapter = new BooksAdapter(getContext(), dbAdapter.getBooks(orderId));
       booksAdapter.setBookClickListener(onBookClickListener);
       booksAdapter.setBookLongClickListener(onBookLongClickListener);
       booksAdapter.setHeaderClickListener(onCategoryClickListener);
       if(isExpandAll)
          booksAdapter.expandAll();
       recyclerView.setAdapter(booksAdapter);
-      for(OrderItem orderItem : alOrderItems)
+      for(OrderItem orderItem : orderItems)
       {
-         if(orderItem.iID == iOrderID)
+         if(orderItem.id == orderId)
          {
-            tvBooksOrder.setText(orderItem.sTitle);
-            tvBooksCount.setText(getResources().getQuantityString(R.plurals.books,
+            booksOrderTextView.setText(orderItem.title);
+            booksCountTextView.setText(getResources().getQuantityString(R.plurals.books,
                                                                   booksAdapter.getAllChildrenCount(),
                                                                   booksAdapter.getAllChildrenCount()));
          }
@@ -670,27 +671,27 @@ public class BookListFragment extends BaseFragment
 
    private void loadPreferences()
    {
-      iOrderID = preferences.getInt(PREF_ORDER_ID, DBAdapter.SRT_TTL);
+      orderId = preferences.getInt(PREF_ORDER_ID, DBAdapter.SRT_TTL);
       isExpandAll = preferences.getBoolean(PREF_EXPAND_ALL, false);
-      sExportFolderAbsPath = getExportFolderAbsPath(preferences.getString(PREF_EXPORT_FOLDER, getString(R.string.app_name)));
+      exportFolderAbsPath = getExportFolderAbsPath(preferences.getString(PREF_EXPORT_FOLDER, getString(R.string.app_name)));
    }
 
-   private void saveOrderID(int iOrderID)
+   private void saveOrderID(int orderId)
    {
       SharedPreferences.Editor editor = preferences.edit();
-      editor.putInt(PREF_ORDER_ID, iOrderID);
+      editor.putInt(PREF_ORDER_ID, orderId);
       editor.apply();
    }
    private static class OrderItem
    {
 
-      int    iID;
-      String sTitle;
+      int    id;
+      String title;
 
-      OrderItem(int iID, String sTitle)
+      OrderItem(int id, String title)
       {
-         this.iID = iID;
-         this.sTitle = sTitle;
+         this.id = id;
+         this.title = title;
       }
    }
 }
