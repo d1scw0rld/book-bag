@@ -1,63 +1,28 @@
-package org.d1scw0rld.bookbag.fileselector;
+package org.d1scw0rld.bookbag.fileselector
+
+/**
+ * Represents the type of a file system entry.
+ */
+enum class FileType {
+    /** Constant that specifies the object is a reference to the parent */
+    UP_FOLDER,
+    /** Constant that specifies the object is a folder */
+    FOLDER,
+    /** Constant that specifies the object is a file */
+    FILE
+}
 
 /**
  * This class contains information about the file name and type.
  */
-public class FileData implements Comparable<FileData>
-{
+data class FileData(
+    val fileName: String,
+    val fileType: FileType,
+) : Comparable<FileData> {
 
-   /** Constant that specifies the object is a reference to the parent */
-   static final int UP_FOLDER = 0;
-   /** Constant that specifies the object is a folder */
-   static final int FOLDER = 1;
-   /** Constant that specifies the object is a file */
-   static final int FILE = 2;
-
-   /** The file's name */
-   private final String fileName;
-
-   /** Defines the type of file. Can be one of UP_FOLDER, DIRECTORY or FILE */
-   private final int fileType;
-
-   /**
-    * This class holds information about the file.
-    * 
-    * @param fileName
-    *           - file name
-    * @param fileType
-    *           - file type - can be UP_FOLDER, DIRECTORY or FILE
-    * @throws IllegalArgumentException
-    *            - when illegal type (different than UP_FOLDER, DIRECTORY or
-    *            FILE)
-    */
-   FileData(final String fileName, final int fileType)
-   {
-
-      if(fileType != UP_FOLDER && fileType != FOLDER && fileType != FILE)
-      {
-         throw new IllegalArgumentException("Illegal type of file");
-      }
-      this.fileName = fileName;
-      this.fileType = fileType;
-   }
-
-   @Override
-   public int compareTo(final FileData another)
-   {
-      if(fileType != another.fileType)
-      {
-         return fileType - another.fileType;
-      }
-      return fileName.compareTo(another.fileName);
-   }
-
-   String getFileName()
-   {
-      return fileName;
-   }
-
-   int getFileType()
-   {
-      return fileType;
-   }
+    override fun compareTo(other: FileData): Int {
+        val typeComparison = fileType.compareTo(other.fileType)
+        if (typeComparison != 0) return typeComparison
+        return fileName.compareTo(other.fileName, ignoreCase = true)
+    }
 }

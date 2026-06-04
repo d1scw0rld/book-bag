@@ -1,99 +1,62 @@
-package org.d1scw0rld.bookbag.fileselector;
+package org.d1scw0rld.bookbag.fileselector
 
-import android.content.Context;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.ImageView;
-import android.widget.TextView;
-
-import org.d1scw0rld.bookbag.R;
-
-import java.util.ArrayList;
-import java.util.List;
+import android.content.Context
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.BaseAdapter
+import android.widget.ImageView
+import android.widget.TextView
+import org.d1scw0rld.bookbag.R
 
 /**
  * Adapter used to display a files list
  */
-public class FileListAdapter extends BaseAdapter
-{
+class FileListAdapter(
+    private val context: Context,
+    private var fileDataList: List<FileData>,
+) : BaseAdapter() {
 
-   /** Array of FileData objects that will be used to display a list */
-   private final ArrayList<FileData> fileDataList;
+    override fun getCount(): Int = fileDataList.size
 
-   private final Context context;
-   
-   FileListAdapter(Context context, List<FileData> fileDataList)
-   {
-      this.fileDataList = (ArrayList<FileData>) fileDataList;
-      this.context = context;
-   }
+    override fun getItem(position: Int): FileData = fileDataList[position]
 
-   @Override
-   public int getCount()
-   {
-      return fileDataList.size();
-   }
+    override fun getItemId(position: Int): Long = position.toLong()
 
-   @Override
-   public Object getItem(int position)
-   {
-      return fileDataList.get(position);
-   }
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
+        val view = convertView ?: LayoutInflater.from(parent?.context ?: context)
+            .inflate(R.layout.row_file, parent, false).apply {
+                tag = ViewHolder(
+                    findViewById(R.id.tv_file_name),
+                    findViewById(R.id.iv_file_type),
+                )
+            }
 
-   @Override
-   public long getItemId(int position)
-   {
-      return position;
-   }
+        val holder = view.tag as ViewHolder
+        val tempFileData = getItem(position)
 
-   @Override
-   public View getView(int position, View convertView, ViewGroup parent)
-   {
-      FileData tempFileData = fileDataList.get(position);
+        holder.fileNameTextView.text = tempFileData.fileName
 
-      final ViewHolder holder;
-      int imgRes = -1;
-      if (convertView == null) 
-      {
-         convertView = View.inflate(context, R.layout.row_file, null);
-         holder = new ViewHolder();
-         holder.fileNameTextView = convertView.findViewById(R.id.tv_file_name);
-         holder.fileTypeImageView = convertView.findViewById(R.id.iv_file_type);
-         convertView.setTag(holder);
-      } 
-      else 
-      {
-         holder = (ViewHolder) convertView.getTag();
-      }
-      
-      holder.fileNameTextView.setText(tempFileData.getFileName());
-      switch (tempFileData.getFileType())
-      {
-         case FileData.UP_FOLDER:
-         {
-            imgRes = R.drawable.ic_folder_open;
-            break;
-         }
-         case FileData.FOLDER:
-         {
-            imgRes = R.drawable.ic_folder;
-            break;
-         }
-         case FileData.FILE:
-         {
-            imgRes = R.drawable.ic_file;
-            break;
-         }
-      }
-      holder.fileTypeImageView.setImageResource(imgRes);
-      
-      return convertView;      
-   }
-   
-   static class ViewHolder 
-   {
-      TextView fileNameTextView;
-      ImageView fileTypeImageView;
-   }
+        val imgRes = when (tempFileData.fileType) {
+            FileType.UP_FOLDER -> R.drawable.ic_folder_open
+            FileType.FOLDER -> R.drawable.ic_folder
+            FileType.FILE -> R.drawable.ic_file
+        }
+        holder.fileTypeImageView.setImageResource(imgRes)
+
+        return view
+    }
+
+    /**
+     * Updates the data set and refreshes the list without reconstructing the adapter.
+     */
+    fun updateData(newFileDataList: List<FileData>) {
+        fileDataList = newFileDataList
+        notifyDataSetChanged()
+    }
+
+    private class ViewHolder(
+        val fileNameTextView: TextView,
+        val fileTypeImageView: ImageView,
+    )
 }
