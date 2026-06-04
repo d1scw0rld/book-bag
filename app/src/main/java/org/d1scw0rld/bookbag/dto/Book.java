@@ -7,69 +7,69 @@ import java.util.ArrayList;
  */
 public class Book
 {
-   public long iID = 0;
+   public long id = 0;
    
-   public Changeable<String> csTitle,
-                             csDescription,
-                             csPrice,
-                             csValue,
-                             csISBN,
-                             csWeb;
+   public Changeable<String> title,
+                             description,
+                             price,
+                             value,
+                             isbn,
+                             web;
 
-   public Changeable<Integer> ciVolume,
-                              ciPages,
-                              ciPublicationDate,
-                              ciEdition,
-                              ciReadDate,
-                              ciDueDate,
-                              ciRating;
+   public Changeable<Integer> volume,
+                              pages,
+                              publicationDate,
+                              edition,
+                              readDate,
+                              dueDate,
+                              rating;
 
-   public ArrayList<Property> alProperties = new ArrayList<>();
+   public ArrayList<Property> properties = new ArrayList<>();
 
    public Book()
    {
-      csTitle = new Changeable<>("");
-      csDescription  = new Changeable<>("");
-      csPrice = new Changeable<>("");
-      csValue = new Changeable<>("");
-      csISBN = new Changeable<>("");
-      csWeb = new Changeable<>("");
+      title = new Changeable<>("");
+      description  = new Changeable<>("");
+      price = new Changeable<>("");
+      value = new Changeable<>("");
+      isbn = new Changeable<>("");
+      web = new Changeable<>("");
 
-      ciVolume = new Changeable<>(0);
-      ciPages = new Changeable<>(0);
-      ciPublicationDate = new Changeable<>(0);
-      ciEdition = new Changeable<>(0);
-      ciReadDate = new Changeable<>(0);
-      ciDueDate = new Changeable<>(0);
-      ciRating = new Changeable<>(0);
+      volume = new Changeable<>(0);
+      pages = new Changeable<>(0);
+      publicationDate = new Changeable<>(0);
+      edition = new Changeable<>(0);
+      readDate = new Changeable<>(0);
+      dueDate = new Changeable<>(0);
+      rating = new Changeable<>(0);
    }
 
-   public Book(int iID,
-               String sTitle,
-               String sDescription,
-               int iVolume,
-               int iPublicationDate,
-               int iPages,
-               String sPrice,
-               String sValue,
-               int iDueDate,
-               int iReadDate,
-               int iEdition,
-               String sISBN,
-               String sWeb)
+   public Book(int id,
+               String title,
+               String description,
+               int volume,
+               int publicationDate,
+               int pages,
+               String price,
+               String value,
+               int dueDate,
+               int readDate,
+               int edition,
+               String isbn,
+               String web)
    {
-      this.iID = iID;
-      this.csTitle = new Changeable<>(sTitle);
-      csDescription = new Changeable<>(sDescription);
-      ciVolume = new Changeable<>(iVolume);
-      ciPublicationDate = new Changeable<>(iPublicationDate);
-      ciPages = new Changeable<>(iPages);
-      csPrice = new Changeable<>(sPrice);
-      csValue = new Changeable<>(sValue);
-      ciReadDate = new Changeable<>(iReadDate);
-      ciDueDate = new Changeable<>(iDueDate);
-      ciEdition = new Changeable<>(iEdition);
-      csISBN = new Changeable<>(sISBN);
-      csWeb = new Changeable<>(sWeb);
+      this.id = id;
+      this.title = new Changeable<>(title);
+      this.description = new Changeable<>(description);
+      this.volume = new Changeable<>(volume);
+      this.publicationDate = new Changeable<>(publicationDate);
+      this.pages = new Changeable<>(pages);
+      this.price = new Changeable<>(price);
+      this.value = new Changeable<>(value);
+      this.readDate = new Changeable<>(readDate);
+      this.dueDate = new Changeable<>(dueDate);
+      this.edition = new Changeable<>(edition);
+      this.isbn = new Changeable<>(isbn);
+      this.web = new Changeable<>(web);
    }
 }

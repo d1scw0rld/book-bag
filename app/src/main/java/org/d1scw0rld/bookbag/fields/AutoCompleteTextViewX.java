@@ -18,28 +18,28 @@ import android.widget.TextView;
 
 public class AutoCompleteTextViewX extends androidx.appcompat.widget.AppCompatAutoCompleteTextView
 {
-   private Context oContext;
+   private Context context;
    
    private OnUpdateListener onUpdateListener = null;
 
-   private Callback oCallback = null;
+   private Callback callback = null;
 
    private final OnEditorActionListener onEditorActionListener = new OnEditorActionListener()
    {
       @Override
-      public boolean onEditorAction(TextView v, int actionId, KeyEvent event)
+      public boolean onEditorAction(TextView textView, int actionId, KeyEvent event)
       {
          if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT)
          {
 
             if(onUpdateListener != null)
-               onUpdateListener.onUpdate((EditText) v);
+               onUpdateListener.onUpdate((EditText) textView);
             if(actionId == EditorInfo.IME_ACTION_DONE)
             {
-               InputMethodManager inputManager = (InputMethodManager) oContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+               InputMethodManager inputManager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
                inputManager.toggleSoftInput(0, 0);
             }
-            v.clearFocus();
+            textView.clearFocus();
          }
          return false;      
       }
@@ -57,38 +57,38 @@ public class AutoCompleteTextViewX extends androidx.appcompat.widget.AppCompatAu
    private final TextWatcher textWatcher = new TextWatcher()
    {
        @Override
-       public void beforeTextChanged(CharSequence s, int start, int count, int after) 
+       public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) 
        {
        }
 
        @Override
-       public void onTextChanged(CharSequence s, int start, int before, int count) 
+       public void onTextChanged(CharSequence charSequence, int start, int before, int count) 
        {
-           updateDeleteIcon(s.toString(), isFocused());
+           updateDeleteIcon(charSequence.toString(), isFocused());
        }
 
        @Override
-       public void afterTextChanged(Editable s) 
+       public void afterTextChanged(Editable editable) 
        {
        }
    };
    
-   private final OnTouchListener onTouchListener = (v, event) -> {
+   private final OnTouchListener onTouchListener = (view, event) -> {
        final int DRAWABLE_RIGHT = 2;
 
        // Only for warning disposal
-       v.performClick();
+       view.performClick();
 
        if (event.getAction() == MotionEvent.ACTION_UP)
        {
            final Drawable rightDrawable = getCompoundDrawables()[DRAWABLE_RIGHT];
            if (rightDrawable != null && event.getRawX() >= (getRight() - rightDrawable.getBounds().width()))
            {
-               if (oCallback != null) oCallback.beforeClear(AutoCompleteTextViewX.this);
+               if (callback != null) callback.beforeClear(AutoCompleteTextViewX.this);
                setText("");
                requestFocus();
               ((ArrayAdapter<?>)getAdapter()).getFilter().filter("");
-               if (oCallback != null) oCallback.afterClear(AutoCompleteTextViewX.this);
+               if (callback != null) callback.afterClear(AutoCompleteTextViewX.this);
                return false;
            }
        }
@@ -99,26 +99,26 @@ public class AutoCompleteTextViewX extends androidx.appcompat.widget.AppCompatAu
    {
       super(context);
       
-      vInit(context);
+      init(context);
    }
    
    public AutoCompleteTextViewX(Context context, AttributeSet attrs)
    {
       super(context, attrs);
 
-      vInit(context);
+      init(context);
    }
    
    public AutoCompleteTextViewX(Context context, AttributeSet attrs, int defStyle)
    {
       super(context, attrs, defStyle);
 
-      vInit(context);
+      init(context);
    }
 
-   private void vInit(Context context)
+   private void init(Context context)
    {
-      oContext = context;
+      this.context = context;
       
       updateDeleteIcon(isFocused());
       
@@ -162,12 +162,12 @@ public class AutoCompleteTextViewX extends androidx.appcompat.widget.AppCompatAu
 
    public interface OnUpdateListener
    {
-      void onUpdate(EditText et);
+      void onUpdate(EditText editText);
    }
 
    public void setCallback(Callback callback) 
    {
-      this.oCallback = callback;
+      this.callback = callback;
    }   
    
    private void updateDeleteIcon(boolean focused) 

@@ -6,64 +6,66 @@ import java.util.Locale;
 
 public class Date
 {
-   public int iDay, 
-              iMonth, 
-              iYear; 
+   public int day, 
+              month, 
+              year; 
 
    public Date()
    {
-      iDay = 1;
-      iMonth = 1;
-      iYear = 1900;
+      day = 1;
+      month = 1;
+      year = 1900;
    }
    
-   public Date(int iDay,
-                int iMonth,
-                int iYear)
+   public Date(int day,
+                int month,
+                int year)
    {
-      this.iDay = iDay;
-      this.iMonth = iMonth;
-      this.iYear = iYear;
+      this.day = day;
+      this.month = month;
+      this.year = year;
    }
    
    
-   public Date(int iDate)
+   public Date(int dateValue)
    {
-      fromInt(iDate);
+      fromInt(dateValue);
    }
    
-   public Date(Date oDate)
+   public Date(Date otherDate)
    {
-      this(oDate.iDay, oDate.iMonth, oDate.iYear);
+      this(otherDate.day, otherDate.month, otherDate.year);
    }
    
    public int toInt()
    {
-      return iYear*10000 + iMonth*100 + iDay;
+      return year*10000 + month*100 + day;
    }
    
-   private void fromInt(int iDate)
+   private void fromInt(int dateValue)
    {
-      iDay = iDate % 100;
-      iMonth = (iDate / 100) % 100;
-      iYear = iDate / 10000;
+      day = dateValue % 100;
+      month = (dateValue / 100) % 100;
+      year = dateValue / 10000;
    }
 
    @NonNull
    @Override
    public String toString()
    {
-      return String.format(Locale.getDefault(), "%02d", iDay) + "/" + String.format(Locale.getDefault(), "%02d", iMonth) + "/" + iYear;
+      return String.format(Locale.getDefault(), "%02d", day) + "/" + String.format(Locale.getDefault(), "%02d", month) + "/" + year;
    }
    
    @Override
-   public boolean equals(Object o)
+   public boolean equals(Object other)
    {
-      if (this == o) return true;
+      if (this == other) return true;
+      if (other == null || getClass() != other.getClass()) return false;
 
-      if(iDay != ((Date)o).iDay) return false;
-      if(iMonth != ((Date)o).iMonth) return false;
-      return iYear == ((Date) o).iYear;
+      Date otherDate = (Date) other;
+      if(day != otherDate.day) return false;
+      if(month != otherDate.month) return false;
+      return year == otherDate.year;
    }      
 
 }

@@ -16,9 +16,6 @@ import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
-
 import org.d1scw0rld.bookbag.R;
 
 import java.util.ArrayList;
@@ -29,38 +26,38 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
 {
    private static final float INITIAL_POSITION = 0f,
                               ROTATED_POSITION = 180f;
-   private int iAllChildrenCount;
+   private int allChildrenCount;
 
-   private String sFilter = "";
+   private String filterText = "";
 
-   private final ArrayList<BookListItem> alListItemsNotFiltered;
+   private final ArrayList<BookListItem> listItemsNotFiltered;
 
    private OnClickListener onBookClickListener = null;
    private OnLongClickListener onBookLongClickListener = null;
    private OnClickListener onHeaderClickListener   = null;
 
-   public BooksAdapter(Context context, ArrayList<ParentResult> alParentsResults)
+   public BooksAdapter(Context context, ArrayList<ParentResult> parentsResults)
    {
       super(context);
 
-      setItems(generateItems(alParentsResults));
-      alListItemsNotFiltered = new ArrayList<>(allItems);
+      setItems(generateItems(parentsResults));
+      listItemsNotFiltered = new ArrayList<>(allItems);
    }
 
    @Override
-   public long getItemId(int i)
+   public long getItemId(int position)
    {
-      return visibleItems.get(i).id;
+      return visibleItems.get(position).id;
    }
 
-   private List<BookListItem> generateItems(ArrayList<ParentResult> alParentsResults)
+   private List<BookListItem> generateItems(ArrayList<ParentResult> parentsResults)
    {
-      iAllChildrenCount = 0;
+      allChildrenCount = 0;
       List<BookListItem> items = new ArrayList<>();
-      for(ParentResult parentResult : alParentsResults)
+      for(ParentResult parentResult : parentsResults)
       {
          items.add(new BookListItem(parentResult.getName()));
-         iAllChildrenCount += parentResult.getChildList()
+         allChildrenCount += parentResult.getChildList()
                                            .size();
          for(Result result : parentResult.getChildList())
          {
@@ -114,7 +111,7 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
       {
          super.bind(position);
 
-         name.setText(visibleItems.get(position).sText);
+         name.setText(visibleItems.get(position).text);
       }
 
       @Override
@@ -173,23 +170,23 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
 
       void bind(int position)
       {
-         String sText = visibleItems.get(position).sText;
-         Spannable spContent = new SpannableString(sText);
-         int iFilteredStart = sText.toLowerCase(Locale.getDefault())
-                                   .indexOf(sFilter.toLowerCase(Locale.getDefault()));
-         int iFilterEnd;
-         if(iFilteredStart < 0)
+         String textValue = visibleItems.get(position).text;
+         Spannable spContent = new SpannableString(textValue);
+         int filteredStart = textValue.toLowerCase(Locale.getDefault())
+                                   .indexOf(filterText.toLowerCase(Locale.getDefault()));
+         int filterEnd;
+         if(filteredStart < 0)
          {
-            iFilteredStart = 0;
-            iFilterEnd = 0;
+            filteredStart = 0;
+            filterEnd = 0;
          }
          else
          {
-            iFilterEnd = iFilteredStart + sFilter.length();
+            filterEnd = filteredStart + filterText.length();
          }
-         spContent.setSpan(new ForegroundColorSpan(ContextCompat.getColor(mContext, R.color.accent)),
-                           iFilteredStart,
-                           iFilterEnd,
+         spContent.setSpan(new ForegroundColorSpan(ContextCompat.getColor(context, R.color.accent)),
+                           filteredStart,
+                           filterEnd,
                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
          name.setText(spContent);
       }
@@ -233,53 +230,53 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
 
    public void filter(String charText)
    {
-      iAllChildrenCount = 0;
+      allChildrenCount = 0;
 
       charText = charText.toLowerCase(Locale.getDefault());
-      ArrayList<BookListItem> alBookListItemsTmp = new ArrayList<>();
-      sFilter = charText;
+      ArrayList<BookListItem> tempBookListItems = new ArrayList<>();
+      filterText = charText;
       visibleItems.clear();
       if(charText.isEmpty())
       {
-         setItems(alListItemsNotFiltered);
-         for(ListItem listItem : alListItemsNotFiltered)
+         setItems(listItemsNotFiltered);
+         for(ListItem listItem : listItemsNotFiltered)
          {
-            if(listItem.ItemType == TYPE_ITEM)
+            if(listItem.itemType == TYPE_ITEM)
             {
-               iAllChildrenCount++;
+               allChildrenCount++;
             }
          }
       }
       else
       {
-         for(BookListItem bookListItem : alListItemsNotFiltered)
+         for(BookListItem bookListItem : listItemsNotFiltered)
          {
-            if(bookListItem.ItemType == TYPE_HEADER || bookListItem.sText.toLowerCase(Locale.getDefault())
+            if(bookListItem.itemType == TYPE_HEADER || bookListItem.text.toLowerCase(Locale.getDefault())
                                                                          .contains(charText))
             {
                /*
-                * If the last and the next items are headers remove the last item - it has not subitems
+                * If the last and the next items are headers remove the last item - it has no subitems
                 */
 
-               if(bookListItem.ItemType == TYPE_HEADER
-                     && !alBookListItemsTmp.isEmpty()
-                     && alBookListItemsTmp.get(alBookListItemsTmp.size() - 1).ItemType == TYPE_HEADER)
+               if(bookListItem.itemType == TYPE_HEADER
+                     && !tempBookListItems.isEmpty()
+                     && tempBookListItems.get(tempBookListItems.size() - 1).itemType == TYPE_HEADER)
                {
-                  alBookListItemsTmp.remove(alBookListItemsTmp.size() - 1);
+                  tempBookListItems.remove(tempBookListItems.size() - 1);
                }
-               if(bookListItem.ItemType == TYPE_ITEM)
+               if(bookListItem.itemType == TYPE_ITEM)
                {
-                  iAllChildrenCount++;
+                  allChildrenCount++;
                }
-               alBookListItemsTmp.add(bookListItem);
+               tempBookListItems.add(bookListItem);
             }
          }
-         if(!alBookListItemsTmp.isEmpty()
-               && alBookListItemsTmp.get(alBookListItemsTmp.size() - 1).ItemType == TYPE_HEADER)
+         if(!tempBookListItems.isEmpty()
+               && tempBookListItems.get(tempBookListItems.size() - 1).itemType == TYPE_HEADER)
          {
-            alBookListItemsTmp.remove(alBookListItemsTmp.size() - 1);
+            tempBookListItems.remove(tempBookListItems.size() - 1);
          }
-         setItems(alBookListItemsTmp);
+         setItems(tempBookListItems);
       }
 
       expandAll();
@@ -287,7 +284,7 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
 
    public int getAllChildrenCount()
    {
-      return iAllChildrenCount;
+      return allChildrenCount;
    }
 
    public void setBookClickListener(OnClickListener onClickListener)
@@ -300,18 +297,18 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
       this.onBookLongClickListener = onLongClickListener;
    }
 
-   public void removeAt(int iClickedItemNdx)
+   public void removeAt(int clickedItemIndex)
    {
-      removeItemAt(iClickedItemNdx);
-      iAllChildrenCount--;
+      removeItemAt(clickedItemIndex);
+      allChildrenCount--;
    }
 
    @Override
    protected void removeItemAt(int visiblePosition)
    {
-      alListItemsNotFiltered.remove(visibleItems.get(visiblePosition));
+      listItemsNotFiltered.remove(visibleItems.get(visiblePosition));
       super.removeItemAt(visiblePosition);
-      if(visibleItems.get(visiblePosition - 1).ItemType == TYPE_HEADER && (visiblePosition == visibleItems.size() || visibleItems.get(visiblePosition).ItemType == TYPE_HEADER))
+      if(visibleItems.get(visiblePosition - 1).itemType == TYPE_HEADER && (visiblePosition == visibleItems.size() || visibleItems.get(visiblePosition).itemType == TYPE_HEADER))
       {
          super.removeItemAt(visiblePosition - 1);
       }

@@ -23,7 +23,7 @@ import android.widget.LinearLayout;
 public class FieldDate extends LinearLayout implements OnDateSetListener, Field
 {
    private Title  title;
-   private Button btnSpinner;
+   private Button selectButton;
    private Date date = new Date(0);
    private String hint = "";
    private OnUpdateListener onUpdateListener = null;
@@ -42,26 +42,26 @@ public class FieldDate extends LinearLayout implements OnDateSetListener, Field
 
       init(context);
       
-      TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.FieldDate, 0, 0);
+      TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.FieldDate, 0, 0);
       
-      String title = a.getString(R.styleable.FieldDate_title);
-      int titleValueColor = a.getColor(R.styleable.FieldDate_titleColor, 0);
-      int titleTextSize = a.getDimensionPixelOffset(R.styleable.FieldDate_titleTextSize, 0);
-      int titleLineSize = a.getDimensionPixelOffset(R.styleable.FieldDate_titleLineSize, 0);
-      String contentDescription = a.getString(R.styleable.FieldDate_android_contentDescription);
-      hint = a.getString(R.styleable.FieldDate_android_hint);
+      String titleText = typedArray.getString(R.styleable.FieldDate_title);
+      int titleValueColor = typedArray.getColor(R.styleable.FieldDate_titleColor, 0);
+      int titleTextSize = typedArray.getDimensionPixelOffset(R.styleable.FieldDate_titleTextSize, 0);
+      int titleLineSize = typedArray.getDimensionPixelOffset(R.styleable.FieldDate_titleLineSize, 0);
+      String contentDescription = typedArray.getString(R.styleable.FieldDate_android_contentDescription);
+      hint = typedArray.getString(R.styleable.FieldDate_android_hint);
 
-      a.recycle();
+      typedArray.recycle();
 
       setOrientation(LinearLayout.VERTICAL);
       setGravity(Gravity.CENTER_VERTICAL);
 
-      this.title.setText(title);
+      this.title.setText(titleText);
       this.title.setColor(titleValueColor);
       this.title.setTextSize(titleTextSize);
       this.title.setLineSize(titleLineSize);
       
-      btnSpinner.setContentDescription(contentDescription);
+      selectButton.setContentDescription(contentDescription);
    }
    
    void init(Context context)
@@ -72,26 +72,26 @@ public class FieldDate extends LinearLayout implements OnDateSetListener, Field
       final Activity activity = (Activity) context;
 
       title = findViewById(R.id.title);
-      btnSpinner = findViewById(R.id.action_select_type);
+      selectButton = findViewById(R.id.action_select_type);
       
-      btnSpinner.setOnClickListener(new OnClickListener()
+      selectButton.setOnClickListener(new OnClickListener()
       {
          @Override
-         public void onClick(View v)
+         public void onClick(View view)
          {
             if(date.toInt() == 0)
             {
                // Use the current date as the default date in the picker
-               final Calendar c = Calendar.getInstance();
-               date = new Date(c.get(Calendar.DAY_OF_MONTH),
-                               c.get(Calendar.MONTH) + 1,
-                               c.get(Calendar.YEAR));
+               final Calendar calendar = Calendar.getInstance();
+               date = new Date(calendar.get(Calendar.DAY_OF_MONTH),
+                               calendar.get(Calendar.MONTH) + 1,
+                               calendar.get(Calendar.YEAR));
             }
 
             datePickerDialog = DatePickerDialog.newInstance(FieldDate.this,
-                                                            date.iYear, 
-                                                            date.iMonth - 1, 
-                                                            date.iDay);
+                                                            date.year, 
+                                                            date.month - 1, 
+                                                            date.day);
 
             datePickerDialog.setThemeDark(false);
 
@@ -109,18 +109,18 @@ public class FieldDate extends LinearLayout implements OnDateSetListener, Field
       
    }
    
-   private void setButtonText(Button oButton, Date date)
+   private void setButtonText(Button button, Date date)
    {
       if(date.toInt() != 0)
       {
          
-         oButton.setText(date.iDay + "/" + date.iMonth+ "/" + date.iYear);
-         oButton.setTextColor(Color.BLACK);
+         button.setText(date.day + "/" + date.month + "/" + date.year);
+         button.setTextColor(Color.BLACK);
       }
       else
       {
-         oButton.setText(hint);
-         oButton.setTextColor(Color.GRAY);
+         button.setText(hint);
+         button.setTextColor(Color.GRAY);
       }
    }
 
@@ -129,9 +129,9 @@ public class FieldDate extends LinearLayout implements OnDateSetListener, Field
       this.title.setText(title);
    }
    
-   public void setTitle(int resid)
+   public void setTitle(int resourceId)
    {
-      title.setText(resid);
+      title.setText(resourceId);
    }
 
    @Override
@@ -157,13 +157,13 @@ public class FieldDate extends LinearLayout implements OnDateSetListener, Field
 
    public void setContentDescription(String contentDescription)
    {
-      btnSpinner.setContentDescription(contentDescription);
+      selectButton.setContentDescription(contentDescription);
    }
    
    public void setHint(String hint)
    {
       this.hint = hint;
-      setButtonText(btnSpinner, date);
+      setButtonText(selectButton, date);
    }
 
    public Date getDate()
@@ -174,7 +174,7 @@ public class FieldDate extends LinearLayout implements OnDateSetListener, Field
    public void setDate(Date date)
    {
       this.date = date;
-      setButtonText(btnSpinner, date);
+      setButtonText(selectButton, date);
    }
 
    public void setUpdateListener(OnUpdateListener onUpdateListener)
@@ -185,7 +185,7 @@ public class FieldDate extends LinearLayout implements OnDateSetListener, Field
    public interface OnUpdateListener
    {
       void onUpdate(Date date);
-      void onUpdate(FieldDate oFieldDate);
+      void onUpdate(FieldDate fieldDate);
    }
 
 
@@ -196,7 +196,7 @@ public class FieldDate extends LinearLayout implements OnDateSetListener, Field
                          int dayOfMonth)
    {
       date = new Date(dayOfMonth, monthOfYear + 1, year);
-      setButtonText(btnSpinner, date);
+      setButtonText(selectButton, date);
       if(onUpdateListener != null)
       {
          onUpdateListener.onUpdate(FieldDate.this);

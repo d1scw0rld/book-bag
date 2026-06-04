@@ -18,12 +18,12 @@ public class FieldRating extends LinearLayout implements Field
 
    private boolean isIndicator;
    
-   private int iNumStars;
+   private int numStars;
    
-   private float fRating,
-                 fStepSize;
+   private float rating,
+                 stepSize;
 
-   private AppCompatRatingBar oRatingBar;
+   private AppCompatRatingBar ratingBar;
    
    public FieldRating(Context context)
    {
@@ -38,32 +38,32 @@ public class FieldRating extends LinearLayout implements Field
 
       init(context);
       
-      TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.FieldRating, 0, 0);
+      TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.FieldRating, 0, 0);
       
-      String title = a.getString(R.styleable.FieldRating_title);
-      int titleValueColor = a.getColor(R.styleable.FieldRating_titleColor, 0);
-      int titleTextSize = a.getDimensionPixelOffset(R.styleable.FieldRating_titleTextSize, 0);
-      int titleLineSize = a.getDimensionPixelOffset(R.styleable.FieldRating_titleLineSize, 0);
-      String contentDescription = a.getString(R.styleable.FieldRating_android_contentDescription);
-      setNumStars(a.getInteger(R.styleable.FieldRating_android_numStars, 5));
-      setRating(a.getFloat(R.styleable.FieldRating_android_rating, 0.0f));
-      setStepSize(a.getFloat(R.styleable.FieldRating_android_stepSize, 0.5f));
-      setIsIndicator(a.getBoolean(R.styleable.FieldRating_android_isIndicator, false));
+      String titleText = typedArray.getString(R.styleable.FieldRating_title);
+      int titleValueColor = typedArray.getColor(R.styleable.FieldRating_titleColor, 0);
+      int titleTextSize = typedArray.getDimensionPixelOffset(R.styleable.FieldRating_titleTextSize, 0);
+      int titleLineSize = typedArray.getDimensionPixelOffset(R.styleable.FieldRating_titleLineSize, 0);
+      String contentDescription = typedArray.getString(R.styleable.FieldRating_android_contentDescription);
+      setNumStars(typedArray.getInteger(R.styleable.FieldRating_android_numStars, 5));
+      setRating(typedArray.getFloat(R.styleable.FieldRating_android_rating, 0.0f));
+      setStepSize(typedArray.getFloat(R.styleable.FieldRating_android_stepSize, 0.5f));
+      setIsIndicator(typedArray.getBoolean(R.styleable.FieldRating_android_isIndicator, false));
 
-      a.recycle();
+      typedArray.recycle();
 
       setOrientation(LinearLayout.VERTICAL);
       setGravity(Gravity.CENTER_VERTICAL);
 
-      this.title.setText(title);
+      this.title.setText(titleText);
       this.title.setColor(titleValueColor);
       this.title.setTextSize(titleTextSize);
       this.title.setLineSize(titleLineSize);
-      oRatingBar.setContentDescription(contentDescription);
-      oRatingBar.setNumStars(iNumStars);
-      oRatingBar.setRating(fRating);
-      oRatingBar.setStepSize(fStepSize);
-      oRatingBar.setIsIndicator(isIndicator);
+      ratingBar.setContentDescription(contentDescription);
+      ratingBar.setNumStars(numStars);
+      ratingBar.setRating(rating);
+      ratingBar.setStepSize(stepSize);
+      ratingBar.setIsIndicator(isIndicator);
    }
    
    void init(Context context)
@@ -72,7 +72,7 @@ public class FieldRating extends LinearLayout implements Field
       inflater.inflate(R.layout.field_rating, this, true);
 
       title = findViewById(R.id.title);
-      oRatingBar = findViewById(R.id.rating_bar);
+      ratingBar = findViewById(R.id.rating_bar);
    }
 
    public void setTitle(String title)
@@ -80,9 +80,9 @@ public class FieldRating extends LinearLayout implements Field
       this.title.setText(title);
    }
    
-   public void setTitle(int resid)
+   public void setTitle(int resourceId)
    {
-      title.setText(resid);
+      title.setText(resourceId);
    }
 
    @Override
@@ -108,38 +108,38 @@ public class FieldRating extends LinearLayout implements Field
 
    public void setContentDescription(String contentDescription)
    {
-      oRatingBar.setContentDescription(contentDescription);
+      ratingBar.setContentDescription(contentDescription);
    }
 
    public int getNumStars()
    {
-      return iNumStars;
+      return numStars;
    }
 
-   public void setNumStars(int iNumStars)
+   public void setNumStars(int numStars)
    {
-      this.iNumStars = iNumStars;
+      this.numStars = numStars;
    }
 
    public float getRating()
    {
-      return fRating;
+      return rating;
    }
 
-   public void setRating(float fRating)
+   public void setRating(float rating)
    {
-      this.fRating = fRating;
-      oRatingBar.setRating(fRating);
+      this.rating = rating;
+      ratingBar.setRating(rating);
    }
 
    public float getStepSize()
    {
-      return fStepSize;
+      return stepSize;
    }
 
-   public void setStepSize(float fStepSize)
+   public void setStepSize(float stepSize)
    {
-      this.fStepSize = fStepSize;
+      this.stepSize = stepSize;
    }
 
    public boolean isIndicator()
@@ -154,6 +154,6 @@ public class FieldRating extends LinearLayout implements Field
 
    public void setOnRatingBarChangeListener(OnRatingBarChangeListener onRatingBarChangeListener)
    {
-      oRatingBar.setOnRatingBarChangeListener(onRatingBarChangeListener);
+      ratingBar.setOnRatingBarChangeListener(onRatingBarChangeListener);
    }
 }

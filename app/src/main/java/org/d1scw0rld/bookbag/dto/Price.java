@@ -4,38 +4,38 @@ import androidx.annotation.NonNull;
 
 public class Price
 {
-   public int iValue = 0;
-   public long iCurrencyID = 0;
+   public int value = 0;
+   public long currencyId = 0;
    
    public Price()
    {}
    
-   public Price(String sPrice)
+   public Price(String priceString)
    {
       this();
       
-      if(sPrice.isEmpty())
+      if(priceString.isEmpty())
          return;
          
-      String[] sParts = sPrice.split("\\|");
-      iValue = Integer.parseInt(sParts[0]);
-      if(sParts.length > 1)
-         iCurrencyID = Long.parseLong(sParts[1]);
+      String[] parts = priceString.split("\\|");
+      value = Integer.parseInt(parts[0]);
+      if(parts.length > 1)
+         currencyId = Long.parseLong(parts[1]);
    }
    
-   public Price(int iValue, int iCurrency)
+   public Price(int value, int currency)
    {
-      this.iValue = iValue;
-      this.iCurrencyID = iCurrency;
+      this.value = value;
+      this.currencyId = currency;
    }
 
    @NonNull
    @Override
    public String toString()
    {
-      if(iValue == 0)
+      if(value == 0)
          return "";
       else
-         return iValue + "|" + iCurrencyID;
+         return value + "|" + currencyId;
    }
 }

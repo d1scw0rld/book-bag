@@ -29,20 +29,20 @@ public class FieldSpinner extends LinearLayout implements Field
 
       init(context);
       
-      TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.FieldSpinner, 0, 0);
+      TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.FieldSpinner, 0, 0);
       
-      String title = a.getString(R.styleable.FieldSpinner_title);
-      int titleValueColor = a.getColor(R.styleable.FieldSpinner_titleColor, 0);
-      int titleTextSize = a.getDimensionPixelOffset(R.styleable.FieldSpinner_titleTextSize, 0);
-      int titleLineSize = a.getDimensionPixelOffset(R.styleable.FieldSpinner_titleLineSize, 0);
-      String contentDescription = a.getString(R.styleable.FieldSpinner_android_contentDescription);
+      String titleText = typedArray.getString(R.styleable.FieldSpinner_title);
+      int titleValueColor = typedArray.getColor(R.styleable.FieldSpinner_titleColor, 0);
+      int titleTextSize = typedArray.getDimensionPixelOffset(R.styleable.FieldSpinner_titleTextSize, 0);
+      int titleLineSize = typedArray.getDimensionPixelOffset(R.styleable.FieldSpinner_titleLineSize, 0);
+      String contentDescription = typedArray.getString(R.styleable.FieldSpinner_android_contentDescription);
 
-      a.recycle();
+      typedArray.recycle();
 
       setOrientation(LinearLayout.VERTICAL);
       setGravity(Gravity.CENTER_VERTICAL);
 
-      this.title.setText(title);
+      this.title.setText(titleText);
       this.title.setColor(titleValueColor);
       this.title.setTextSize(titleTextSize);
       this.title.setLineSize(titleLineSize);
@@ -64,9 +64,9 @@ public class FieldSpinner extends LinearLayout implements Field
       this.title.setText(title);
    }
    
-   public void setTitle(int resid)
+   public void setTitle(int resourceId)
    {
-      title.setText(resid);
+      title.setText(resourceId);
    }
 
    @Override
@@ -113,6 +113,6 @@ public class FieldSpinner extends LinearLayout implements Field
    
    public interface OnUpdateListener
    {
-      public void onUpdate(FieldSpinner oFieldSpinner, int pos);
+      public void onUpdate(FieldSpinner fieldSpinner, int position);
    }
 }

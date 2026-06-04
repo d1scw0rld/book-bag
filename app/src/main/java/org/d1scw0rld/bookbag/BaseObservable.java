@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class BaseObservable<LISTENER_CLASS>
 {
-   private final Set<LISTENER_CLASS> listeners = Collections.newSetFromMap(new ConcurrentHashMap<LISTENER_CLASS, Boolean>(1));
+   private final Set<LISTENER_CLASS> listeners = Collections.newSetFromMap(new ConcurrentHashMap<>(1));
 
    public final void registerListener(LISTENER_CLASS listener)
    {

@@ -4,27 +4,20 @@ import java.util.List;
 
 public class ParentResult implements Parent<Result>
 {
-   /* Create an instance variable for your list of children */
+   private String name;
    
-   private String sName;
-   
-   private final List<Result> lsChildren;
+   private final List<Result> children;
 
-   /**
-    * Your constructor and any other accessor
-    *  methods should go here.
-    */
-   
-   public ParentResult(String sName, List<Result> lsChildren)
+   public ParentResult(String name, List<Result> children)
    {
-      this.setName(sName);
-      this.lsChildren = lsChildren;
+      this.setName(name);
+      this.children = children;
    }
 
    @Override
    public List<Result> getChildList()
    {
-      return lsChildren;
+      return children;
    }
 
    @Override
@@ -33,19 +26,19 @@ public class ParentResult implements Parent<Result>
       return true;
    }
 
-   public void setName(String sName)
+   public void setName(String name)
    {
-      this.sName = sName;
+      this.name = name;
    }
    
    public void addChildResult(Result result)
    {
-      lsChildren.add(result);
+      children.add(result);
    }
 
    @Override
    public String getName()
    {
-      return sName;
+      return name;
    }
 }

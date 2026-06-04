@@ -30,20 +30,20 @@ public class FieldCheckBox extends LinearLayout implements Field
 
       init(context);
       
-      TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.FieldCheckBox, 0, 0);
+      TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.FieldCheckBox, 0, 0);
       
-      String title = a.getString(R.styleable.FieldCheckBox_title);
-      int titleValueColor = a.getColor(R.styleable.FieldCheckBox_titleColor, 0);
-      int titleTextSize = a.getDimensionPixelOffset(R.styleable.FieldCheckBox_titleTextSize, 0);
-      int titleLineSize = a.getDimensionPixelOffset(R.styleable.FieldCheckBox_titleLineSize, 0);
-      boolean checked = a.getBoolean(R.styleable.FieldCheckBox_android_checked, false);
+      String titleText = typedArray.getString(R.styleable.FieldCheckBox_title);
+      int titleValueColor = typedArray.getColor(R.styleable.FieldCheckBox_titleColor, 0);
+      int titleTextSize = typedArray.getDimensionPixelOffset(R.styleable.FieldCheckBox_titleTextSize, 0);
+      int titleLineSize = typedArray.getDimensionPixelOffset(R.styleable.FieldCheckBox_titleLineSize, 0);
+      boolean checked = typedArray.getBoolean(R.styleable.FieldCheckBox_android_checked, false);
 
-      a.recycle();
+      typedArray.recycle();
 
       setOrientation(LinearLayout.VERTICAL);
       setGravity(Gravity.CENTER_VERTICAL);
 
-      this.title.setText(title);
+      this.title.setText(titleText);
       this.title.setColor(titleValueColor);
       this.title.setTextSize(titleTextSize);
       this.title.setLineSize(titleLineSize);
@@ -64,9 +64,9 @@ public class FieldCheckBox extends LinearLayout implements Field
       this.title.setText(title);
    }
    
-   public void setTitle(int resid)
+   public void setTitle(int resourceId)
    {
-      title.setText(resid);
+      title.setText(resourceId);
    }
 
    @Override

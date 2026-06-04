@@ -1,10 +1,6 @@
 package org.d1scw0rld.bookbag.fields;
 
-import java.util.ArrayList;
-
-import org.d1scw0rld.bookbag.FilteredArrayAdapter;
 import org.d1scw0rld.bookbag.R;
-import org.d1scw0rld.bookbag.dto.Property;
 import org.d1scw0rld.bookbag.fields.AutoCompleteTextViewX.Callback;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -20,7 +16,7 @@ import android.widget.LinearLayout;
 public class FieldAutoCompleteTextView extends LinearLayout implements Field
 {
    
-   private Title                 title;
+   private Title title;
    private AutoCompleteTextViewX autoCompleteTextViewX;
 
    public FieldAutoCompleteTextView(Context context)
@@ -36,16 +32,16 @@ public class FieldAutoCompleteTextView extends LinearLayout implements Field
       
       init(context);
       
-      TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.FieldAutoCompleteTextView, 0, 0);
+      TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.FieldAutoCompleteTextView, 0, 0);
 
-      String titleText = a.getString(R.styleable.FieldAutoCompleteTextView_title);
-      int titleValueColor = a.getColor(R.styleable.FieldAutoCompleteTextView_titleColor, 0);
-      int titleTextSize = a.getDimensionPixelOffset(R.styleable.FieldAutoCompleteTextView_titleTextSize, 0);
-      int titleLineSize = a.getDimensionPixelOffset(R.styleable.FieldAutoCompleteTextView_titleLineSize, 0);
-      String text = a.getString(R.styleable.FieldAutoCompleteTextView_android_text);
-      String hint = a.getString(R.styleable.FieldAutoCompleteTextView_android_hint);
+      String titleText = typedArray.getString(R.styleable.FieldAutoCompleteTextView_title);
+      int titleValueColor = typedArray.getColor(R.styleable.FieldAutoCompleteTextView_titleColor, 0);
+      int titleTextSize = typedArray.getDimensionPixelOffset(R.styleable.FieldAutoCompleteTextView_titleTextSize, 0);
+      int titleLineSize = typedArray.getDimensionPixelOffset(R.styleable.FieldAutoCompleteTextView_titleLineSize, 0);
+      String text = typedArray.getString(R.styleable.FieldAutoCompleteTextView_android_text);
+      String hint = typedArray.getString(R.styleable.FieldAutoCompleteTextView_android_hint);
       
-      a.recycle();
+      typedArray.recycle();
 
       setOrientation(LinearLayout.VERTICAL);
       setGravity(Gravity.CENTER_VERTICAL);
@@ -74,9 +70,9 @@ public class FieldAutoCompleteTextView extends LinearLayout implements Field
       this.title.setText(title);
    }
 
-   public void setTitle(int resid)
+   public void setTitle(int resourceId)
    {
-      title.setText(resid);
+      title.setText(resourceId);
    }
 
    @Override
@@ -105,9 +101,9 @@ public class FieldAutoCompleteTextView extends LinearLayout implements Field
       autoCompleteTextViewX.setText(text);
    }
 
-   public void setText(int resid)
+   public void setText(int resourceId)
    {
-      autoCompleteTextViewX.setText(resid);
+      autoCompleteTextViewX.setText(resourceId);
    }
    
    public Editable getText()
@@ -120,9 +116,9 @@ public class FieldAutoCompleteTextView extends LinearLayout implements Field
       autoCompleteTextViewX.setHint(hint);
    }
 
-   public void setHint(int resid)
+   public void setHint(int resourceId)
    {
-      autoCompleteTextViewX.setHint(resid);
+      autoCompleteTextViewX.setHint(resourceId);
    }
    
    public void setThreshold(int threshold)
@@ -145,13 +141,13 @@ public class FieldAutoCompleteTextView extends LinearLayout implements Field
       autoCompleteTextViewX.setCallback(callback);
    }   
    
-   public void setOnItemSelectedListener(OnItemSelectedListener l)
+   public void setOnItemSelectedListener(OnItemSelectedListener listener)
    {
-      autoCompleteTextViewX.setOnItemSelectedListener(l);
+      autoCompleteTextViewX.setOnItemSelectedListener(listener);
    }
 
-   public void setOnItemClickListener(OnItemClickListener l)
+   public void setOnItemClickListener(OnItemClickListener listener)
    {
-      autoCompleteTextViewX.setOnItemClickListener(l);
+      autoCompleteTextViewX.setOnItemClickListener(listener);
    }
 }

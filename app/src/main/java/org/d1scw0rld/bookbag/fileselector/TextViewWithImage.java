@@ -7,7 +7,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 /**
- * Class which combines ImageView and TextView in LineralLayout with horizontal
+ * Class which combines ImageView and TextView in LinearLayout with horizontal
  * orientation
  */
 public class TextViewWithImage extends LinearLayout
@@ -17,48 +17,48 @@ public class TextViewWithImage extends LinearLayout
     * Image - in this project will be used to display icon representing the file
     * type
     */
-   private final ImageView mImage;
+   private final ImageView imageView;
    /** Text - in this project will be used to display the file name */
-   private final TextView mText;
+   private final TextView textView;
 
    public TextViewWithImage(Context context)
    {
       super(context);
       setOrientation(HORIZONTAL);
-      mImage = new ImageView(context);
-      mText = new TextView(context);
+      imageView = new ImageView(context);
+      textView = new TextView(context);
 
-      LayoutParams lp = new LayoutParams(0, LayoutParams.WRAP_CONTENT, 1);
-      lp.weight = 1;
-      addView(mImage, lp);
-      lp = new LayoutParams(0, LayoutParams.WRAP_CONTENT, 3);
-      addView(mText, lp);
+      LayoutParams layoutParams = new LayoutParams(0, LayoutParams.WRAP_CONTENT, 1);
+      layoutParams.weight = 1;
+      addView(imageView, layoutParams);
+      layoutParams = new LayoutParams(0, LayoutParams.WRAP_CONTENT, 3);
+      addView(textView, layoutParams);
    }
 
    /** Simple wrapper around the TextView.getText() method. */
    public CharSequence getText()
    {
-      return mText.getText();
+      return textView.getText();
    }
 
    /**
-    * Simple wrapper around ImageView.setImageResource() method. but if resId is
-    * equal -1 this method sets Images visibility as GONE
+    * Simple wrapper around ImageView.setImageResource() method, but if resourceId is
+    * equal to -1 this method sets Image's visibility as GONE.
     */
-   public void setImageResource(int resId)
+   public void setImageResource(int resourceId)
    {
-      if(resId == -1)
+      if(resourceId == -1)
       {
-         mImage.setVisibility(View.GONE);
+         imageView.setVisibility(View.GONE);
          return;
       }
-      mImage.setImageResource(resId);
+      imageView.setImageResource(resourceId);
    }
 
    /** Simple wrapper around TextView.setText() method. */
-   public void setText(String aText)
+   public void setText(String text)
    {
-      mText.setText(aText);
+      textView.setText(text);
    }
 
 }

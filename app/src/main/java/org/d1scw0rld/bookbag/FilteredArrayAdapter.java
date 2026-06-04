@@ -31,9 +31,9 @@ public class FilteredArrayAdapter<T> extends ArrayAdapter<T>
    public View getView(int position, View convertView, @NonNull ViewGroup parent)
    {
       TextView view = (TextView) super.getView(position, convertView, parent);
-      T t = getItem(position);
-      assert t!= null;
-      view.setText(t.toString());
+      T item = getItem(position);
+      assert item != null;
+      view.setText(item.toString());
       return view;
    }
 
@@ -66,17 +66,17 @@ public class FilteredArrayAdapter<T> extends ArrayAdapter<T>
          if(charSequence != null && charSequence.length() > 0)
          {
             String filterSeq = charSequence.toString().toLowerCase();
-            ArrayList<T> filter = new ArrayList<>();
+            ArrayList<T> filteredSuggestions = new ArrayList<>();
 
             for(T object : suggestions)
             {
                if(object.toString()
                         .toLowerCase(ConfigurationCompat.getLocales(context.getResources().getConfiguration()).get(0))
                         .startsWith(filterSeq))
-                  filter.add(object);
+                  filteredSuggestions.add(object);
             }
-            result.count = filter.size();
-            result.values = filter;
+            result.count = filteredSuggestions.size();
+            result.values = filteredSuggestions;
          }
          else
          {

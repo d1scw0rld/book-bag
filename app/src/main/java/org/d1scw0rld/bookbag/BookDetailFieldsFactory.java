@@ -22,8 +22,8 @@ public class BookDetailFieldsFactory
    private final static String SEP = ", ";
 
    private final DBAdapter dbAdapter;
-   private final Book           book;
-   private final Context        context;
+   private final Book book;
+   private final Context context;
    private final LayoutInflater inflater;
 
    public BookDetailFieldsFactory(Context context, DBAdapter dbAdapter, Book book)
@@ -36,58 +36,58 @@ public class BookDetailFieldsFactory
 
    public void addFields(ViewGroup rootView)
    {
-      // Show the dummy content as text in a TextView.
       if (book != null)
       {
-         LinearLayout llCategories = rootView.findViewById(R.id.ll_categories);
-         String sName,
-               sValue = "";
+         LinearLayout categoriesLayout = rootView.findViewById(R.id.ll_categories);
+         String name;
+         StringBuilder valueBuilder = new StringBuilder();
 
-         ArrayList<Property> alCurrencies = dbAdapter.getPropertyValues(DBAdapter.FLD_CURRENCY);
+         ArrayList<Property> currencies = dbAdapter.getPropertyValues(DBAdapter.FLD_CURRENCY);
 
-         Price oPrice = null;
+         Price price = null;
 
          for(Field field : DBAdapter.FIELDS)
          {
-            sName = field.sName;
+            name = field.name;
+            valueBuilder.setLength(0);
 
-            if(field.iID > 99)
+            if(field.id > 99)
             {
-               switch (field.iType)
+               switch (field.type)
                {
                   case Field.TYPE_TEXT:
                   {
-                     switch(field.iID)
+                     switch(field.id)
                      {
                         case DBAdapter.FLD_TITLE:
-                           sValue = book.csTitle.value;
+                           valueBuilder.append(book.title.value);
                            break;
 
                         case DBAdapter.FLD_DESCRIPTION:
-                           sValue = book.csDescription.value;
+                           valueBuilder.append(book.description.value);
                            break;
 
                         case DBAdapter.FLD_VOLUME:
-                           if(book.ciVolume.value != 0)
-                              sValue = book.ciVolume.value.toString();
+                           if(book.volume.value != 0)
+                              valueBuilder.append(book.volume.value);
                            break;
 
                         case DBAdapter.FLD_PAGES:
-                           if(book.ciPages.value != 0)
-                              sValue = book.ciPages.value.toString();
+                           if(book.pages.value != 0)
+                              valueBuilder.append(book.pages.value);
                            break;
 
                         case DBAdapter.FLD_EDITION:
-                           if(book.ciEdition.value != 0)
-                              sValue = book.ciEdition.value.toString();
+                           if(book.edition.value != 0)
+                              valueBuilder.append(book.edition.value);
                            break;
 
                         case DBAdapter.FLD_ISBN:
-                           sValue = book.csISBN.value;
+                           valueBuilder.append(book.isbn.value);
                            break;
 
                         case DBAdapter.FLD_WEB:
-                           sValue = book.csWeb.value;
+                           valueBuilder.append(book.web.value);
                            break;
                      }
                   }
@@ -95,46 +95,47 @@ public class BookDetailFieldsFactory
 
                   case Field.TYPE_MONEY:
                   {
-                     switch(field.iID)
+                     switch(field.id)
                      {
                         case DBAdapter.FLD_PRICE:
-                           oPrice = new Price(book.csPrice.value);
+                           price = new Price(book.price.value);
                            break;
 
                         case DBAdapter.FLD_VALUE:
-                           oPrice = new Price(book.csValue.value);
+                           price = new Price(book.value.value);
                            break;
 
                      }
 
-                     if(oPrice == null || oPrice.iValue == 0)
+                     if(price == null || price.value == 0)
                         break;
 
-                     Property fldCurrency = null;
-                     for(Property oCurrency : alCurrencies)
-                        if(oCurrency.iID == oPrice.iCurrencyID)
+                     Property fieldCurrency = null;
+                     for(Property currency : currencies)
+                        if(currency.id == price.currencyId)
                         {
-                           fldCurrency = oCurrency;
+                           fieldCurrency = currency;
                            break;
                         }
 
-                     sValue = fldCurrency == null ?
-                           String.format(context.getResources().getString(R.string.amn_vl), oPrice.iValue / 100, DBAdapter.separator, oPrice.iValue % 100) :
-                           String.format(context.getResources().getString(R.string.amn_vl_crn), oPrice.iValue / 100, DBAdapter.separator, oPrice.iValue % 100, fldCurrency.sValue);
+                     String formattedValue = fieldCurrency == null ?
+                           String.format(context.getResources().getString(R.string.amn_vl), price.value / 100, DBAdapter.separator, price.value % 100) :
+                           String.format(context.getResources().getString(R.string.amn_vl_crn), price.value / 100, DBAdapter.separator, price.value % 100, fieldCurrency.value);
+                     valueBuilder.append(formattedValue);
                   }
                   break;
 
                   case Field.TYPE_DATE:
                   {
                      Date date = null;
-                     switch(field.iID)
+                     switch(field.id)
                      {
                         case DBAdapter.FLD_READ_DATE:
-                           date = new Date(book.ciReadDate.value);
+                           date = new Date(book.readDate.value);
                            break;
 
                         case DBAdapter.FLD_DUE_DATE:
-                           date = new Date(book.ciDueDate.value);
+                           date = new Date(book.dueDate.value);
                            break;
 
                         default:
@@ -142,79 +143,81 @@ public class BookDetailFieldsFactory
                      }
                      if(date == null || date.toInt() == 0)
                         break;
-                     sValue = date.toString();
+                     valueBuilder.append(date.toString());
                   }
                   break;
                }
             }
             else
             {
-               for(Property oProperty : book.alProperties)
+               for(Property property : book.properties)
                {
-                  if(oProperty.iFieldTypeID == field.iID)
+                  if(property.fieldTypeId == field.id)
                   {
-                     switch (field.iType)
+                     switch (field.type)
                      {
                         case Field.TYPE_MULTIFIELD:
                         case Field.TYPE_MULTI_SPINNER:
-                           String[] tsNames = field.sName.split("\\|");
-                           if(tsNames.length > 1)
-                              sName = tsNames[1];
-                           sValue += (!sValue.trim().isEmpty() ? SEP : "") + oProperty.sValue;
+                           String[] splitNames = field.name.split("\\|");
+                           if(splitNames.length > 1)
+                              name = splitNames[1];
+                           if (valueBuilder.length() > 0)
+                              valueBuilder.append(SEP);
+                           valueBuilder.append(property.value);
                            break;
 
                         default:
-                           sValue = oProperty.sValue;
+                           valueBuilder.append(property.value);
                            break;
                      }
                   }
                }
             }
 
-            if(!sValue.trim().isEmpty())
+            String finalValue = valueBuilder.toString().trim();
+            if(!finalValue.isEmpty())
             {
-               if(field.iType == Field.TYPE_RATING)
-                  addRatingField(llCategories, sName, sValue);
-               else if(field.iType == Field.TYPE_CHECK_BOX)
-                  addCheckBoxField(llCategories, sName, sValue);
+               if(field.type == Field.TYPE_RATING)
+                  addRatingField(categoriesLayout, name, finalValue);
+               else if(field.type == Field.TYPE_CHECK_BOX)
+                  addCheckBoxField(categoriesLayout, name, finalValue);
                else
-                  addField(llCategories, sName, sValue);
-               sValue = "";
+                  addField(categoriesLayout, name, finalValue);
             }
          }
       }
 
    }
 
-   private void addField(LinearLayout rootView, String sName, String sValue)
+   private void addField(LinearLayout rootView, String name, String value)
    {
-      View vRow = inflater.inflate(R.layout.row_category_new, null);
-      ((TextView) vRow.findViewById(R.id.tv_title)).setText(sName);
-      ((TextView) vRow.findViewById(R.id.tv_value)).setText(sValue);
+      View rowView = inflater.inflate(R.layout.row_category_new, null);
+      ((TextView) rowView.findViewById(R.id.tv_title)).setText(name);
+      ((TextView) rowView.findViewById(R.id.tv_value)).setText(value);
 
-      rootView.addView(vRow);
+      rootView.addView(rowView);
    }
 
    private void addRatingField(LinearLayout rootView,
-                               String sName,
-                               String sValue)
+                               String name,
+                               String value)
    {
-      View vRow = inflater.inflate(R.layout.row_category_rating, null);
-      ((TextView) vRow.findViewById(R.id.tv_title)).setText(sName);
-      ((RatingBar) vRow.findViewById(R.id.rating_bar)).setRating(Float.parseFloat(sValue));
+      View rowView = inflater.inflate(R.layout.row_category_rating, null);
+      ((TextView) rowView.findViewById(R.id.tv_title)).setText(name);
+      ((RatingBar) rowView.findViewById(R.id.rating_bar)).setRating(Float.parseFloat(value));
 
-      rootView.addView(vRow);
+      rootView.addView(rowView);
    }
 
    private void addCheckBoxField(LinearLayout rootView,
-                                 String sName,
-                                 String sValue)
+                                 String name,
+                                 String value)
    {
-      View vRow = inflater.inflate(R.layout.row_category_check_box, null);
-      ((TextView) vRow.findViewById(R.id.tv_title)).setText(sName);
-      ((CheckBox) vRow.findViewById(R.id.check_box)).setChecked(Boolean.parseBoolean(sValue));
+      View rowView = inflater.inflate(R.layout.row_category_check_box, null);
+      ((TextView) rowView.findViewById(R.id.tv_title)).setText(name);
+      ((CheckBox) rowView.findViewById(R.id.check_box)).setChecked(Boolean.parseBoolean(value));
 
-      rootView.addView(vRow);
+      rootView.addView(rowView);
    }
 
 }

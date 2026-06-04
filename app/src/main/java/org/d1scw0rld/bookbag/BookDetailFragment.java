@@ -33,7 +33,7 @@ public class BookDetailFragment extends Fragment
    private DBAdapter dbAdapter = null;
 
    private BookDetailFieldsFactory bookDetailFieldsFactory;
-   private LinearLayout llCategories;
+   private LinearLayout categoriesLayout;
 
    @Override
    public void onCreate(Bundle savedInstanceState)
@@ -65,9 +65,9 @@ public class BookDetailFragment extends Fragment
       CollapsingToolbarLayout appBarLayout = requireActivity().findViewById(R.id.toolbar_layout);
 
       if(appBarLayout != null)
-         appBarLayout.setTitle(book.csTitle.value);
+         appBarLayout.setTitle(book.title.value);
 
-      llCategories = view.findViewById(R.id.ll_categories);
+      categoriesLayout = view.findViewById(R.id.ll_categories);
    }
 
    @Override
@@ -86,6 +86,6 @@ public class BookDetailFragment extends Fragment
       dbAdapter.open();
 
       if (book != null)
-         bookDetailFieldsFactory.addFields(llCategories);
+         bookDetailFieldsFactory.addFields(categoriesLayout);
    }
 }

@@ -255,12 +255,12 @@ public class FileSelectorDialog extends DialogFragment
       {
 
          @Override
-         public void onItemSelected(AdapterView<?> aAdapter,
-                                    View aView,
+         public void onItemSelected(AdapterView<?> adapterView,
+                                    View view,
                                     int position,
                                     long row)
          {
-            TextView textViewItem = (TextView) aView;
+            TextView textViewItem = (TextView) view;
             String filter = textViewItem.getText().toString();
             makeList(currentLocation, filter);
             toolbar.setTitle(currentLocation.getName());

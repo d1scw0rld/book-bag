@@ -163,37 +163,37 @@ public class DBAdapter
 
    final static ArrayList<Field> FIELDS = new ArrayList<>();
    
-	DBAdapter(Context _context)
+	DBAdapter(Context context)
 	{
-		this.context = _context;
+		this.context = context;
 		dbHelper = new DBOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION);
-		Resources r = context.getResources();
+		Resources resources = context.getResources();
 		FIELDS.clear();
-		FIELDS.add(new Field(FLD_TITLE, r.getString(R.string.fld_title), Field.TYPE_TEXT).setVisibility(true));
-		FIELDS.add(new Field(FLD_AUTHOR, r.getString(R.string.fld_author), Field.TYPE_MULTIFIELD).setVisibility(true));
-		FIELDS.add(new Field(FLD_DESCRIPTION, r.getString(R.string.fld_descrition), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_MULTI_LINE).setVisibility(false));
-		FIELDS.add(new Field(FLD_SERIE, r.getString(R.string.fld_serie), Field.TYPE_TEXT_AUTOCOMPLETE));
-		FIELDS.add(new Field(FLD_VOLUME, r.getString(R.string.fld_volume), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
-		FIELDS.add(new Field(FLD_GENRE, r.getString(R.string.fld_genre), Field.TYPE_MULTI_SPINNER));
-		FIELDS.add(new Field(FLD_LANGUAGE, r.getString(R.string.fld_language), Field.TYPE_SPINNER));
-		FIELDS.add(new Field(FLD_PAGES, r.getString(R.string.fld_pages), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
-		FIELDS.add(new Field(FLD_PUBLISHER, r.getString(R.string.fld_publisher), Field.TYPE_TEXT_AUTOCOMPLETE));
-		FIELDS.add(new Field(FLD_PUBLICATION_DATE, r.getString(R.string.fld_publication_date), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
-		FIELDS.add(new Field(FLD_PUBLICATION_LOCATION, r.getString(R.string.fld_publication_location), Field.TYPE_TEXT_AUTOCOMPLETE));
-		FIELDS.add(new Field(FLD_EDITION, r.getString(R.string.fld_edition), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
-		FIELDS.add(new Field(FLD_PRICE, r.getString(R.string.fld_price), Field.TYPE_MONEY).setInputType(InputType.TYPE_CLASS_NUMBER|InputType.TYPE_NUMBER_FLAG_DECIMAL));
-      FIELDS.add(new Field(FLD_VALUE, r.getString(R.string.fld_value), Field.TYPE_MONEY).setInputType(InputType.TYPE_CLASS_NUMBER|InputType.TYPE_NUMBER_FLAG_DECIMAL));
-      FIELDS.add(new Field(FLD_STATUS, r.getString(R.string.fld_status), Field.TYPE_SPINNER));
-		FIELDS.add(new Field(FLD_LOANED_TO, r.getString(R.string.fld_loaned_to), Field.TYPE_TEXT_AUTOCOMPLETE));
-		FIELDS.add(new Field(FLD_READ, r.getString(R.string.fld_read), Field.TYPE_CHECK_BOX));
-		FIELDS.add(new Field(FLD_READ_DATE, r.getString(R.string.fld_read_date), Field.TYPE_DATE));
-		FIELDS.add(new Field(FLD_RATING, r.getString(R.string.fld_rating), Field.TYPE_RATING));
-		FIELDS.add(new Field(FLD_FORMAT, r.getString(R.string.fld_format), Field.TYPE_SPINNER));
-      FIELDS.add(new Field(FLD_CONDITION, r.getString(R.string.fld_condition), Field.TYPE_SPINNER));
-		FIELDS.add(new Field(FLD_LOCATION, r.getString(R.string.fld_location), Field.TYPE_TEXT_AUTOCOMPLETE));
-		FIELDS.add(new Field(FLD_DUE_DATE, r.getString(R.string.fld_due_date), Field.TYPE_DATE));
-		FIELDS.add(new Field(FLD_ISBN, r.getString(R.string.fld_isbn), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
-		FIELDS.add(new Field(FLD_WEB, r.getString(R.string.fld_web), Field.TYPE_TEXT));
+		FIELDS.add(new Field(FLD_TITLE, resources.getString(R.string.fld_title), Field.TYPE_TEXT).setVisibility(true));
+		FIELDS.add(new Field(FLD_AUTHOR, resources.getString(R.string.fld_author), Field.TYPE_MULTIFIELD).setVisibility(true));
+		FIELDS.add(new Field(FLD_DESCRIPTION, resources.getString(R.string.fld_descrition), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_MULTI_LINE).setVisibility(false));
+		FIELDS.add(new Field(FLD_SERIE, resources.getString(R.string.fld_serie), Field.TYPE_TEXT_AUTOCOMPLETE));
+		FIELDS.add(new Field(FLD_VOLUME, resources.getString(R.string.fld_volume), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
+		FIELDS.add(new Field(FLD_GENRE, resources.getString(R.string.fld_genre), Field.TYPE_MULTI_SPINNER));
+		FIELDS.add(new Field(FLD_LANGUAGE, resources.getString(R.string.fld_language), Field.TYPE_SPINNER));
+		FIELDS.add(new Field(FLD_PAGES, resources.getString(R.string.fld_pages), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
+		FIELDS.add(new Field(FLD_PUBLISHER, resources.getString(R.string.fld_publisher), Field.TYPE_TEXT_AUTOCOMPLETE));
+		FIELDS.add(new Field(FLD_PUBLICATION_DATE, resources.getString(R.string.fld_publication_date), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
+		FIELDS.add(new Field(FLD_PUBLICATION_LOCATION, resources.getString(R.string.fld_publication_location), Field.TYPE_TEXT_AUTOCOMPLETE));
+		FIELDS.add(new Field(FLD_EDITION, resources.getString(R.string.fld_edition), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
+		FIELDS.add(new Field(FLD_PRICE, resources.getString(R.string.fld_price), Field.TYPE_MONEY).setInputType(InputType.TYPE_CLASS_NUMBER|InputType.TYPE_NUMBER_FLAG_DECIMAL));
+        FIELDS.add(new Field(FLD_VALUE, resources.getString(R.string.fld_value), Field.TYPE_MONEY).setInputType(InputType.TYPE_CLASS_NUMBER|InputType.TYPE_NUMBER_FLAG_DECIMAL));
+        FIELDS.add(new Field(FLD_STATUS, resources.getString(R.string.fld_status), Field.TYPE_SPINNER));
+		FIELDS.add(new Field(FLD_LOANED_TO, resources.getString(R.string.fld_loaned_to), Field.TYPE_TEXT_AUTOCOMPLETE));
+		FIELDS.add(new Field(FLD_READ, resources.getString(R.string.fld_read), Field.TYPE_CHECK_BOX));
+		FIELDS.add(new Field(FLD_READ_DATE, resources.getString(R.string.fld_read_date), Field.TYPE_DATE));
+		FIELDS.add(new Field(FLD_RATING, resources.getString(R.string.fld_rating), Field.TYPE_RATING));
+		FIELDS.add(new Field(FLD_FORMAT, resources.getString(R.string.fld_format), Field.TYPE_SPINNER));
+        FIELDS.add(new Field(FLD_CONDITION, resources.getString(R.string.fld_condition), Field.TYPE_SPINNER));
+		FIELDS.add(new Field(FLD_LOCATION, resources.getString(R.string.fld_location), Field.TYPE_TEXT_AUTOCOMPLETE));
+		FIELDS.add(new Field(FLD_DUE_DATE, resources.getString(R.string.fld_due_date), Field.TYPE_DATE));
+		FIELDS.add(new Field(FLD_ISBN, resources.getString(R.string.fld_isbn), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
+		FIELDS.add(new Field(FLD_WEB, resources.getString(R.string.fld_web), Field.TYPE_TEXT));
 	}
 
 	void open() throws SQLiteException
@@ -221,36 +221,36 @@ public class DBAdapter
       }
       else
       {
-         ArrayList<ParentResult> alParrentResults = new ArrayList<>();
+         ArrayList<ParentResult> parentResults = new ArrayList<>();
    
          Cursor cursor = db.rawQuery(query, null);
          
          if(cursor.moveToFirst())
          {
             Result result;
-            String sParrent = cursor.getString(0);
-            List<Result> alChildResults = new ArrayList<>();
-            ParentResult oParrentResult = new ParentResult(sParrent, alChildResults);
+            String parent = cursor.getString(0);
+            List<Result> childResults = new ArrayList<>();
+            ParentResult parentResult = new ParentResult(parent, childResults);
 
             do
             {
-               sParrent = cursor.getString(0);
+               parent = cursor.getString(0);
                result = new Result();
                result.id = Integer.parseInt(cursor.getString(1));
                result.content = cursor.getString(2);
-               if(!sParrent.equalsIgnoreCase(oParrentResult.getName()))
+               if(!parent.equalsIgnoreCase(parentResult.getName()))
                {
-                  alParrentResults.add(oParrentResult);
-                  alChildResults = new ArrayList<>();
-                  oParrentResult = new ParentResult(sParrent, alChildResults);
+                  parentResults.add(parentResult);
+                  childResults = new ArrayList<>();
+                  parentResult = new ParentResult(parent, childResults);
                }
-               alChildResults.add(result);
+               childResults.add(result);
             } while (cursor.moveToNext());
-            alParrentResults.add(oParrentResult);
+            parentResults.add(parentResult);
          }
          cursor.close();
    
-         return alParrentResults;
+         return parentResults;
       }      
    }
    
@@ -471,43 +471,43 @@ public class DBAdapter
       return getBooksOrderedBy(query);
    }
 
-   void insertBook(Book oBook)
+   void insertBook(Book book)
    {
       db.beginTransaction();
       try
       {
          ContentValues values = new ContentValues();
-         values.put(KEY_TTL, oBook.csTitle.value);
-         values.put(KEY_DSCR, oBook.csDescription.value);
-         values.put(KEY_VLM, oBook.ciVolume.value);
-         values.put(KEY_PBL_DT, oBook.ciPublicationDate.value);
-         values.put(KEY_PGS, oBook.ciPages.value);
-         values.put(KEY_PRC, oBook.csPrice.value);
-         values.put(KEY_VL, oBook.csValue.value);
-         values.put(KEY_DUE_DT, oBook.ciDueDate.value);
-         values.put(KEY_RD_DT, oBook.ciReadDate.value);
-         values.put(KEY_EDN, oBook.ciEdition.value);
-         values.put(KEY_ISBN, oBook.csISBN.value);
-         values.put(KEY_WEB, oBook.csWeb.value);
+         values.put(KEY_TTL, book.title.value);
+         values.put(KEY_DSCR, book.description.value);
+         values.put(KEY_VLM, book.volume.value);
+         values.put(KEY_PBL_DT, book.publicationDate.value);
+         values.put(KEY_PGS, book.pages.value);
+         values.put(KEY_PRC, book.price.value);
+         values.put(KEY_VL, book.value.value);
+         values.put(KEY_DUE_DT, book.dueDate.value);
+         values.put(KEY_RD_DT, book.readDate.value);
+         values.put(KEY_EDN, book.edition.value);
+         values.put(KEY_ISBN, book.isbn.value);
+         values.put(KEY_WEB, book.web.value);
 
-         long iBookID = db.insert(TABLE_BOOKS, null, values);
+         long bookId = db.insert(TABLE_BOOKS, null, values);
          
-         for(int i = 0; i < oBook.alProperties.size(); i++)
+         for(int i = 0; i < book.properties.size(); i++)
          {
-            if (oBook.alProperties.get(i).iID == 0)
+            if (book.properties.get(i).id == 0)
             {
                values = new ContentValues();
-               values.put(KEY_TP_ID, oBook.alProperties.get(i).iFieldTypeID);
-               values.put(KEY_NM, oBook.alProperties.get(i).sValue);
-               oBook.alProperties.get(i).iID = db.insert(TABLE_FIELDS, null, values);
+               values.put(KEY_TP_ID, book.properties.get(i).fieldTypeId);
+               values.put(KEY_NM, book.properties.get(i).value);
+               book.properties.get(i).id = db.insert(TABLE_FIELDS, null, values);
             }
          }
 
-         for (Property oProperty : oBook.alProperties)
+         for (Property property : book.properties)
          {
             values = new ContentValues();
-            values.put(KEY_FLD_ID, oProperty.iID);
-            values.put(KEY_BK_ID, iBookID);
+            values.put(KEY_FLD_ID, property.id);
+            values.put(KEY_BK_ID, bookId);
             db.insert(TABLE_BOOK_FIELDS, null, values);
          }
 
@@ -520,49 +520,49 @@ public class DBAdapter
       shrink();
    }
 
-   ArrayList<Property> getPropertyValues(int iTypeID)
+   ArrayList<Property> getPropertyValues(int typeId)
    {
-      return getPropertyValues(iTypeID, false);
+      return getPropertyValues(typeId, false);
    }
    
-   ArrayList<Property> getPropertyValues(int iTypeID, boolean isOrdered)
+   ArrayList<Property> getPropertyValues(int typeId, boolean isOrdered)
    {
 
-      ArrayList<Property> alPropertyValues = new ArrayList<>();
+      ArrayList<Property> propertyValues = new ArrayList<>();
 
       String sql = "SELECT f." + KEY_ID + ", f." + KEY_TP_ID + ", f." + KEY_NM
                    + " FROM " + TABLE_FIELDS + " as f "
-                   + " WHERE f." + KEY_TP_ID + " = " + iTypeID;
+                   + " WHERE f." + KEY_TP_ID + " = " + typeId;
 
       if(isOrdered)
          sql += " ORDER BY f." + KEY_NM;
 
       Cursor cursor = db.rawQuery(sql, null);
 
-      Property oProperty;
+      Property property;
       if(cursor.moveToFirst())
       {
          do
          {
-            oProperty = new Property(Integer.parseInt(cursor.getString(ID_KEY_ID)),
+            property = new Property(Integer.parseInt(cursor.getString(ID_KEY_ID)),
                                      Integer.parseInt(cursor.getString(ID_KEY_TP_ID)),
                                      cursor.getString(ID_KEY_NM));
 
-            alPropertyValues.add(oProperty);
+            propertyValues.add(property);
          } while(cursor.moveToNext());
       }
       cursor.close();
 
-      return alPropertyValues;
+      return propertyValues;
    }
 
-   Book getBook(long iBookID)
+   Book getBook(long bookId)
    {
-      Book oBook = null;
+      Book book = null;
 
       Cursor cursor = db.query(TABLE_BOOKS,
                                null,
-                               KEY_ID + " = " + iBookID,
+                               KEY_ID + " = " + bookId,
                                null,
                                null,
                                null,
@@ -570,7 +570,7 @@ public class DBAdapter
 
       if(cursor.moveToFirst())
       {
-         oBook = new Book(Integer.parseInt(cursor.getString(ID_KEY_ID)),
+         book = new Book(Integer.parseInt(cursor.getString(ID_KEY_ID)),
                           cursor.getString(ID_KEY_TTL),
                           cursor.getString(ID_KEY_DSCR),
                           Integer.parseInt(cursor.getString(ID_KEY_VLM)),
@@ -589,36 +589,36 @@ public class DBAdapter
 
       String sql = "SELECT f." + KEY_ID + ", f." + KEY_TP_ID + ", f." + KEY_NM
                    + " FROM " + TABLE_BOOK_FIELDS + " as bf LEFT JOIN " + TABLE_FIELDS + " AS f ON bf." + KEY_FLD_ID + " = f." + KEY_ID
-                   + " WHERE bf." + KEY_BK_ID + " = " + iBookID;
+                   + " WHERE bf." + KEY_BK_ID + " = " + bookId;
 
       cursor.close();
       cursor = db.rawQuery(sql, null);
 
-      Property oProperty;
+      Property property;
       if(cursor.moveToFirst())
       {
          do
          {
-            oProperty = new Property(Integer.parseInt(cursor.getString(ID_KEY_ID)),
+            property = new Property(Integer.parseInt(cursor.getString(ID_KEY_ID)),
                                      Integer.parseInt(cursor.getString(ID_KEY_TP_ID)),
                                      cursor.getString(ID_KEY_NM));
 
-            assert oBook != null;
-            oBook.alProperties.add(oProperty);
+            assert book != null;
+            book.properties.add(property);
          } while(cursor.moveToNext());
       }
       cursor.close();
 
-      return oBook;
+      return book;
    }
 
-   void deleteBook(long iBookID)
+   void deleteBook(long bookId)
    {
       db.beginTransaction();
       try
       {
-         db.delete(TABLE_BOOK_FIELDS, KEY_BK_ID + " = " + iBookID, null);
-         db.delete(TABLE_BOOKS, KEY_ID + " = " + iBookID, null);
+         db.delete(TABLE_BOOK_FIELDS, KEY_BK_ID + " = " + bookId, null);
+         db.delete(TABLE_BOOKS, KEY_ID + " = " + bookId, null);
 
          db.setTransactionSuccessful();
       }
@@ -634,48 +634,48 @@ public class DBAdapter
 
    }
 
-   void updateBook(Book oBook)
+   void updateBook(Book book)
    {
-      ContentValues oValues;
+      ContentValues values;
 
       db.beginTransaction();
       try
       {
-         for(Property oProperty : oBook.alProperties)
+         for(Property property : book.properties)
          {
-            if(oProperty.iID == 0)
+            if(property.id == 0)
             {
-               oValues = new ContentValues();
-               oValues.put(KEY_TP_ID, oProperty.iFieldTypeID);
-               oValues.put(KEY_NM, oProperty.sValue);
-               oProperty.iID = db.insert(TABLE_FIELDS, null, oValues);
+               values = new ContentValues();
+               values.put(KEY_TP_ID, property.fieldTypeId);
+               values.put(KEY_NM, property.value);
+               property.id = db.insert(TABLE_FIELDS, null, values);
             }
          }
 
-         db.delete(TABLE_BOOK_FIELDS, KEY_BK_ID + " = " + oBook.iID, null);
+         db.delete(TABLE_BOOK_FIELDS, KEY_BK_ID + " = " + book.id, null);
 
-         for(Property oProperty : oBook.alProperties)
+         for(Property property : book.properties)
          {
-            oValues = new ContentValues();
-            oValues.put(KEY_FLD_ID, oProperty.iID);
-            oValues.put(KEY_BK_ID, oBook.iID);
-            db.insert(TABLE_BOOK_FIELDS, null, oValues);
+            values = new ContentValues();
+            values.put(KEY_FLD_ID, property.id);
+            values.put(KEY_BK_ID, book.id);
+            db.insert(TABLE_BOOK_FIELDS, null, values);
          }
 
-         oValues = new ContentValues();
-         oValues.put(KEY_TTL, oBook.csTitle.value);
-         oValues.put(KEY_DSCR, oBook.csDescription.value);
-         oValues.put(KEY_VLM, oBook.ciVolume.value);
-         oValues.put(KEY_PBL_DT, oBook.ciPublicationDate.value);
-         oValues.put(KEY_PGS, oBook.ciPages.value);
-         oValues.put(KEY_PRC, oBook.csPrice.value);
-         oValues.put(KEY_VL, oBook.csValue.value);
-         oValues.put(KEY_DUE_DT, oBook.ciDueDate.value);
-         oValues.put(KEY_RD_DT, oBook.ciReadDate.value);
-         oValues.put(KEY_EDN, oBook.ciEdition.value);
-         oValues.put(KEY_ISBN, oBook.csISBN.value);
-         oValues.put(KEY_WEB, oBook.csWeb.value);
-         db.update(TABLE_BOOKS, oValues, KEY_ID + " = " + oBook.iID, null);
+         values = new ContentValues();
+         values.put(KEY_TTL, book.title.value);
+         values.put(KEY_DSCR, book.description.value);
+         values.put(KEY_VLM, book.volume.value);
+         values.put(KEY_PBL_DT, book.publicationDate.value);
+         values.put(KEY_PGS, book.pages.value);
+         values.put(KEY_PRC, book.price.value);
+         values.put(KEY_VL, book.value.value);
+         values.put(KEY_DUE_DT, book.dueDate.value);
+         values.put(KEY_RD_DT, book.readDate.value);
+         values.put(KEY_EDN, book.edition.value);
+         values.put(KEY_ISBN, book.isbn.value);
+         values.put(KEY_WEB, book.web.value);
+         db.update(TABLE_BOOKS, values, KEY_ID + " = " + book.id, null);
 
          db.setTransactionSuccessful();
       }
@@ -706,52 +706,52 @@ public class DBAdapter
 		}
 
 		@Override
-		public void onCreate(SQLiteDatabase _db)
+		public void onCreate(SQLiteDatabase db)
 		{
-			_db.execSQL(CREATE_TABLE_BOOKS);
-			_db.execSQL(CREATE_TABLE_FIELDS);
-			_db.execSQL(CREATE_TABLE_BOOK_FIELDS);
+			db.execSQL(CREATE_TABLE_BOOKS);
+			db.execSQL(CREATE_TABLE_FIELDS);
+			db.execSQL(CREATE_TABLE_BOOK_FIELDS);
 
-			_db.beginTransaction();
+			db.beginTransaction();
 	      try
 	      {
-	         int iTypeID,
-	             iValuesID,
-                iFieldID;
+	         int typeId,
+	             valuesId,
+                fieldId;
 
-	         String sFieldName;
-            String[] tsValues;
+	         String fieldName;
+            String[] valuesArray;
 
-            TypedArray taField;
+            TypedArray fieldTypedArray;
 	         
 	         ContentValues values;
 	         
-	         TypedArray taFieldsValues = context.getResources().obtainTypedArray(R.array.fields_values);
-	         for(int i = 0; i < taFieldsValues.length(); i++)
+	         TypedArray fieldsValuesTypedArray = context.getResources().obtainTypedArray(R.array.fields_values);
+	         for(int i = 0; i < fieldsValuesTypedArray.length(); i++)
 	         {
-	            iFieldID = taFieldsValues.getResourceId(i, -1);
-	            taField = context.getResources().obtainTypedArray(iFieldID);
-	            iTypeID = taField.getInt(0, -1);
+	            fieldId = fieldsValuesTypedArray.getResourceId(i, -1);
+	            fieldTypedArray = context.getResources().obtainTypedArray(fieldId);
+	            typeId = fieldTypedArray.getInt(0, -1);
                @StyleableRes int index = 1;
-	            iValuesID = taField.getResourceId(index, -1);
-	            tsValues = context.getResources().getStringArray(iValuesID);
-	            sFieldName = context.getResources().getResourceEntryName(iValuesID);
-	            for(String sValue : tsValues)
+	            valuesId = fieldTypedArray.getResourceId(index, -1);
+	            valuesArray = context.getResources().getStringArray(valuesId);
+	            fieldName = context.getResources().getResourceEntryName(valuesId);
+	            for(String sValue : valuesArray)
 	            {
 	               values = new ContentValues();
-	               values.put(KEY_TP_ID, iTypeID);
+	               values.put(KEY_TP_ID, typeId);
 	               values.put(KEY_NM, sValue);
-	               if(_db.insert(TABLE_FIELDS, null, values) < 0)
+	               if(db.insert(TABLE_FIELDS, null, values) < 0)
 	               {
-	                  throw new RuntimeException(context.getResources().getString(R.string.err_db, sFieldName, iTypeID, sValue));
+	                  throw new RuntimeException(context.getResources().getString(R.string.err_db, fieldName, typeId, sValue));
 	               }              
 	            }
-	            taField.recycle();
+	            fieldTypedArray.recycle();
 	         }
 	         
-	         taFieldsValues.recycle(); // Important!
+	         fieldsValuesTypedArray.recycle(); // Important!
 
-            _db.setTransactionSuccessful();
+            db.setTransactionSuccessful();
 	      }
 	      catch(RuntimeException e)
 	      {
@@ -760,21 +760,21 @@ public class DBAdapter
             
 	      finally
 	      {
-	         _db.endTransaction();
+	         db.endTransaction();
          }
 		}
 
 		@Override
-		public void onUpgrade(SQLiteDatabase _db, int _oldVersion, int _newVersion)
+		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
 		{
-			Log.w("TaskDBAdapter", "Upgrade from version " + _oldVersion + " to " + _newVersion + ", which will destroy all old data");
+			Log.w("TaskDBAdapter", "Upgrade from version " + oldVersion + " to " + newVersion + ", which will destroy all old data");
 			// on upgrade drop older tables
-			_db.execSQL("DROP TABLE IF EXISTS " + TABLE_BOOKS);
-			_db.execSQL("DROP TABLE IF EXISTS " + TABLE_FIELDS);
-			_db.execSQL("DROP TABLE IF EXISTS " + TABLE_BOOK_FIELDS);
+			db.execSQL("DROP TABLE IF EXISTS " + TABLE_BOOKS);
+			db.execSQL("DROP TABLE IF EXISTS " + TABLE_FIELDS);
+			db.execSQL("DROP TABLE IF EXISTS " + TABLE_BOOK_FIELDS);
 
 			// create new tables
-			onCreate(_db);
+			onCreate(db);
 		}
 	}
    
