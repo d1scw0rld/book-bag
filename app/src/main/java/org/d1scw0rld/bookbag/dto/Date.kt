@@ -21,12 +21,6 @@ data class Date(
     // Copy constructor for compatibility
     constructor(otherDate: Date) : this(otherDate.day, otherDate.month, otherDate.year)
 
-    /**
-     * Checks if the date represents an uninitialized or empty date (0/0/0).
-     */
-    val isEmpty: Boolean
-        get() = toInt() == 0
-
     fun toInt(): Int {
         return year * 10000 + month * 100 + day
     }

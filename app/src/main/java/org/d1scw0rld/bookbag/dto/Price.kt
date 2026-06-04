@@ -1,28 +1,28 @@
 package org.d1scw0rld.bookbag.dto
 
-class Price {
-    @JvmField var value: Int = 0
+/**
+ * Data Transfer Object representing a Price.
+ *
+ * This class uses Kotlin's primary constructor with default values and [JvmOverloads]
+ * to allow seamless usage from Java (e.g., direct field access via [JvmField] and overloaded constructors).
+ */
+data class Price @JvmOverloads constructor(
+    @JvmField var value: Int = 0,
     @JvmField var currencyId: Long = 0
+) {
+    /**
+     * Parses a Price from a serialized string format (e.g., "value|currencyId").
+     * Uses efficient inline string operations to delegate to the primary constructor.
+     */
+    constructor(priceString: String) : this(
+        value = priceString.substringBefore('|').toIntOrNull() ?: 0,
+        currencyId = if ('|' in priceString) priceString.substringAfter('|').toLongOrNull() ?: 0 else 0
+    )
 
-    constructor()
-
-    constructor(priceString: String) : this() {
-        if (priceString.isEmpty()) return
-
-        val parts = priceString.split("|")
-        if (parts.isNotEmpty()) {
-            value = parts[0].toIntOrNull() ?: 0
-        }
-        if (parts.size > 1) {
-            currencyId = parts[1].toLongOrNull() ?: 0
-        }
-    }
-
-    constructor(value: Int, currency: Int) {
-        this.value = value
-        this.currencyId = currency.toLong()
-    }
-
+    /**
+     * Custom string serialization format used for database storage.
+     * Keeps standard compatibility with existing storage formats.
+     */
     override fun toString(): String {
         return if (value == 0) "" else "$value|$currencyId"
     }

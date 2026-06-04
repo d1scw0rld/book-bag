@@ -186,9 +186,9 @@ class DBAdapter(private val context: Context) {
             if (cursor.moveToFirst()) {
                 do {
                     val property = Property(
-                        cursor.getLong(ID_KEY_ID),
-                        cursor.getInt(ID_KEY_TP_ID),
-                        cursor.getString(ID_KEY_NM).orEmpty()
+                        id = cursor.getLong(ID_KEY_ID),
+                        fieldTypeId = cursor.getInt(ID_KEY_TP_ID),
+                        value = cursor.getString(ID_KEY_NM).orEmpty()
                     )
                     propertyValues.add(property)
                 } while (cursor.moveToNext())
@@ -238,9 +238,9 @@ class DBAdapter(private val context: Context) {
             if (cursor.moveToFirst()) {
                 do {
                     val property = Property(
-                        cursor.getLong(ID_KEY_ID),
-                        cursor.getInt(ID_KEY_TP_ID),
-                        cursor.getString(ID_KEY_NM).orEmpty()
+                        id = cursor.getLong(ID_KEY_ID),
+                        fieldTypeId = cursor.getInt(ID_KEY_TP_ID),
+                        value = cursor.getString(ID_KEY_NM).orEmpty()
                     )
                     book?.properties?.add(property)
                 } while (cursor.moveToNext())
