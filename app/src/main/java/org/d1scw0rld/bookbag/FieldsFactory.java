@@ -97,20 +97,17 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
          previousView = fieldEditTextUpdatableClearable.findViewById(R.id.editTextX);
       }
       fieldEditTextUpdatableClearable.setUpdateListener(editText -> {
-         Class<?> genericTypeClass = changeableValue.getGenericType();
-         Class<?> clazz;
+         Class<?> clazz = changeableValue.getGenericType();
          Object object;
          try
          {
-            clazz = Class.forName(genericTypeClass.getName());
             Constructor<?> constructor = clazz.getConstructor(String.class);
             object = constructor.newInstance(editText.getText()
                                         .toString()
                                         .trim());
 
          }
-         catch(ClassNotFoundException
-               | NoSuchMethodException
+         catch(NoSuchMethodException
                | SecurityException
                | InstantiationException
                | IllegalAccessException
@@ -157,7 +154,7 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
       fieldAutoCompleteTextView.setAdapter(filteredArrayAdapter);
       fieldAutoCompleteTextView.setOnItemClickListener((adapter, view1, position, rowId) -> {
          Property selectedField = (Property) adapter.getItemAtPosition(position);
-         ((Property) fieldAutoCompleteTextView.getTag()).copy(selectedField);
+         ((Property) fieldAutoCompleteTextView.getTag()).updateFrom(selectedField);
       });
       fieldAutoCompleteTextView.setUpdateListener(editText -> {
          boolean isFound = false;
@@ -169,7 +166,7 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
                  .equalsIgnoreCase(p.value))
             {
                isFound = true;
-               ((Property) fieldAutoCompleteTextView.getTag()).copy(p);
+               ((Property) fieldAutoCompleteTextView.getTag()).updateFrom(p);
                break;
             }
          }
@@ -259,7 +256,7 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
          public void onItemSelected(AdapterView<?> parent, View view, int pos, long id)
          {
             if(pos > 0)
-               ((Property) fieldSpinner.getTag()).copy(propertyValues.get(pos - 1));
+               ((Property) fieldSpinner.getTag()).updateFrom(propertyValues.get(pos - 1));
          }
 
          @Override
@@ -314,7 +311,7 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
                if(property.value.trim()
                                  .equalsIgnoreCase(value.trim()))
                {
-                  ((Property) view.getTag()).copy(property);
+                  ((Property) view.getTag()).updateFrom(property);
                   isExists = true;
                   break;
                }
@@ -329,7 +326,7 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
          @Override
          public void onItemSelect(View view, Property selection)
          {
-            ((Property) view.getTag()).copy(selection);
+            ((Property) view.getTag()).updateFrom(selection);
          }
       });
 
@@ -561,7 +558,7 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
                if(propertyOfType.value.equalsIgnoreCase(ratingStr))
                {
                   isFound = true;
-                  ((Property) fieldRating.getTag()).copy(propertyOfType);
+                  ((Property) fieldRating.getTag()).updateFrom(propertyOfType);
                   break;
                }
             }
@@ -618,7 +615,7 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
                if(propertyValue.value.equalsIgnoreCase(checkedStr))
                {
                   isFound = true;
-                  ((Property) fieldCheckBox.getTag()).copy(propertyValue);
+                  ((Property) fieldCheckBox.getTag()).updateFrom(propertyValue);
                   break;
                }
             }

@@ -25,7 +25,7 @@ import org.d1scw0rld.bookbag.dto.Property;
 import org.d1scw0rld.bookbag.dto.Field;
 import org.d1scw0rld.bookbag.dto.FileUtils;
 import org.d1scw0rld.bookbag.dto.ParentResult;
-import org.d1scw0rld.bookbag.dto.Result;
+import org.d1scw0rld.bookbag.dto.BookResult;
 
 import androidx.annotation.StyleableRes;
 
@@ -227,17 +227,15 @@ public class DBAdapter
          
          if(cursor.moveToFirst())
          {
-            Result result;
+            BookResult result;
             String parent = cursor.getString(0);
-            List<Result> childResults = new ArrayList<>();
+            List<BookResult> childResults = new ArrayList<>();
             ParentResult parentResult = new ParentResult(parent, childResults);
 
             do
             {
                parent = cursor.getString(0);
-               result = new Result();
-               result.id = Integer.parseInt(cursor.getString(1));
-               result.content = cursor.getString(2);
+               result = new BookResult(Long.parseLong(cursor.getString(1)), cursor.getString(2));
                if(!parent.equalsIgnoreCase(parentResult.getName()))
                {
                   parentResults.add(parentResult);

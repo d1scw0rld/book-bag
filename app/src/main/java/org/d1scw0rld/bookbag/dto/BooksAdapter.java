@@ -59,7 +59,7 @@ public class BooksAdapter extends ExpandableRecyclerAdapter<BooksAdapter.BookLis
          items.add(new BookListItem(parentResult.getName()));
          allChildrenCount += parentResult.getChildList()
                                            .size();
-         for(Result result : parentResult.getChildList())
+         for(BookResult result : parentResult.getChildList())
          {
             items.add(new BookListItem(result.id, result.content));
          }

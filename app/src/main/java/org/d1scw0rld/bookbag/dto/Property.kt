@@ -1,51 +1,34 @@
-package org.d1scw0rld.bookbag.dto;
+package org.d1scw0rld.bookbag.dto
 
-import androidx.annotation.NonNull;
+class Property(
+    @JvmField var id: Long = 0,
+    @JvmField var fieldTypeId: Int = 0,
+    @JvmField var value: String = ""
+) {
+    constructor(fieldTypeId: Int) : this(0, fieldTypeId, "")
 
-public class Property
-{
-   public int    fieldTypeId;
-   public long   id = 0;
-   public String value = "";
+    constructor(fieldTypeId: Int, value: String) : this(0, fieldTypeId, value)
 
-   public Property(int fieldTypeId)
-   {
-      this.fieldTypeId = fieldTypeId;
-   }
+    fun updateFrom(other: Property) {
+        this.id = other.id
+        this.fieldTypeId = other.fieldTypeId
+        this.value = other.value
+    }
 
-   public Property(int fieldTypeId, String value)
-   {
-      this.fieldTypeId = fieldTypeId;
-      this.value = value;
-   }
+    override fun toString(): String {
+        return value
+    }
 
-   public Property(long id, int fieldTypeId, String value)
-   {
-      this.id = id;
-      this.fieldTypeId = fieldTypeId;
-      this.value = value;
-   }
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Property) return false
+        return id == other.id && fieldTypeId == other.fieldTypeId && value.equals(other.value, ignoreCase = true)
+    }
 
-   public void copy(Property other)
-   {
-      id = other.id;
-      fieldTypeId = other.fieldTypeId;
-      value = other.value;
-   }
-
-   @NonNull
-   @Override
-   public String toString()
-   {
-      return value;
-   }
-
-   @Override
-   public boolean equals(Object other)
-   {
-      if (this == other) return true;
-      if (other == null || getClass() != other.getClass()) return false;
-      Property property = (Property) other;
-      return id == property.id && fieldTypeId == property.fieldTypeId && value.equalsIgnoreCase(property.value);
-   }
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + fieldTypeId
+        result = 31 * result + value.lowercase().hashCode()
+        return result
+    }
 }

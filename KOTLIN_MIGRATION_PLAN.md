@@ -60,7 +60,7 @@ DTOs are "leaf nodes" (no UI or structural logic). Migrating these first simplif
 
 ### Action Items:
 Convert the following classes under `org.d1scw0rld.bookbag.dto.*` (suggested order):
-1. **`Result.kt` & `Parent.kt`**: Basic interface and model.
+1. **`BookResult.kt` & `Parent.kt`**: Basic interface and model.
 2. **`ParentResult.kt`**: Replace custom getters/setters with Kotlin properties.
 3. **`Date.kt`**: Leverage Kotlin's primary constructor and property definitions.
 4. **`Price.kt`**: Re-write parsing with idiomatic Kotlin string operations.

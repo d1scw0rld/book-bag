@@ -1,71 +1,41 @@
-package org.d1scw0rld.bookbag.dto;
+package org.d1scw0rld.bookbag.dto
 
-import androidx.annotation.NonNull;
+import java.util.Locale
 
-import java.util.Locale;
+data class Date(
+    @JvmField val day: Int,
+    @JvmField val month: Int,
+    @JvmField val year: Int
+) : Comparable<Date> {
 
-public class Date
-{
-   public int day, 
-              month, 
-              year; 
+    // Default constructor (sets day=1, month=1, year=1900 as in original)
+    constructor() : this(1, 1, 1900)
 
-   public Date()
-   {
-      day = 1;
-      month = 1;
-      year = 1900;
-   }
-   
-   public Date(int day,
-                int month,
-                int year)
-   {
-      this.day = day;
-      this.month = month;
-      this.year = year;
-   }
-   
-   
-   public Date(int dateValue)
-   {
-      fromInt(dateValue);
-   }
-   
-   public Date(Date otherDate)
-   {
-      this(otherDate.day, otherDate.month, otherDate.year);
-   }
-   
-   public int toInt()
-   {
-      return year*10000 + month*100 + day;
-   }
-   
-   private void fromInt(int dateValue)
-   {
-      day = dateValue % 100;
-      month = (dateValue / 100) % 100;
-      year = dateValue / 10000;
-   }
+    // Parse from an integer value (e.g., yyyymmdd)
+    constructor(dateValue: Int) : this(
+        day = dateValue % 100,
+        month = (dateValue / 100) % 100,
+        year = dateValue / 10000
+    )
 
-   @NonNull
-   @Override
-   public String toString()
-   {
-      return String.format(Locale.getDefault(), "%02d", day) + "/" + String.format(Locale.getDefault(), "%02d", month) + "/" + year;
-   }
-   
-   @Override
-   public boolean equals(Object other)
-   {
-      if (this == other) return true;
-      if (other == null || getClass() != other.getClass()) return false;
+    // Copy constructor for compatibility
+    constructor(otherDate: Date) : this(otherDate.day, otherDate.month, otherDate.year)
 
-      Date otherDate = (Date) other;
-      if(day != otherDate.day) return false;
-      if(month != otherDate.month) return false;
-      return year == otherDate.year;
-   }      
+    /**
+     * Checks if the date represents an uninitialized or empty date (0/0/0).
+     */
+    val isEmpty: Boolean
+        get() = toInt() == 0
 
+    fun toInt(): Int {
+        return year * 10000 + month * 100 + day
+    }
+
+    override fun toString(): String {
+        return String.format(Locale.getDefault(), "%02d/%02d/%d", day, month, year)
+    }
+
+    override fun compareTo(other: Date): Int {
+        return toInt().compareTo(other.toInt())
+    }
 }

@@ -1,41 +1,29 @@
-package org.d1scw0rld.bookbag.dto;
+package org.d1scw0rld.bookbag.dto
 
-import androidx.annotation.NonNull;
+class Price {
+    @JvmField var value: Int = 0
+    @JvmField var currencyId: Long = 0
 
-public class Price
-{
-   public int value = 0;
-   public long currencyId = 0;
-   
-   public Price()
-   {}
-   
-   public Price(String priceString)
-   {
-      this();
-      
-      if(priceString.isEmpty())
-         return;
-         
-      String[] parts = priceString.split("\\|");
-      value = Integer.parseInt(parts[0]);
-      if(parts.length > 1)
-         currencyId = Long.parseLong(parts[1]);
-   }
-   
-   public Price(int value, int currency)
-   {
-      this.value = value;
-      this.currencyId = currency;
-   }
+    constructor()
 
-   @NonNull
-   @Override
-   public String toString()
-   {
-      if(value == 0)
-         return "";
-      else
-         return value + "|" + currencyId;
-   }
+    constructor(priceString: String) : this() {
+        if (priceString.isEmpty()) return
+
+        val parts = priceString.split("|")
+        if (parts.isNotEmpty()) {
+            value = parts[0].toIntOrNull() ?: 0
+        }
+        if (parts.size > 1) {
+            currencyId = parts[1].toLongOrNull() ?: 0
+        }
+    }
+
+    constructor(value: Int, currency: Int) {
+        this.value = value
+        this.currencyId = currency.toLong()
+    }
+
+    override fun toString(): String {
+        return if (value == 0) "" else "$value|$currencyId"
+    }
 }
