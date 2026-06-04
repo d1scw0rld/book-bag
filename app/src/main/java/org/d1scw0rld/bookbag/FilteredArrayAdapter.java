@@ -44,7 +44,6 @@ public class FilteredArrayAdapter<T> extends ArrayAdapter<T>
       if(nameFilter == null)
          nameFilter = new FieldFilter(items);
       return nameFilter;
-//          return nameFilter;
    }
 
    private class FieldFilter extends Filter

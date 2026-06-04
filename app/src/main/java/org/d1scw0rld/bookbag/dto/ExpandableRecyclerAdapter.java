@@ -1,6 +1,8 @@
 package org.d1scw0rld.bookbag.dto;
 
 import android.content.Context;
+import androidx.annotation.UiThread;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,9 +22,9 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
    private List<Integer> indexList = new ArrayList<>();
    private SparseIntArray expandMap = new SparseIntArray();
    private int mode;
-
-   static final int TYPE_HEADER = 1000,
-                    TYPE_ITEM = 1001;
+   
+   public static final int TYPE_HEADER = 1000,
+                            TYPE_ITEM = 1001;
 
    private static final int MODE_ACCORDION = 1;
 

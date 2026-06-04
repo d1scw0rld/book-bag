@@ -1,98 +1,80 @@
 package org.d1scw0rld.bookbag;
 
-import java.util.ArrayList;
-
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.LinearLayout;
-import android.widget.RatingBar;
-import android.widget.TextView;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
 
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 
 import org.d1scw0rld.bookbag.dto.Book;
-import org.d1scw0rld.bookbag.dto.Date;
-import org.d1scw0rld.bookbag.dto.Property;
-import org.d1scw0rld.bookbag.dto.Field;
-import org.d1scw0rld.bookbag.dto.Price;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 /**
- * A fragment representing a single Book detail screen.
- * This fragment is either contained in a {@link BookListActivity}
- * in two-pane mode (on tablets) or a {@link BookDetailActivity}
+ * A fragment representing a single book detail screen.
+ * This fragment is either contained in a {@link MainActivity}
+ * in two-pane mode (on tablets) or a {@link BookFragment}
  * on handsets.
  */
 public class BookDetailFragment extends Fragment
 {
    /**
-    * The fragment argument representing the item ID that this fragment
+    * The fragment argument representing the book ID that this fragment
     * represents.
     */
-   public static final String ARG_ITEM_ID = "item_id";
+   public static final String BOOK_ID = "book_id";
 
-   /**
-    * The dummy content this fragment is presenting.
-    */
-   private final static String SEP = ", ";
+   private Book book;
    
-   private Book oBook;
-   
-   private DBAdapter oDbAdapter = null;
-   
-   private LayoutInflater oInflater;
+   private DBAdapter dbAdapter = null;
 
-   /**
-    * Mandatory empty constructor for the fragment manager to instantiate the
-    * fragment (e.g. upon screen orientation changes).
-    */
-   public BookDetailFragment()
-   {
-   }
+   private BookDetailFieldsFactory bookDetailFieldsFactory;
+   private LinearLayout llCategories;
 
    @Override
    public void onCreate(Bundle savedInstanceState)
    {
       super.onCreate(savedInstanceState);
-      
-      oDbAdapter = new DBAdapter(getActivity());
-      oDbAdapter.open();
-      
-      oInflater = LayoutInflater.from(getActivity());
 
-      if(getArguments() != null && getArguments().containsKey(ARG_ITEM_ID))
+      dbAdapter = new DBAdapter(getActivity());
+      dbAdapter.open();
+
+      if(getArguments() != null && getArguments().containsKey(BOOK_ID))
       {
-         // Load the dummy content specified by the fragment
-         // arguments. In a real-world scenario, use a Loader
-         // to load content from a content provider.
-         //         long id = getArguments().getLong(ARG_ITEM_ID);
-         oBook = oDbAdapter.getBook(getArguments().getLong(ARG_ITEM_ID));
+         book = dbAdapter.getBook(getArguments().getLong(BOOK_ID));
 
-         Activity activity = this.getActivity();
-         CollapsingToolbarLayout appBarLayout = null;
-         if(activity != null)
-         {
-            appBarLayout = activity.findViewById(R.id.toolbar_layout);
-         }
-         if(appBarLayout != null)
-         {
-            appBarLayout.setTitle(oBook.csTitle.value);
-         }
+         bookDetailFieldsFactory = new BookDetailFieldsFactory(getContext(), dbAdapter, book);
       }
+   }
+
+   @Override
+   public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+   {
+      return inflater.inflate(R.layout.fragment_book_detail, container, false);
+   }
+
+   @Override
+   public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
+   {
+      super.onViewCreated(view, savedInstanceState);
+
+      CollapsingToolbarLayout appBarLayout = requireActivity().findViewById(R.id.toolbar_layout);
+
+      if(appBarLayout != null)
+         appBarLayout.setTitle(book.csTitle.value);
+
+      llCategories = view.findViewById(R.id.ll_categories);
    }
 
    @Override
    public void onPause()
    {
-      oDbAdapter.close();
-      
+      dbAdapter.close();
+
       super.onPause();
    }
 
@@ -100,197 +82,10 @@ public class BookDetailFragment extends Fragment
    public void onResume()
    {
       super.onResume();
-      
-      oDbAdapter.open();
+
+      dbAdapter.open();
+
+      if (book != null)
+         bookDetailFieldsFactory.addFields(llCategories);
    }
-
-   @Override
-   public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-   {
-      View rootView = inflater.inflate(R.layout.book_detail, container, false);
-
-      // Show the dummy content as text in a TextView.
-      if (oBook != null)
-      {
-         LinearLayout llCategories = rootView.findViewById(R.id.ll_categories);
-         String sName,
-                sValue = "";
-         
-         ArrayList<Property> alCurrencies = oDbAdapter.getPropertyValues(DBAdapter.FLD_CURRENCY);
-         
-         Price oPrice = null;
-         
-         for(Field field : DBAdapter.FIELDS)
-         {
-            sName = field.sName;
-            
-            if(field.iID > 99)
-            {
-               switch (field.iType)
-               {
-                  case Field.TYPE_TEXT:
-                  {
-                     switch(field.iID)
-                     {
-                        case DBAdapter.FLD_DESCRIPTION:
-                           sValue = oBook.csDescription.value;
-                        break;
-
-                        case DBAdapter.FLD_VOLUME:
-                           if(oBook.ciVolume.value != 0)
-                              sValue = oBook.ciVolume.value.toString();
-                        break;
-
-                        case DBAdapter.FLD_PAGES:
-                           if(oBook.ciPages.value != 0)
-                              sValue = oBook.ciPages.value.toString();
-                        break;
-                         
-                        case DBAdapter.FLD_EDITION:
-                           if(oBook.ciEdition.value != 0)
-                              sValue = oBook.ciEdition.value.toString();
-                        break;
-
-                        case DBAdapter.FLD_ISBN:
-                           sValue = oBook.csISBN.value;
-                        break;
-                         
-                        case DBAdapter.FLD_WEB:
-                           sValue = oBook.csWeb.value;
-                        break;
-                     }
-                  }
-                  break;
-                  
-                  case Field.TYPE_MONEY:
-                  {
-                     switch(field.iID)
-                     {
-                        case DBAdapter.FLD_PRICE:
-                           oPrice = new Price(oBook.csPrice.value);
-                        break;
-                        
-                        case DBAdapter.FLD_VALUE:
-                           oPrice = new Price(oBook.csValue.value);
-                        break;                  
-                        
-                     }
-                     
-                     if(oPrice == null || oPrice.iValue == 0)
-                        break;
-
-                     Property fldCurrency = null;
-                     for(Property oCurrency : alCurrencies)
-                        if(oCurrency.iID == oPrice.iCurrencyID)
-                        {
-                           fldCurrency = oCurrency;
-                           break;
-                        }
-                     
-                     sValue = fldCurrency == null ? 
-                              String.format(getResources().getString(R.string.amn_vl), oPrice.iValue / 100, DBAdapter.separator, oPrice.iValue % 100) :  
-                              String.format(getResources().getString(R.string.amn_vl_crn), oPrice.iValue / 100, DBAdapter.separator, oPrice.iValue % 100, fldCurrency.sValue);
-                  }
-                  break;
-                  
-                  case Field.TYPE_DATE:
-                  {
-                     Date date = null;
-                     switch(field.iID)
-                     {
-                        case DBAdapter.FLD_READ_DATE:
-                           date = new Date(oBook.ciReadDate.value);
-                        break;
-                        
-                        case DBAdapter.FLD_DUE_DATE:
-                           date = new Date(oBook.ciDueDate.value);
-                        break;
-                        
-                        default:
-                           break;
-                     }
-                     if(date == null || date.toInt() == 0)
-                        break;
-                     sValue = date.toString();
-                  }
-                  break;
-               }               
-            }
-            else
-            {
-               for(Property oProperty : oBook.alProperties)
-               {
-                  if(oProperty.iFieldTypeID == field.iID)
-                  {
-                     switch (field.iType)
-                     {
-                        case Field.TYPE_MULTIFIELD:
-                        case Field.TYPE_MULTI_SPINNER:
-                           String[] tsNames = field.sName.split("\\|");
-                           if(tsNames.length > 1)
-                              sName = tsNames[1];
-                           sValue += (!sValue.trim().isEmpty() ? SEP : "") + oProperty.sValue;
-                        break;
-                        
-                        default:
-                           sValue = oProperty.sValue;
-                           break;
-                     }
-                  }
-               }
-            }
-            
-            if(!sValue.trim().isEmpty())
-            {
-               if(field.iType == Field.TYPE_RATING)
-                  addRatingField(llCategories, sName, sValue);
-               else if(field.iType == Field.TYPE_CHECK_BOX)
-                  addCheckBoxField(llCategories, sName, sValue);
-               else
-                  addField(llCategories, sName, sValue);
-               sValue = "";
-            }            
-         }
-      }
-
-      return rootView;
-   }
-
-   @Override
-   public void onActivityResult(int requestCode, int resultCode, Intent data)
-   {
-      super.onActivityResult(requestCode, resultCode, data);
-   }
-
-   private void addField(LinearLayout rootView, String sName, String sValue)
-   {
-      View vRow = oInflater.inflate(R.layout.row_category_new, null);
-      ((TextView) vRow.findViewById(R.id.tv_title)).setText(sName);
-      ((TextView) vRow.findViewById(R.id.tv_value)).setText(sValue);
-      
-      rootView.addView(vRow);  
-   }
-
-   private void addRatingField(LinearLayout rootView,
-                               String sName,
-                               String sValue)
-   {
-      View vRow = oInflater.inflate(R.layout.row_category_rating, null);
-      ((TextView) vRow.findViewById(R.id.tv_title)).setText(sName);
-      ((RatingBar) vRow.findViewById(R.id.rating_bar)).setRating(Float.parseFloat(sValue));
-      
-      rootView.addView(vRow);
-   }
-   
-   private void addCheckBoxField(LinearLayout rootView,
-                                 String sName,
-                                 String sValue)
-   {
-      View vRow = oInflater.inflate(R.layout.row_category_check_box, null);
-      ((TextView) vRow.findViewById(R.id.tv_title)).setText(sName);
-      ((CheckBox) vRow.findViewById(R.id.check_box)).setChecked(Boolean.parseBoolean(sValue));
-
-      rootView.addView(vRow);
-   }
-   
 }

@@ -9,4 +9,9 @@
       style="@style/Widget.AppCompat.Spinner"
       app:showAsAction="always"/>
 
+   <item
+      android:id="@+id/action_load"
+      android:title="@string/load"
+      app:showAsAction="always"/>
+
 </menu>

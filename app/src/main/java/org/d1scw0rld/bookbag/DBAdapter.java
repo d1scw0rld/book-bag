@@ -27,6 +27,8 @@ import org.d1scw0rld.bookbag.dto.FileUtils;
 import org.d1scw0rld.bookbag.dto.ParentResult;
 import org.d1scw0rld.bookbag.dto.Result;
 
+import androidx.annotation.StyleableRes;
+
 public class DBAdapter
 {
 	static final String DATABASE_NAME = "book_bag.db";
@@ -181,7 +183,7 @@ public class DBAdapter
 		FIELDS.add(new Field(FLD_EDITION, r.getString(R.string.fld_edition), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
 		FIELDS.add(new Field(FLD_PRICE, r.getString(R.string.fld_price), Field.TYPE_MONEY).setInputType(InputType.TYPE_CLASS_NUMBER|InputType.TYPE_NUMBER_FLAG_DECIMAL));
       FIELDS.add(new Field(FLD_VALUE, r.getString(R.string.fld_value), Field.TYPE_MONEY).setInputType(InputType.TYPE_CLASS_NUMBER|InputType.TYPE_NUMBER_FLAG_DECIMAL));
-		FIELDS.add(new Field(FLD_STATUS, r.getString(R.string.fld_status), Field.TYPE_SPINNER));
+      FIELDS.add(new Field(FLD_STATUS, r.getString(R.string.fld_status), Field.TYPE_SPINNER));
 		FIELDS.add(new Field(FLD_LOANED_TO, r.getString(R.string.fld_loaned_to), Field.TYPE_TEXT_AUTOCOMPLETE));
 		FIELDS.add(new Field(FLD_READ, r.getString(R.string.fld_read), Field.TYPE_CHECK_BOX));
 		FIELDS.add(new Field(FLD_READ_DATE, r.getString(R.string.fld_read_date), Field.TYPE_DATE));
@@ -574,6 +576,8 @@ public class DBAdapter
                           Integer.parseInt(cursor.getString(ID_KEY_VLM)),
                           Integer.parseInt(cursor.getString(ID_KEY_PBL_DT)),
                           Integer.parseInt(cursor.getString(ID_KEY_PGS)),
+                          // Integer.parseInt(cursor.getString(ID_KEY_PRC)),
+                          // Integer.parseInt(cursor.getString(ID_KEY_VL)),
                           cursor.getString(ID_KEY_PRC),
                           cursor.getString(ID_KEY_VL),
                           Integer.parseInt(cursor.getString(ID_KEY_DUE_DT)),
@@ -587,6 +591,7 @@ public class DBAdapter
                    + " FROM " + TABLE_BOOK_FIELDS + " as bf LEFT JOIN " + TABLE_FIELDS + " AS f ON bf." + KEY_FLD_ID + " = f." + KEY_ID
                    + " WHERE bf." + KEY_BK_ID + " = " + iBookID;
 
+      cursor.close();
       cursor = db.rawQuery(sql, null);
 
       Property oProperty;
@@ -609,7 +614,6 @@ public class DBAdapter
 
    void deleteBook(long iBookID)
    {
-
       db.beginTransaction();
       try
       {
@@ -728,7 +732,8 @@ public class DBAdapter
 	            iFieldID = taFieldsValues.getResourceId(i, -1);
 	            taField = context.getResources().obtainTypedArray(iFieldID);
 	            iTypeID = taField.getInt(0, -1);
-	            iValuesID = taField.getResourceId(1, -1);
+               @StyleableRes int index = 1;
+	            iValuesID = taField.getResourceId(index, -1);
 	            tsValues = context.getResources().getStringArray(iValuesID);
 	            sFieldName = context.getResources().getResourceEntryName(iValuesID);
 	            for(String sValue : tsValues)

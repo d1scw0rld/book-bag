@@ -4,7 +4,7 @@
    tools:context="com.discworld.myapplication.MainActivity" >
 
    <item
-      android:id="@+id/action_settings"
+      android:id="@+id/fragment_settings"
       android:orderInCategory="1"
       android:title="@string/action_settings"
       app:showAsAction="never"/>

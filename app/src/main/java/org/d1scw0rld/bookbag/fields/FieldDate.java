@@ -6,12 +6,13 @@ import org.d1scw0rld.bookbag.R;
 import org.d1scw0rld.bookbag.dto.Date;
 
 import android.app.Activity;
-//import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
-//import com.wdullaer.materialdatetimepicker.date.DatePickerDialog.OnDateSetListener;
+import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
+import com.wdullaer.materialdatetimepicker.date.DatePickerDialog.OnDateSetListener;
 
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
+import androidx.core.content.ContextCompat;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -19,13 +20,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
-import androidx.core.content.ContextCompat;
-
-import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
-
-public class FieldDate extends LinearLayout implements DatePickerDialog.OnDateSetListener
+public class FieldDate extends LinearLayout implements OnDateSetListener, Field
 {
-   private Title oTitle;
+   private Title  title;
    private Button btnSpinner;
    private Date date = new Date(0);
    private String hint = "";
@@ -35,15 +32,15 @@ public class FieldDate extends LinearLayout implements DatePickerDialog.OnDateSe
    public FieldDate(Context context)
    {
       super(context);
-      
-      vInit(context);
+
+      init(context);
    }
    
    public FieldDate(Context context, AttributeSet attrs)
    {
       super(context, attrs);
 
-      vInit(context);
+      init(context);
       
       TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.FieldDate, 0, 0);
       
@@ -59,22 +56,22 @@ public class FieldDate extends LinearLayout implements DatePickerDialog.OnDateSe
       setOrientation(LinearLayout.VERTICAL);
       setGravity(Gravity.CENTER_VERTICAL);
 
-      oTitle.setText(title);
-      oTitle.setColor(titleValueColor);
-      oTitle.setTextSize(titleTextSize);
-      oTitle.setLineSize(titleLineSize);
+      this.title.setText(title);
+      this.title.setColor(titleValueColor);
+      this.title.setTextSize(titleTextSize);
+      this.title.setLineSize(titleLineSize);
       
       btnSpinner.setContentDescription(contentDescription);
    }
    
-   void vInit(Context context)
+   void init(Context context)
    {
       LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       inflater.inflate(R.layout.field_date, this, true);
 
       final Activity activity = (Activity) context;
-      
-      oTitle = findViewById(R.id.title);
+
+      title = findViewById(R.id.title);
       btnSpinner = findViewById(R.id.action_select_type);
       
       btnSpinner.setOnClickListener(new OnClickListener()
@@ -105,6 +102,8 @@ public class FieldDate extends LinearLayout implements DatePickerDialog.OnDateSe
             datePickerDialog.setOkColor(ContextCompat.getColor(activity, R.color.accent));
 
             datePickerDialog.setTitle("Select Date From DatePickerDialog");
+
+            datePickerDialog.show(activity.getFragmentManager(), "DatePickerDialog");
          }
       });
       
@@ -127,27 +126,33 @@ public class FieldDate extends LinearLayout implements DatePickerDialog.OnDateSe
 
    public void setTitle(String title)
    {
-      oTitle.setText(title);
+      this.title.setText(title);
    }
    
    public void setTitle(int resid)
    {
-      oTitle.setText(resid);
+      title.setText(resid);
    }
-   
+
+   @Override
+   public String getTitle()
+   {
+      return title.getTitle();
+   }
+
    public void setTitleColor(int valueColor)
    {
-      oTitle.setColor(valueColor);
+      title.setColor(valueColor);
    }
    
    public void setTitleTextSize(int textSize)
    {
-      oTitle.setTextSize(textSize);
+      title.setTextSize(textSize);
    }
    
    public void setLineSize(int lineSize)
    {
-      oTitle.setTextSize(lineSize);
+      title.setTextSize(lineSize);
    }
 
    public void setContentDescription(String contentDescription)

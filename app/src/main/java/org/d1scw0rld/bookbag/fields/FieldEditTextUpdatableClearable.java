@@ -15,23 +15,24 @@ import android.view.LayoutInflater;
 import android.view.inputmethod.EditorInfo;
 import android.widget.LinearLayout;
 
-public class FieldEditTextUpdatableClearable extends LinearLayout
+public class FieldEditTextUpdatableClearable extends LinearLayout implements Field
 {
-   private Title oTitle;
-   private EditTextX oEditTextX;
-   
+   private Title     title;
+   private EditTextX editTextX;
+
+
    public FieldEditTextUpdatableClearable(Context context)
    {
       super(context);
       
-      vInit(context);
+      init(context);
    }
 
    public FieldEditTextUpdatableClearable(Context context, AttributeSet attrs)
    {
       super(context, attrs);
 
-      vInit(context);
+      init(context);
       
       TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.FieldEditTextUpdatableClearable, 0, 0);
       
@@ -49,113 +50,119 @@ public class FieldEditTextUpdatableClearable extends LinearLayout
       setOrientation(LinearLayout.VERTICAL);
       setGravity(Gravity.CENTER_VERTICAL);
 
-      oTitle.setText(title);
-      oTitle.setColor(titleValueColor);
-      oTitle.setTextSize(titleTextSize);
-      oTitle.setLineSize(titleLineSize);
+      this.title.setText(title);
+      this.title.setColor(titleValueColor);
+      this.title.setTextSize(titleTextSize);
+      this.title.setLineSize(titleLineSize);
       
-      oEditTextX.setText(text);
+      editTextX.setText(text);
       if(inputType > 0)
-         oEditTextX.setInputType(inputType);
-      oEditTextX.setContentDescription(contentDescription);
-      oEditTextX.setHint(hint);
+         editTextX.setInputType(inputType);
+      editTextX.setContentDescription(contentDescription);
+      editTextX.setHint(hint);
    }
    
-   void vInit(Context context)
+   void init(Context context)
    {
       LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       inflater.inflate(R.layout.field_edit_text_updatable_clearable, this, true);
-      
-      oTitle = findViewById(R.id.title);
-      oEditTextX = findViewById(R.id.editTextX);
+
+      title = findViewById(R.id.title);
+      editTextX = findViewById(R.id.editTextX);
    }
    
    public void setTitle(String title)
    {
-      oTitle.setText(title);
+      this.title.setText(title);
    }
    
    public void setTitle(int resid)
    {
-      oTitle.setText(resid);
+      title.setText(resid);
    }
-   
+
+   @Override
+   public String getTitle()
+   {
+      return title.getTitle();
+   }
+
    public void setTitleColor(int valueColor)
    {
-      oTitle.setColor(valueColor);
+      title.setColor(valueColor);
    }
    
    public void setTitleTextSize(int textSize)
    {
-      oTitle.setTextSize(textSize);
+      title.setTextSize(textSize);
    }
    
    public void setLineSize(int lineSize)
    {
-      oTitle.setTextSize(lineSize);
+      title.setTextSize(lineSize);
    }
    
    public void setText(String text)
    {
-      oEditTextX.setText(text);
+      editTextX.setText(text);
    }
 
    public void setText(int resid)
    {
-      oEditTextX.setText(resid);
+      editTextX.setText(resid);
    }
    
    public Editable getText()
    {
-      return oEditTextX.getText();
+      return editTextX.getText();
    }
 
    public void setInputType(int type)
    {
       if(type > 0)
-         oEditTextX.setInputType(type);
+         editTextX.setInputType(type);
    }
    
    public void setMultiline()
    {
-      oEditTextX.setSingleLine(false);
-      oEditTextX.setImeOptions(EditorInfo.IME_FLAG_NO_ENTER_ACTION);   
+      editTextX.setSingleLine(false);
+      editTextX.setImeOptions(EditorInfo.IME_FLAG_NO_ENTER_ACTION);
       
    }
 
    public void setDigits(String digits)
    {
-      oEditTextX.setInputType(InputType.TYPE_CLASS_PHONE);
-      oEditTextX.setKeyListener(DigitsKeyListener.getInstance(digits));
+      editTextX.setInputType(InputType.TYPE_CLASS_PHONE);
+      editTextX.setKeyListener(DigitsKeyListener.getInstance(digits));
    }
 
    public void setContentDescription(String contentDescription)
    {
-      oEditTextX.setContentDescription(contentDescription);
+      editTextX.setContentDescription(contentDescription);
    }
    
    public void setHint(String hint)
    {
-      oEditTextX.setHint(hint);
+      editTextX.setHint(hint);
    }
    
    public void setHint(int resid)
    {
-      oEditTextX.setHint(resid);
+      editTextX.setHint(resid);
    }
    
    public void setError(CharSequence error)
    {
-      oEditTextX.setError(error);
+      editTextX.setError(error);
    }
    
    public void setUpdateListener(OnUpdateListener onUpdateListener)
    {
-      oEditTextX.setOnUpdateListener(onUpdateListener);
+      editTextX.setOnUpdateListener(onUpdateListener);
    }
    
    public void setCallback(Callback callback)
    {
-      oEditTextX.setCallback(callback);
+      editTextX.setCallback(callback);
    }
 }

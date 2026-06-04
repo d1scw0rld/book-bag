@@ -1,15 +1,32 @@
-<androidx.preference.PreferenceScreen
-    xmlns:android="http://schemas.android.com/apk/res/android">
-        <androidx.preference.CheckBoxPreference
+<PreferenceScreen
+
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    >
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:divider="?android:dividerHorizontal"
             android:key="pref_expand_all"
             android:summary="@string/pref_summary_expand_all"
             android:title="@string/pref_title_expand_all"
-            android:defaultValue="false"
+            app:allowDividerAbove="true"
+            app:iconSpaceReserved="false"
             />
-        <androidx.preference.EditTextPreference
+        <EditTextPreference
+            android:defaultValue="@string/app_name"
+            android:dialogLayout="@layout/preference_dialog_edittext_fix"
+            android:divider="?android:dividerHorizontal"
             android:key="pref_export_folder"
             android:summary="@string/pref_summary_export_folder"
-            android:title="@string/pref_title_export_folder" 
-            android:defaultValue="@string/app_name"
-            android:dialogLayout="@layout/preference_dialog_edittext_fix"/>
-</androidx.preference.PreferenceScreen>
+            android:title="@string/pref_title_export_folder"
+            app:allowDividerAbove="true"
+            app:iconSpaceReserved="false" />
+        <!--            app:allowDividerAbove="true"-->
+<!--        app:allowDividerBelow="true"-->
+
+        <!--    <PreferenceCategory -->
+        <!--         android:title="@string/pref_title" -->
+        <!--         android:key="pref_key_storage_settings"> -->
+        <!--     </PreferenceCategory> -->
+</PreferenceScreen>

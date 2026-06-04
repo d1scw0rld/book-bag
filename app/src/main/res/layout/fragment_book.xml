@@ -3,22 +3,23 @@
                                                  xmlns:tools="http://schemas.android.com/tools"
                                                  android:layout_width="match_parent"
                                                  android:layout_height="match_parent"
+                                                 tools:ignore="MergeRootFrame"
                                                  android:fitsSystemWindows="true"
-                                                 tools:context="org.d1scw0rld.bookbag.BookDetailActivity"
-                                                 tools:ignore="MergeRootFrame">
+
+                                    android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+<!--                                                    android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar">-->
+    <!--                                                android:theme="@style/AppTheme">-->
+<!--    android:fitsSystemWindows="true"-->
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/app_bar_height"
-        android:fitsSystemWindows="true"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+        android:layout_height="@dimen/app_bar_height">
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:id="@+id/toolbar_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:fitsSystemWindows="true"
             app:contentScrim="?attr/colorPrimary"
             app:layout_scrollFlags="scroll|exitUntilCollapsed"
             app:toolbarId="@+id/toolbar">
@@ -41,7 +42,7 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
+        android:id="@+id/fab_edit_book"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical|start"

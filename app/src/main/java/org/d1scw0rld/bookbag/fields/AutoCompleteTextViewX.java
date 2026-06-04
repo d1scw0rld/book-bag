@@ -17,7 +17,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 public class AutoCompleteTextViewX extends androidx.appcompat.widget.AppCompatAutoCompleteTextView
-
 {
    private Context oContext;
    
