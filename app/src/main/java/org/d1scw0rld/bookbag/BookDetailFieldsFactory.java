@@ -22,8 +22,8 @@ public class BookDetailFieldsFactory
    private final static String SEP = ", ";
 
    private final DBAdapter dbAdapter;
-   private final Book           book;
-   private final Context        context;
+   private final Book book;
+   private final Context context;
    private final LayoutInflater inflater;
 
    public BookDetailFieldsFactory(Context context, DBAdapter dbAdapter, Book book)

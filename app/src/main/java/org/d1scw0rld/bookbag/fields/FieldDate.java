@@ -42,16 +42,16 @@ public class FieldDate extends LinearLayout implements OnDateSetListener, Field
 
       init(context);
       
-      TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.FieldDate, 0, 0);
+      TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.FieldDate, 0, 0);
       
-      String titleText = a.getString(R.styleable.FieldDate_title);
-      int titleValueColor = a.getColor(R.styleable.FieldDate_titleColor, 0);
-      int titleTextSize = a.getDimensionPixelOffset(R.styleable.FieldDate_titleTextSize, 0);
-      int titleLineSize = a.getDimensionPixelOffset(R.styleable.FieldDate_titleLineSize, 0);
-      String contentDescription = a.getString(R.styleable.FieldDate_android_contentDescription);
-      hint = a.getString(R.styleable.FieldDate_android_hint);
+      String titleText = typedArray.getString(R.styleable.FieldDate_title);
+      int titleValueColor = typedArray.getColor(R.styleable.FieldDate_titleColor, 0);
+      int titleTextSize = typedArray.getDimensionPixelOffset(R.styleable.FieldDate_titleTextSize, 0);
+      int titleLineSize = typedArray.getDimensionPixelOffset(R.styleable.FieldDate_titleLineSize, 0);
+      String contentDescription = typedArray.getString(R.styleable.FieldDate_android_contentDescription);
+      hint = typedArray.getString(R.styleable.FieldDate_android_hint);
 
-      a.recycle();
+      typedArray.recycle();
 
       setOrientation(LinearLayout.VERTICAL);
       setGravity(Gravity.CENTER_VERTICAL);
@@ -77,15 +77,15 @@ public class FieldDate extends LinearLayout implements OnDateSetListener, Field
       selectButton.setOnClickListener(new OnClickListener()
       {
          @Override
-         public void onClick(View v)
+         public void onClick(View view)
          {
             if(date.toInt() == 0)
             {
                // Use the current date as the default date in the picker
-               final Calendar c = Calendar.getInstance();
-               date = new Date(c.get(Calendar.DAY_OF_MONTH),
-                               c.get(Calendar.MONTH) + 1,
-                               c.get(Calendar.YEAR));
+               final Calendar calendar = Calendar.getInstance();
+               date = new Date(calendar.get(Calendar.DAY_OF_MONTH),
+                               calendar.get(Calendar.MONTH) + 1,
+                               calendar.get(Calendar.YEAR));
             }
 
             datePickerDialog = DatePickerDialog.newInstance(FieldDate.this,
@@ -129,9 +129,9 @@ public class FieldDate extends LinearLayout implements OnDateSetListener, Field
       this.title.setText(title);
    }
    
-   public void setTitle(int resid)
+   public void setTitle(int resourceId)
    {
-      title.setText(resid);
+      title.setText(resourceId);
    }
 
    @Override

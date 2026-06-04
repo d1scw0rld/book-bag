@@ -1,7 +1,7 @@
 package org.d1scw0rld.bookbag.fileselector;
 
 /**
- * This class contais information about the file name and type
+ * This class contains information about the file name and type.
  */
 public class FileData implements Comparable<FileData>
 {
@@ -14,10 +14,10 @@ public class FileData implements Comparable<FileData>
    static final int FILE = 2;
 
    /** The file's name */
-   final private String mFileName;
+   private final String fileName;
 
    /** Defines the type of file. Can be one of UP_FOLDER, DIRECTORY or FILE */
-   final private int mFileType;
+   private final int fileType;
 
    /**
     * This class holds information about the file.
@@ -35,29 +35,29 @@ public class FileData implements Comparable<FileData>
 
       if(fileType != UP_FOLDER && fileType != FOLDER && fileType != FILE)
       {
-         throw new IllegalArgumentException("Illegel type of file");
+         throw new IllegalArgumentException("Illegal type of file");
       }
-      this.mFileName = fileName;
-      this.mFileType = fileType;
+      this.fileName = fileName;
+      this.fileType = fileType;
    }
 
    @Override
    public int compareTo(final FileData another)
    {
-      if(mFileType != another.mFileType)
+      if(fileType != another.fileType)
       {
-         return mFileType - another.mFileType;
+         return fileType - another.fileType;
       }
-      return mFileName.compareTo(another.mFileName);
+      return fileName.compareTo(another.fileName);
    }
 
    String getFileName()
    {
-      return mFileName;
+      return fileName;
    }
 
    int getFileType()
    {
-      return mFileType;
+      return fileType;
    }
 }

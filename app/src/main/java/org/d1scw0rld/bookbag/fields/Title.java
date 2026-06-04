@@ -24,14 +24,14 @@ public class Title extends LinearLayout
       super(context, attrs);
       if(!isInEditMode())
       {
-         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.Title, 0, 0);
-         String titleText = a.getString(R.styleable.Title_text);
+         TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.Title, 0, 0);
+         String titleText = typedArray.getString(R.styleable.Title_text);
          
-         int valueColor = a.getColor(R.styleable.Title_color, getResources().getColor(android.R.color.black));
-         int textSize = a.getDimensionPixelOffset(R.styleable.Title_textSize, 0);
-         int lineSize = a.getDimensionPixelOffset(R.styleable.Title_lineSize, 0);
+         int valueColor = typedArray.getColor(R.styleable.Title_color, getResources().getColor(android.R.color.black));
+         int textSize = typedArray.getDimensionPixelOffset(R.styleable.Title_textSize, 0);
+         int lineSize = typedArray.getDimensionPixelOffset(R.styleable.Title_lineSize, 0);
          
-         a.recycle();
+         typedArray.recycle();
 
          setOrientation(LinearLayout.VERTICAL);
          setGravity(Gravity.CENTER_VERTICAL);
@@ -74,9 +74,9 @@ public class Title extends LinearLayout
       return title.getText().toString();
    }
 
-   public void setText(int resid)
+   public void setText(int resourceId)
    {
-      title.setText(resid);
+      title.setText(resourceId);
    }
    
    public void setTextSize(int textSize)

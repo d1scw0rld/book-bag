@@ -19,26 +19,26 @@ public class FileListAdapter extends BaseAdapter
 {
 
    /** Array of FileData objects that will be used to display a list */
-   private final ArrayList<FileData> mFileDataArray;
+   private final ArrayList<FileData> fileDataList;
 
-   private final Context mContext;
+   private final Context context;
    
-   FileListAdapter(Context context, List<FileData> aFileDataArray)
+   FileListAdapter(Context context, List<FileData> fileDataList)
    {
-      mFileDataArray = (ArrayList<FileData>) aFileDataArray;
-      mContext = context;
+      this.fileDataList = (ArrayList<FileData>) fileDataList;
+      this.context = context;
    }
 
    @Override
    public int getCount()
    {
-      return mFileDataArray.size();
+      return fileDataList.size();
    }
 
    @Override
    public Object getItem(int position)
    {
-      return mFileDataArray.get(position);
+      return fileDataList.get(position);
    }
 
    @Override
@@ -50,16 +50,16 @@ public class FileListAdapter extends BaseAdapter
    @Override
    public View getView(int position, View convertView, ViewGroup parent)
    {
-      FileData tempFileData = mFileDataArray.get(position);
+      FileData tempFileData = fileDataList.get(position);
 
       final ViewHolder holder;
       int imgRes = -1;
       if (convertView == null) 
       {
-         convertView = View.inflate(mContext, R.layout.row_file, null);
+         convertView = View.inflate(context, R.layout.row_file, null);
          holder = new ViewHolder();
-         holder.tvFileName = convertView.findViewById(R.id.tv_file_name);
-         holder.ivFileType = convertView.findViewById(R.id.iv_file_type);
+         holder.fileNameTextView = convertView.findViewById(R.id.tv_file_name);
+         holder.fileTypeImageView = convertView.findViewById(R.id.iv_file_type);
          convertView.setTag(holder);
       } 
       else 
@@ -67,7 +67,7 @@ public class FileListAdapter extends BaseAdapter
          holder = (ViewHolder) convertView.getTag();
       }
       
-      holder.tvFileName.setText(tempFileData.getFileName());
+      holder.fileNameTextView.setText(tempFileData.getFileName());
       switch (tempFileData.getFileType())
       {
          case FileData.UP_FOLDER:
@@ -86,14 +86,14 @@ public class FileListAdapter extends BaseAdapter
             break;
          }
       }
-      holder.ivFileType.setImageResource(imgRes);
+      holder.fileTypeImageView.setImageResource(imgRes);
       
       return convertView;      
    }
    
    static class ViewHolder 
    {
-      TextView tvFileName;
-      ImageView ivFileType;
+      TextView fileNameTextView;
+      ImageView fileTypeImageView;
    }
 }

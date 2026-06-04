@@ -163,37 +163,37 @@ public class DBAdapter
 
    final static ArrayList<Field> FIELDS = new ArrayList<>();
    
-	DBAdapter(Context _context)
+	DBAdapter(Context context)
 	{
-		this.context = _context;
+		this.context = context;
 		dbHelper = new DBOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION);
-		Resources r = context.getResources();
+		Resources resources = context.getResources();
 		FIELDS.clear();
-		FIELDS.add(new Field(FLD_TITLE, r.getString(R.string.fld_title), Field.TYPE_TEXT).setVisibility(true));
-		FIELDS.add(new Field(FLD_AUTHOR, r.getString(R.string.fld_author), Field.TYPE_MULTIFIELD).setVisibility(true));
-		FIELDS.add(new Field(FLD_DESCRIPTION, r.getString(R.string.fld_descrition), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_MULTI_LINE).setVisibility(false));
-		FIELDS.add(new Field(FLD_SERIE, r.getString(R.string.fld_serie), Field.TYPE_TEXT_AUTOCOMPLETE));
-		FIELDS.add(new Field(FLD_VOLUME, r.getString(R.string.fld_volume), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
-		FIELDS.add(new Field(FLD_GENRE, r.getString(R.string.fld_genre), Field.TYPE_MULTI_SPINNER));
-		FIELDS.add(new Field(FLD_LANGUAGE, r.getString(R.string.fld_language), Field.TYPE_SPINNER));
-		FIELDS.add(new Field(FLD_PAGES, r.getString(R.string.fld_pages), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
-		FIELDS.add(new Field(FLD_PUBLISHER, r.getString(R.string.fld_publisher), Field.TYPE_TEXT_AUTOCOMPLETE));
-		FIELDS.add(new Field(FLD_PUBLICATION_DATE, r.getString(R.string.fld_publication_date), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
-		FIELDS.add(new Field(FLD_PUBLICATION_LOCATION, r.getString(R.string.fld_publication_location), Field.TYPE_TEXT_AUTOCOMPLETE));
-		FIELDS.add(new Field(FLD_EDITION, r.getString(R.string.fld_edition), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
-		FIELDS.add(new Field(FLD_PRICE, r.getString(R.string.fld_price), Field.TYPE_MONEY).setInputType(InputType.TYPE_CLASS_NUMBER|InputType.TYPE_NUMBER_FLAG_DECIMAL));
-      FIELDS.add(new Field(FLD_VALUE, r.getString(R.string.fld_value), Field.TYPE_MONEY).setInputType(InputType.TYPE_CLASS_NUMBER|InputType.TYPE_NUMBER_FLAG_DECIMAL));
-      FIELDS.add(new Field(FLD_STATUS, r.getString(R.string.fld_status), Field.TYPE_SPINNER));
-		FIELDS.add(new Field(FLD_LOANED_TO, r.getString(R.string.fld_loaned_to), Field.TYPE_TEXT_AUTOCOMPLETE));
-		FIELDS.add(new Field(FLD_READ, r.getString(R.string.fld_read), Field.TYPE_CHECK_BOX));
-		FIELDS.add(new Field(FLD_READ_DATE, r.getString(R.string.fld_read_date), Field.TYPE_DATE));
-		FIELDS.add(new Field(FLD_RATING, r.getString(R.string.fld_rating), Field.TYPE_RATING));
-		FIELDS.add(new Field(FLD_FORMAT, r.getString(R.string.fld_format), Field.TYPE_SPINNER));
-      FIELDS.add(new Field(FLD_CONDITION, r.getString(R.string.fld_condition), Field.TYPE_SPINNER));
-		FIELDS.add(new Field(FLD_LOCATION, r.getString(R.string.fld_location), Field.TYPE_TEXT_AUTOCOMPLETE));
-		FIELDS.add(new Field(FLD_DUE_DATE, r.getString(R.string.fld_due_date), Field.TYPE_DATE));
-		FIELDS.add(new Field(FLD_ISBN, r.getString(R.string.fld_isbn), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
-		FIELDS.add(new Field(FLD_WEB, r.getString(R.string.fld_web), Field.TYPE_TEXT));
+		FIELDS.add(new Field(FLD_TITLE, resources.getString(R.string.fld_title), Field.TYPE_TEXT).setVisibility(true));
+		FIELDS.add(new Field(FLD_AUTHOR, resources.getString(R.string.fld_author), Field.TYPE_MULTIFIELD).setVisibility(true));
+		FIELDS.add(new Field(FLD_DESCRIPTION, resources.getString(R.string.fld_descrition), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_MULTI_LINE).setVisibility(false));
+		FIELDS.add(new Field(FLD_SERIE, resources.getString(R.string.fld_serie), Field.TYPE_TEXT_AUTOCOMPLETE));
+		FIELDS.add(new Field(FLD_VOLUME, resources.getString(R.string.fld_volume), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
+		FIELDS.add(new Field(FLD_GENRE, resources.getString(R.string.fld_genre), Field.TYPE_MULTI_SPINNER));
+		FIELDS.add(new Field(FLD_LANGUAGE, resources.getString(R.string.fld_language), Field.TYPE_SPINNER));
+		FIELDS.add(new Field(FLD_PAGES, resources.getString(R.string.fld_pages), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
+		FIELDS.add(new Field(FLD_PUBLISHER, resources.getString(R.string.fld_publisher), Field.TYPE_TEXT_AUTOCOMPLETE));
+		FIELDS.add(new Field(FLD_PUBLICATION_DATE, resources.getString(R.string.fld_publication_date), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
+		FIELDS.add(new Field(FLD_PUBLICATION_LOCATION, resources.getString(R.string.fld_publication_location), Field.TYPE_TEXT_AUTOCOMPLETE));
+		FIELDS.add(new Field(FLD_EDITION, resources.getString(R.string.fld_edition), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
+		FIELDS.add(new Field(FLD_PRICE, resources.getString(R.string.fld_price), Field.TYPE_MONEY).setInputType(InputType.TYPE_CLASS_NUMBER|InputType.TYPE_NUMBER_FLAG_DECIMAL));
+        FIELDS.add(new Field(FLD_VALUE, resources.getString(R.string.fld_value), Field.TYPE_MONEY).setInputType(InputType.TYPE_CLASS_NUMBER|InputType.TYPE_NUMBER_FLAG_DECIMAL));
+        FIELDS.add(new Field(FLD_STATUS, resources.getString(R.string.fld_status), Field.TYPE_SPINNER));
+		FIELDS.add(new Field(FLD_LOANED_TO, resources.getString(R.string.fld_loaned_to), Field.TYPE_TEXT_AUTOCOMPLETE));
+		FIELDS.add(new Field(FLD_READ, resources.getString(R.string.fld_read), Field.TYPE_CHECK_BOX));
+		FIELDS.add(new Field(FLD_READ_DATE, resources.getString(R.string.fld_read_date), Field.TYPE_DATE));
+		FIELDS.add(new Field(FLD_RATING, resources.getString(R.string.fld_rating), Field.TYPE_RATING));
+		FIELDS.add(new Field(FLD_FORMAT, resources.getString(R.string.fld_format), Field.TYPE_SPINNER));
+        FIELDS.add(new Field(FLD_CONDITION, resources.getString(R.string.fld_condition), Field.TYPE_SPINNER));
+		FIELDS.add(new Field(FLD_LOCATION, resources.getString(R.string.fld_location), Field.TYPE_TEXT_AUTOCOMPLETE));
+		FIELDS.add(new Field(FLD_DUE_DATE, resources.getString(R.string.fld_due_date), Field.TYPE_DATE));
+		FIELDS.add(new Field(FLD_ISBN, resources.getString(R.string.fld_isbn), Field.TYPE_TEXT).setInputType(InputType.TYPE_CLASS_NUMBER));
+		FIELDS.add(new Field(FLD_WEB, resources.getString(R.string.fld_web), Field.TYPE_TEXT));
 	}
 
 	void open() throws SQLiteException
@@ -221,36 +221,36 @@ public class DBAdapter
       }
       else
       {
-         ArrayList<ParentResult> alParrentResults = new ArrayList<>();
+         ArrayList<ParentResult> parentResults = new ArrayList<>();
    
          Cursor cursor = db.rawQuery(query, null);
          
          if(cursor.moveToFirst())
          {
             Result result;
-            String sParrent = cursor.getString(0);
-            List<Result> alChildResults = new ArrayList<>();
-            ParentResult oParrentResult = new ParentResult(sParrent, alChildResults);
+            String parent = cursor.getString(0);
+            List<Result> childResults = new ArrayList<>();
+            ParentResult parentResult = new ParentResult(parent, childResults);
 
             do
             {
-               sParrent = cursor.getString(0);
+               parent = cursor.getString(0);
                result = new Result();
                result.id = Integer.parseInt(cursor.getString(1));
                result.content = cursor.getString(2);
-               if(!sParrent.equalsIgnoreCase(oParrentResult.getName()))
+               if(!parent.equalsIgnoreCase(parentResult.getName()))
                {
-                  alParrentResults.add(oParrentResult);
-                  alChildResults = new ArrayList<>();
-                  oParrentResult = new ParentResult(sParrent, alChildResults);
+                  parentResults.add(parentResult);
+                  childResults = new ArrayList<>();
+                  parentResult = new ParentResult(parent, childResults);
                }
-               alChildResults.add(result);
+               childResults.add(result);
             } while (cursor.moveToNext());
-            alParrentResults.add(oParrentResult);
+            parentResults.add(parentResult);
          }
          cursor.close();
    
-         return alParrentResults;
+         return parentResults;
       }      
    }
    
@@ -520,40 +520,40 @@ public class DBAdapter
       shrink();
    }
 
-   ArrayList<Property> getPropertyValues(int iTypeID)
+   ArrayList<Property> getPropertyValues(int typeId)
    {
-      return getPropertyValues(iTypeID, false);
+      return getPropertyValues(typeId, false);
    }
    
-   ArrayList<Property> getPropertyValues(int iTypeID, boolean isOrdered)
+   ArrayList<Property> getPropertyValues(int typeId, boolean isOrdered)
    {
 
-      ArrayList<Property> alPropertyValues = new ArrayList<>();
+      ArrayList<Property> propertyValues = new ArrayList<>();
 
       String sql = "SELECT f." + KEY_ID + ", f." + KEY_TP_ID + ", f." + KEY_NM
                    + " FROM " + TABLE_FIELDS + " as f "
-                   + " WHERE f." + KEY_TP_ID + " = " + iTypeID;
+                   + " WHERE f." + KEY_TP_ID + " = " + typeId;
 
       if(isOrdered)
          sql += " ORDER BY f." + KEY_NM;
 
       Cursor cursor = db.rawQuery(sql, null);
 
-      Property oProperty;
+      Property property;
       if(cursor.moveToFirst())
       {
          do
          {
-            oProperty = new Property(Integer.parseInt(cursor.getString(ID_KEY_ID)),
+            property = new Property(Integer.parseInt(cursor.getString(ID_KEY_ID)),
                                      Integer.parseInt(cursor.getString(ID_KEY_TP_ID)),
                                      cursor.getString(ID_KEY_NM));
 
-            alPropertyValues.add(oProperty);
+            propertyValues.add(property);
          } while(cursor.moveToNext());
       }
       cursor.close();
 
-      return alPropertyValues;
+      return propertyValues;
    }
 
    Book getBook(long bookId)
@@ -706,52 +706,52 @@ public class DBAdapter
 		}
 
 		@Override
-		public void onCreate(SQLiteDatabase _db)
+		public void onCreate(SQLiteDatabase db)
 		{
-			_db.execSQL(CREATE_TABLE_BOOKS);
-			_db.execSQL(CREATE_TABLE_FIELDS);
-			_db.execSQL(CREATE_TABLE_BOOK_FIELDS);
+			db.execSQL(CREATE_TABLE_BOOKS);
+			db.execSQL(CREATE_TABLE_FIELDS);
+			db.execSQL(CREATE_TABLE_BOOK_FIELDS);
 
-			_db.beginTransaction();
+			db.beginTransaction();
 	      try
 	      {
-	         int iTypeID,
-	             iValuesID,
-                iFieldID;
+	         int typeId,
+	             valuesId,
+                fieldId;
 
-	         String sFieldName;
-            String[] tsValues;
+	         String fieldName;
+            String[] valuesArray;
 
-            TypedArray taField;
+            TypedArray fieldTypedArray;
 	         
 	         ContentValues values;
 	         
-	         TypedArray taFieldsValues = context.getResources().obtainTypedArray(R.array.fields_values);
-	         for(int i = 0; i < taFieldsValues.length(); i++)
+	         TypedArray fieldsValuesTypedArray = context.getResources().obtainTypedArray(R.array.fields_values);
+	         for(int i = 0; i < fieldsValuesTypedArray.length(); i++)
 	         {
-	            iFieldID = taFieldsValues.getResourceId(i, -1);
-	            taField = context.getResources().obtainTypedArray(iFieldID);
-	            iTypeID = taField.getInt(0, -1);
+	            fieldId = fieldsValuesTypedArray.getResourceId(i, -1);
+	            fieldTypedArray = context.getResources().obtainTypedArray(fieldId);
+	            typeId = fieldTypedArray.getInt(0, -1);
                @StyleableRes int index = 1;
-	            iValuesID = taField.getResourceId(index, -1);
-	            tsValues = context.getResources().getStringArray(iValuesID);
-	            sFieldName = context.getResources().getResourceEntryName(iValuesID);
-	            for(String sValue : tsValues)
+	            valuesId = fieldTypedArray.getResourceId(index, -1);
+	            valuesArray = context.getResources().getStringArray(valuesId);
+	            fieldName = context.getResources().getResourceEntryName(valuesId);
+	            for(String sValue : valuesArray)
 	            {
 	               values = new ContentValues();
-	               values.put(KEY_TP_ID, iTypeID);
+	               values.put(KEY_TP_ID, typeId);
 	               values.put(KEY_NM, sValue);
-	               if(_db.insert(TABLE_FIELDS, null, values) < 0)
+	               if(db.insert(TABLE_FIELDS, null, values) < 0)
 	               {
-	                  throw new RuntimeException(context.getResources().getString(R.string.err_db, sFieldName, iTypeID, sValue));
+	                  throw new RuntimeException(context.getResources().getString(R.string.err_db, fieldName, typeId, sValue));
 	               }              
 	            }
-	            taField.recycle();
+	            fieldTypedArray.recycle();
 	         }
 	         
-	         taFieldsValues.recycle(); // Important!
+	         fieldsValuesTypedArray.recycle(); // Important!
 
-            _db.setTransactionSuccessful();
+            db.setTransactionSuccessful();
 	      }
 	      catch(RuntimeException e)
 	      {
@@ -760,21 +760,21 @@ public class DBAdapter
             
 	      finally
 	      {
-	         _db.endTransaction();
+	         db.endTransaction();
          }
 		}
 
 		@Override
-		public void onUpgrade(SQLiteDatabase _db, int _oldVersion, int _newVersion)
+		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
 		{
-			Log.w("TaskDBAdapter", "Upgrade from version " + _oldVersion + " to " + _newVersion + ", which will destroy all old data");
+			Log.w("TaskDBAdapter", "Upgrade from version " + oldVersion + " to " + newVersion + ", which will destroy all old data");
 			// on upgrade drop older tables
-			_db.execSQL("DROP TABLE IF EXISTS " + TABLE_BOOKS);
-			_db.execSQL("DROP TABLE IF EXISTS " + TABLE_FIELDS);
-			_db.execSQL("DROP TABLE IF EXISTS " + TABLE_BOOK_FIELDS);
+			db.execSQL("DROP TABLE IF EXISTS " + TABLE_BOOKS);
+			db.execSQL("DROP TABLE IF EXISTS " + TABLE_FIELDS);
+			db.execSQL("DROP TABLE IF EXISTS " + TABLE_BOOK_FIELDS);
 
 			// create new tables
-			onCreate(_db);
+			onCreate(db);
 		}
 	}
    

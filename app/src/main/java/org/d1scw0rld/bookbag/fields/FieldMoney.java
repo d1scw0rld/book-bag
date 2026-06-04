@@ -20,10 +20,6 @@ import android.widget.Spinner;
 public class FieldMoney extends LinearLayout implements Field
 {
    public static final String FILTER = "0*[1-9]?\\d{0,3}(\\" + DBAdapter.separator + "\\d{0,2})?";
-//          FILTER = "([-1-9]{1}[0-9]{0,2}([0-9]{3})*(\\.[0-9]{0,2})?|[1-9]{1}[0-9]{0,}(\\.[0-9]{0,2})?|0(\\.[0-9]{0,2})?|(\\.[0-9]{1,2})?) \u20ac";
-//          FILTER = "((([\\-1-9]?\\d{0,3}))|([\\-1-9]?\\d{0,3}(\\.\\d?)?)|([\\-1-9]?\\d{0,3}(\\.\\d{0,2})?))";
-//          FILTER = "((((\\-\\d)?\\d{0,6}))|([\\-1-9]?\\d{0,4}(\\.\\d?)?)|([\\-1-9]?\\d{0,3}(\\.\\d{0,2})?)) \u20ac");
-
 
    private Title title;
    private Spinner   spinner;
@@ -42,21 +38,21 @@ public class FieldMoney extends LinearLayout implements Field
 
       init(context);
       
-      TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.FieldMoney, 0, 0);
+      TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.FieldMoney, 0, 0);
       
-      String title = a.getString(R.styleable.FieldMoney_title);
-      int titleValueColor = a.getColor(R.styleable.FieldMoney_titleColor, 0);
-      int titleTextSize = a.getDimensionPixelOffset(R.styleable.FieldMoney_titleTextSize, 0);
-      int titleLineSize = a.getDimensionPixelOffset(R.styleable.FieldMoney_titleLineSize, 0);
-      String contentDescription = a.getString(R.styleable.FieldMoney_android_contentDescription);
-      String hint = a.getString(R.styleable.FieldMoney_android_hint);
+      String titleText = typedArray.getString(R.styleable.FieldMoney_title);
+      int titleValueColor = typedArray.getColor(R.styleable.FieldMoney_titleColor, 0);
+      int titleTextSize = typedArray.getDimensionPixelOffset(R.styleable.FieldMoney_titleTextSize, 0);
+      int titleLineSize = typedArray.getDimensionPixelOffset(R.styleable.FieldMoney_titleLineSize, 0);
+      String contentDescription = typedArray.getString(R.styleable.FieldMoney_android_contentDescription);
+      String hint = typedArray.getString(R.styleable.FieldMoney_android_hint);
 
-      a.recycle();
+      typedArray.recycle();
 
       setOrientation(LinearLayout.VERTICAL);
       setGravity(Gravity.CENTER_VERTICAL);
 
-      this.title.setText(title);
+      this.title.setText(titleText);
       this.title.setColor(titleValueColor);
       this.title.setTextSize(titleTextSize);
       this.title.setLineSize(titleLineSize);
@@ -81,9 +77,9 @@ public class FieldMoney extends LinearLayout implements Field
       this.title.setText(title);
    }
    
-   public void setTitle(int resid)
+   public void setTitle(int resourceId)
    {
-      title.setText(resid);
+      title.setText(resourceId);
    }
 
    @Override
@@ -92,9 +88,9 @@ public class FieldMoney extends LinearLayout implements Field
       return title.getTitle();
    }
 
-   public void setValue(int iValue)
+   public void setValue(int value)
    {
-      editTextX.setText(String.format(getResources().getString(R.string.amn_vl), iValue / 100, DBAdapter.separator, iValue % 100));
+      editTextX.setText(String.format(getResources().getString(R.string.amn_vl), value / 100, DBAdapter.separator, value % 100));
    }
    
    public void setTitleColor(int valueColor)
@@ -140,16 +136,16 @@ public class FieldMoney extends LinearLayout implements Field
    
    public interface OnUpdateListener
    {
-      public void onUpdate(FieldMoney oFieldMoney);
+      public void onUpdate(FieldMoney fieldMoney);
    }
    
    private class DecimalDigitsInputFilter implements InputFilter
    {
-      Pattern mPattern;
+      Pattern pattern;
 
       DecimalDigitsInputFilter()
       {
-          mPattern = Pattern.compile(FILTER);
+          pattern = Pattern.compile(FILTER);
       }
 
       @Override
@@ -165,7 +161,7 @@ public class FieldMoney extends LinearLayout implements Field
 
          result = result.replace(",", ".");
 
-         Matcher matcher = mPattern.matcher(result);
+         Matcher matcher = pattern.matcher(result);
 
          if(matcher.matches())
             return null;

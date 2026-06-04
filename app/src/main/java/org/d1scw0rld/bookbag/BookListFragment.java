@@ -546,11 +546,11 @@ public class BookListFragment extends BaseFragment
                 .navigate(actionBookListFragmentToEditBookFragment);
    }
 
-   private void selectBookView(View v)
+   private void selectBookView(View view)
    {
-      if(selectedBookView != null && !selectedBookView.equals(v))
+      if(selectedBookView != null && !selectedBookView.equals(view))
          selectedBookView.setSelected(false);
-      selectedBookView = v;
+      selectedBookView = view;
    }
 
    private void deselectBookView()
@@ -685,7 +685,7 @@ public class BookListFragment extends BaseFragment
    private static class OrderItem
    {
 
-      int    id;
+      int id;
       String title;
 
       OrderItem(int id, String title)

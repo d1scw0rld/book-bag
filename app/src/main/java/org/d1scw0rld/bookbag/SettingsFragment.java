@@ -13,21 +13,6 @@ import androidx.preference.PreferenceFragmentCompat;
 
 public class SettingsFragment extends PreferenceFragmentCompat
 {
-//   public SettingsFragment()
-//   {
-//   }
-//   @Override
-//   public View onCreateView(LayoutInflater inflater,
-//                            ViewGroup container,
-//                            Bundle savedInstanceState)
-//   {
-////      container.getContext().setTheme(R.style.SettingsTheme);
-//      View view = super.onCreateView(inflater, container, savedInstanceState);
-////      ((AppCompatActivity)requireActivity()).getActionBar().setTitle(R.string.title_settings);
-//      getContext().getTheme().applyStyle(R.style.SettingsTheme, true);
-//      return view;
-//   }
-
    @Override
    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
    {
@@ -37,14 +22,17 @@ public class SettingsFragment extends PreferenceFragmentCompat
       Toolbar toolbar = view.findViewById(R.id.toolbar);
       toolbar.setTitle("Settings");
 
+      AppCompatActivity appCompatActivity = requireActivity() instanceof AppCompatActivity ? (AppCompatActivity) requireActivity() : null;
 
-      if (toolbar != null)
+      if(appCompatActivity != null)
       {
-         ((AppCompatActivity)requireActivity()).setSupportActionBar(toolbar);
-         ((AppCompatActivity)requireActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-         ((AppCompatActivity)requireActivity()).getSupportActionBar().setHomeButtonEnabled(true);
+         appCompatActivity.setSupportActionBar(toolbar);
+         if (appCompatActivity.getSupportActionBar() != null)
+         {
+            appCompatActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            appCompatActivity.getSupportActionBar().setHomeButtonEnabled(true);
+         }
       }
-
    }
 
    @Override
@@ -65,12 +53,5 @@ public class SettingsFragment extends PreferenceFragmentCompat
    public void onCreatePreferences(Bundle savedInstanceState, String rootKey)
    {
       setPreferencesFromResource(R.xml.preference_screen, rootKey);
-//      addPreferencesFromResource(R.xml.preference_screen);
    }
-
-//   @Override
-//   public void onViewCreated(@NonNull View view, Bundle savedInstanceState)
-//   {
-//      super.onViewCreated(view, savedInstanceState);
-//   }
 }

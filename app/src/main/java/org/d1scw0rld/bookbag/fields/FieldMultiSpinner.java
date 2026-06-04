@@ -12,12 +12,10 @@ import android.content.res.TypedArray;
 import android.graphics.Color;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.PopupMenu;
-import androidx.appcompat.widget.PopupMenu.OnMenuItemClickListener;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -25,12 +23,12 @@ import android.widget.LinearLayout;
 
 public class FieldMultiSpinner extends LinearLayout implements Field
 {
-   private Title  title;
-   private Button btnSpinner;
-   private String             hint               = "";
-   private Context            context;
-   private ArrayList<Item>    alItems            = new ArrayList<>();
-   private OnUpdateListener   onUpdateListener   = null;
+   private Title title;
+   private Button selectButton;
+   private String hint = "";
+   private Context context;
+   private ArrayList<Item> items = new ArrayList<>();
+   private OnUpdateListener onUpdateListener = null;
 
    public FieldMultiSpinner(Context context)
    {
@@ -45,26 +43,26 @@ public class FieldMultiSpinner extends LinearLayout implements Field
 
       init(context);
 
-      TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.FieldMultiSpinner, 0, 0);
+      TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.FieldMultiSpinner, 0, 0);
 
-      String title = a.getString(R.styleable.FieldMultiSpinner_title);
-      int titleValueColor = a.getColor(R.styleable.FieldMultiSpinner_titleColor, 0);
-      int titleTextSize = a.getDimensionPixelOffset(R.styleable.FieldMultiSpinner_titleTextSize, 0);
-      int titleLineSize = a.getDimensionPixelOffset(R.styleable.FieldMultiSpinner_titleLineSize, 0);
-      String contentDescription = a.getString(R.styleable.FieldMultiSpinner_android_contentDescription);
-      hint = a.getString(R.styleable.FieldMultiSpinner_android_hint);
+      String titleText = typedArray.getString(R.styleable.FieldMultiSpinner_title);
+      int titleValueColor = typedArray.getColor(R.styleable.FieldMultiSpinner_titleColor, 0);
+      int titleTextSize = typedArray.getDimensionPixelOffset(R.styleable.FieldMultiSpinner_titleTextSize, 0);
+      int titleLineSize = typedArray.getDimensionPixelOffset(R.styleable.FieldMultiSpinner_titleLineSize, 0);
+      String contentDescription = typedArray.getString(R.styleable.FieldMultiSpinner_android_contentDescription);
+      hint = typedArray.getString(R.styleable.FieldMultiSpinner_android_hint);
 
-      a.recycle();
+      typedArray.recycle();
 
       setOrientation(LinearLayout.VERTICAL);
       setGravity(Gravity.CENTER_VERTICAL);
 
-      this.title.setText(title);
+      this.title.setText(titleText);
       this.title.setColor(titleValueColor);
       this.title.setTextSize(titleTextSize);
       this.title.setLineSize(titleLineSize);
 
-      btnSpinner.setContentDescription(contentDescription);
+      selectButton.setContentDescription(contentDescription);
    }
 
    private void init(Context context)
@@ -75,54 +73,54 @@ public class FieldMultiSpinner extends LinearLayout implements Field
       inflater.inflate(R.layout.field_multi_spinner, this, true);
 
       title = findViewById(R.id.title);
-      btnSpinner = findViewById(R.id.action_select_type);
+      selectButton = findViewById(R.id.action_select_type);
       
-      setButtonText(btnSpinner, alItems);
-      btnSpinner.setOnClickListener(new OnClickListener()
+      setButtonText(selectButton, items);
+      selectButton.setOnClickListener(new OnClickListener()
       {
          @Override
          public void onClick(View v)
          {
-            displayPopupWindow(v, alItems);
+            displayPopupWindow(v, items);
          }
       });
    }
 
-   private void setButtonText(Button oButton, ArrayList<Item> alItems)
+   private void setButtonText(Button button, ArrayList<Item> itemsList)
    {
-      StringBuilder sButtonText = new StringBuilder();
-      for(Item item : alItems)
+      StringBuilder buttonTextBuilder = new StringBuilder();
+      for(Item item : itemsList)
          if(item.isSelected())
-            sButtonText.append((sButtonText.length() == 0) ? "" : ", ")
+            buttonTextBuilder.append((buttonTextBuilder.length() == 0) ? "" : ", ")
                        .append(item.getTitle());
 
-      if(sButtonText.length() > 0)
+      if(buttonTextBuilder.length() > 0)
       {
-         oButton.setText(sButtonText.toString());
-         oButton.setTextColor(Color.BLACK);
+         button.setText(buttonTextBuilder.toString());
+         button.setTextColor(Color.BLACK);
       }
       else
       {
-         oButton.setText(hint);
-         oButton.setTextColor(Color.GRAY);
+         button.setText(hint);
+         button.setTextColor(Color.GRAY);
       }
    }
 
-   private void displayPopupWindow(final View anchorView, final ArrayList<Item> alItems)
+   private void displayPopupWindow(final View anchorView, final ArrayList<Item> itemsList)
    {
-      if(alItems == null)
+      if(itemsList == null)
          return;
       final PopupMenu popupMenu = new PopupMenu(context, anchorView);
-      initPopupMenu(popupMenu, alItems);
+      initPopupMenu(popupMenu, itemsList);
 
       popupMenu.setOnMenuItemClickListener(menuItem -> {
-         if(menuItem.getOrder() < alItems.size())
+         if(menuItem.getOrder() < itemsList.size())
          {
             menuItem.setChecked(!menuItem.isChecked());
-            Item item = alItems.get(menuItem.getOrder());
+            Item item = itemsList.get(menuItem.getOrder());
             item.setSelected(menuItem.isChecked());
 
-            setButtonText((Button) anchorView, alItems);
+            setButtonText((Button) anchorView, itemsList);
             onUpdateListener.onUpdate(item);
 
             popupMenu.show();
@@ -131,21 +129,21 @@ public class FieldMultiSpinner extends LinearLayout implements Field
          {
             AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.AppCompatAlertDialogStyle);
             builder.setTitle(R.string.add_new);
-            final AppCompatEditText etNewValue = new AppCompatEditText(context);
-            builder.setView(etNewValue);
+            final AppCompatEditText newValueEditText = new AppCompatEditText(context);
+            builder.setView(newValueEditText);
             builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
             {
                public void onClick(DialogInterface dialog, int id)
                {
-                  String sNewValue = etNewValue.getText().toString().trim();
-                  Item item = new Item(sNewValue);
-                  item.setId(alItems.size());
+                  String newValue = newValueEditText.getText().toString().trim();
+                  Item item = new Item(newValue);
+                  item.setId(itemsList.size());
                   item.setSelected(true);
-                  alItems.add(item);
-                  setButtonText((Button) anchorView, alItems);
+                  itemsList.add(item);
+                  setButtonText((Button) anchorView, itemsList);
                   onUpdateListener.onUpdate(item);
                   popupMenu.dismiss();
-                  initPopupMenu(popupMenu, alItems);
+                  initPopupMenu(popupMenu, itemsList);
 
                   InputMethodManager imm = (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
                   imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
@@ -174,18 +172,18 @@ public class FieldMultiSpinner extends LinearLayout implements Field
       popupMenu.show();
    }
 
-   private void initPopupMenu(PopupMenu popupMenu, final ArrayList<Item> alItems)
+   private void initPopupMenu(PopupMenu popupMenu, final ArrayList<Item> itemsList)
    {
       popupMenu.getMenu().clear();
       
-      for(int i = 0; i < alItems.size(); i++)
+      for(int i = 0; i < itemsList.size(); i++)
       {
-         popupMenu.getMenu().add(Menu.NONE, 0, i, alItems.get(i).getTitle())
+         popupMenu.getMenu().add(Menu.NONE, 0, i, itemsList.get(i).getTitle())
          .setCheckable(true)
-         .setChecked(alItems.get(i).isSelected());
+         .setChecked(itemsList.get(i).isSelected());
          
       }
-      popupMenu.getMenu().add(Menu.NONE, 0, alItems.size(), "<add>");
+      popupMenu.getMenu().add(Menu.NONE, 0, itemsList.size(), "<add>");
    }
    
    public void setTitle(String title)
@@ -193,9 +191,9 @@ public class FieldMultiSpinner extends LinearLayout implements Field
       this.title.setText(title);
    }
 
-   public void setTitle(int resid)
+   public void setTitle(int resourceId)
    {
-      title.setText(resid);
+      title.setText(resourceId);
    }
 
    @Override
@@ -221,19 +219,19 @@ public class FieldMultiSpinner extends LinearLayout implements Field
 
    public void setContentDescription(String contentDescription)
    {
-      btnSpinner.setContentDescription(contentDescription);
+      selectButton.setContentDescription(contentDescription);
    }
 
    public void setHint(String hint)
    {
       this.hint = hint;
-      setButtonText(btnSpinner, alItems);
+      setButtonText(selectButton, items);
    }
 
-   public void setItems(ArrayList<Item> alItems)
+   public void setItems(ArrayList<Item> items)
    {
-      this.alItems = alItems;
-      setButtonText(btnSpinner, alItems);
+      this.items = items;
+      setButtonText(selectButton, items);
    }
    
    public void setOnUpdateListener(OnUpdateListener onUpdateListener)

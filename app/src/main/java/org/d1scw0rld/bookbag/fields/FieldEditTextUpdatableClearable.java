@@ -34,23 +34,23 @@ public class FieldEditTextUpdatableClearable extends LinearLayout implements Fie
 
       init(context);
       
-      TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.FieldEditTextUpdatableClearable, 0, 0);
+      TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.FieldEditTextUpdatableClearable, 0, 0);
       
-      String title = a.getString(R.styleable.FieldEditTextUpdatableClearable_title);
-      int titleValueColor = a.getColor(R.styleable.FieldEditTextUpdatableClearable_titleColor, 0);
-      int titleTextSize = a.getDimensionPixelOffset(R.styleable.FieldEditTextUpdatableClearable_titleTextSize, 0);
-      int titleLineSize = a.getDimensionPixelOffset(R.styleable.FieldEditTextUpdatableClearable_titleLineSize, 0);
-      String text = a.getString(R.styleable.FieldEditTextUpdatableClearable_android_text);
-      int inputType = a.getInteger(R.styleable.FieldEditTextUpdatableClearable_android_inputType, 0);
-      String contentDescription = a.getString(R.styleable.FieldEditTextUpdatableClearable_android_contentDescription);
-      String hint = a.getString(R.styleable.FieldEditTextUpdatableClearable_android_hint);
+      String titleText = typedArray.getString(R.styleable.FieldEditTextUpdatableClearable_title);
+      int titleValueColor = typedArray.getColor(R.styleable.FieldEditTextUpdatableClearable_titleColor, 0);
+      int titleTextSize = typedArray.getDimensionPixelOffset(R.styleable.FieldEditTextUpdatableClearable_titleTextSize, 0);
+      int titleLineSize = typedArray.getDimensionPixelOffset(R.styleable.FieldEditTextUpdatableClearable_titleLineSize, 0);
+      String text = typedArray.getString(R.styleable.FieldEditTextUpdatableClearable_android_text);
+      int inputType = typedArray.getInteger(R.styleable.FieldEditTextUpdatableClearable_android_inputType, 0);
+      String contentDescription = typedArray.getString(R.styleable.FieldEditTextUpdatableClearable_android_contentDescription);
+      String hint = typedArray.getString(R.styleable.FieldEditTextUpdatableClearable_android_hint);
 
-      a.recycle();
+      typedArray.recycle();
 
       setOrientation(LinearLayout.VERTICAL);
       setGravity(Gravity.CENTER_VERTICAL);
 
-      this.title.setText(title);
+      this.title.setText(titleText);
       this.title.setColor(titleValueColor);
       this.title.setTextSize(titleTextSize);
       this.title.setLineSize(titleLineSize);
@@ -76,9 +76,9 @@ public class FieldEditTextUpdatableClearable extends LinearLayout implements Fie
       this.title.setText(title);
    }
    
-   public void setTitle(int resid)
+   public void setTitle(int resourceId)
    {
-      title.setText(resid);
+      title.setText(resourceId);
    }
 
    @Override
@@ -107,9 +107,9 @@ public class FieldEditTextUpdatableClearable extends LinearLayout implements Fie
       editTextX.setText(text);
    }
 
-   public void setText(int resid)
+   public void setText(int resourceId)
    {
-      editTextX.setText(resid);
+      editTextX.setText(resourceId);
    }
    
    public Editable getText()
@@ -146,9 +146,9 @@ public class FieldEditTextUpdatableClearable extends LinearLayout implements Fie
       editTextX.setHint(hint);
    }
    
-   public void setHint(int resid)
+   public void setHint(int resourceId)
    {
-      editTextX.setHint(resid);
+      editTextX.setHint(resourceId);
    }
    
    public void setError(CharSequence error)

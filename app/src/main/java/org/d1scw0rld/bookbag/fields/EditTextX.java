@@ -17,67 +17,69 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
-public class EditTextX extends androidx.appcompat.widget.AppCompatEditText
+import androidx.appcompat.widget.AppCompatEditText;
+
+public class EditTextX extends AppCompatEditText
 {
-   private Context oContext;
+   private Context context;
    
    protected OnUpdateListener onUpdateListener = null;
 
-   private Callback oCallback = null;
+   private Callback callback = null;
    
    private final TextView.OnEditorActionListener onEditorActionListener = new TextView.OnEditorActionListener()
    {
       @Override
-      public boolean onEditorAction(TextView v, int actionId, KeyEvent event)
+      public boolean onEditorAction(TextView textView, int actionId, KeyEvent event)
       {
          if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT)
          {
 
             if(onUpdateListener != null)
-               onUpdateListener.onUpdate((EditText) v);
+               onUpdateListener.onUpdate((EditText) textView);
             if(actionId == EditorInfo.IME_ACTION_DONE)
             {
-               InputMethodManager inputManager = (InputMethodManager) oContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+               InputMethodManager inputManager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
                inputManager.toggleSoftInput(0, 0);
             }
             
-            v.clearFocus();
+            textView.clearFocus();
             return false; // New
          }
          return false;      
       }
    };
    
-   private final View.OnFocusChangeListener onFocusChangeListener = (v, hasFocus) -> {
+   private final View.OnFocusChangeListener onFocusChangeListener = (view, hasFocus) -> {
       updateDeleteIcon(hasFocus);
 
       if(!hasFocus && onUpdateListener != null)
       {
-         onUpdateListener.onUpdate((EditText) v);
+         onUpdateListener.onUpdate((EditText) view);
       }
    };
    
    private final TextWatcher textWatcher = new TextWatcher()
    {
        @Override
-       public void beforeTextChanged(CharSequence s, int start, int count, int after) 
+       public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) 
        {
        }
 
        @Override
-       public void onTextChanged(CharSequence s, int start, int before, int count) 
+       public void onTextChanged(CharSequence charSequence, int start, int before, int count) 
        {
-           updateDeleteIcon(s.toString(), isFocused());
+           updateDeleteIcon(charSequence.toString(), isFocused());
        }
 
        @Override
-       public void afterTextChanged(Editable s) 
+       public void afterTextChanged(Editable editable) 
        {
        }
    };
    
    @SuppressLint("ClickableViewAccessibility")
-   private final OnTouchListener onTouchListener = (v, event) -> {
+   private final OnTouchListener onTouchListener = (view, event) -> {
        final int DRAWABLE_RIGHT = 2;
 
        if (event.getAction() == MotionEvent.ACTION_UP)
@@ -85,12 +87,12 @@ public class EditTextX extends androidx.appcompat.widget.AppCompatEditText
            final Drawable rightDrawable = getCompoundDrawables()[DRAWABLE_RIGHT];
            if (rightDrawable != null && event.getRawX() >= (getRight() - rightDrawable.getBounds().width()))
            {
-               if (oCallback != null) oCallback.beforeClear(EditTextX.this);
+               if (callback != null) callback.beforeClear(EditTextX.this);
                setText("");
                requestFocus();
                if(onUpdateListener != null)
-                  onUpdateListener.onUpdate((EditText) v);
-               if (oCallback != null) oCallback.afterClear(EditTextX.this);
+                  onUpdateListener.onUpdate((EditText) view);
+               if (callback != null) callback.afterClear(EditTextX.this);
                return false; // New
            }
        }
@@ -101,26 +103,26 @@ public class EditTextX extends androidx.appcompat.widget.AppCompatEditText
    {
       super(context);
       
-      vInit(context);
+      init(context);
    }
    
    public EditTextX(Context context, AttributeSet attrs)
    {
       super(context, attrs);
 
-      vInit(context);
+      init(context);
    }
    
    public EditTextX(Context context, AttributeSet attrs, int defStyle)
    {
       super(context, attrs, defStyle);
 
-      vInit(context);
+      init(context);
    }
 
-   private void vInit(Context context)
+   private void init(Context context)
    {
-      oContext = context;
+      this.context = context;
       
       updateDeleteIcon(isFocused());
       
@@ -152,12 +154,12 @@ public class EditTextX extends androidx.appcompat.widget.AppCompatEditText
 
    public interface OnUpdateListener
    {
-      void onUpdate(EditText et);
+      void onUpdate(EditText editText);
    }
 
    public void setCallback(Callback callback) 
    {
-      this.oCallback = callback;
+      this.callback = callback;
    }   
    
    private void updateDeleteIcon(boolean focused) 

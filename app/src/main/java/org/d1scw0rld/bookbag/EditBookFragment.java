@@ -38,9 +38,8 @@ public class EditBookFragment extends Fragment implements IBackPressListener
 
    HashMap<MenuItem, View> hiddenFieldsHashMap = new HashMap<>();
    private FieldsFactory fieldsFactory;
-   private ActionBar actionBar;
 
-   @Nullable
+    @Nullable
    @Override
    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
    {
@@ -53,7 +52,7 @@ public class EditBookFragment extends Fragment implements IBackPressListener
       Toolbar toolbar = view.findViewById(R.id.toolbar);
       ((AppCompatActivity)requireActivity()).setSupportActionBar(toolbar);
 
-      actionBar = ((AppCompatActivity)requireActivity()).getSupportActionBar();
+       ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
       if(actionBar != null)
       {
          showHomeTitle(false);
@@ -236,12 +235,12 @@ public class EditBookFragment extends Fragment implements IBackPressListener
       }
    }
 
-   private void onBookSave(View v)
+   private void onBookSave(View view)
    {
       View currentFocus = requireActivity().getCurrentFocus();
       if(currentFocus != null)
          currentFocus.clearFocus();
-      v.requestFocus();
+      view.requestFocus();
 
       hideKeyboard();
 

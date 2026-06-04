@@ -10,9 +10,9 @@ public class BaseFragment extends Fragment
       return requireView().findViewById(id);
    }
 
-   protected void showToast(int resId)
+   protected void showToast(int resourceId)
    {
-      Toast.makeText(getContext(), resId, Toast.LENGTH_SHORT)
+      Toast.makeText(getContext(), resourceId, Toast.LENGTH_SHORT)
            .show();
    }
 }

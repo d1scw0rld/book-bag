@@ -17,7 +17,7 @@ public class Changeable<T>
       return value.toString();
    }
    
-   public Class getGenericType()
+   public Class<?> getGenericType()
    {
       return value.getClass();
    }

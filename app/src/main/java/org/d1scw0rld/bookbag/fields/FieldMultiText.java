@@ -54,16 +54,16 @@ public class FieldMultiText extends LinearLayout implements Field
      
       init(context);
       
-      TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.FieldMultiText, 0, 0);
+      TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.FieldMultiText, 0, 0);
       
-      String titleText = a.getString(R.styleable.FieldMultiText_title);
-      int titleValueColor = a.getColor(R.styleable.FieldMultiText_titleColor, 0);
-      int titleTextSize = a.getDimensionPixelOffset(R.styleable.FieldMultiText_titleTextSize, 0);
-      int titleLineSize = a.getDimensionPixelOffset(R.styleable.FieldMultiText_titleLineSize, 0);
-      contentDescription = a.getString(R.styleable.FieldMultiText_android_contentDescription);
-      hint = a.getString(R.styleable.FieldMultiText_android_hint);
+      String titleText = typedArray.getString(R.styleable.FieldMultiText_title);
+      int titleValueColor = typedArray.getColor(R.styleable.FieldMultiText_titleColor, 0);
+      int titleTextSize = typedArray.getDimensionPixelOffset(R.styleable.FieldMultiText_titleTextSize, 0);
+      int titleLineSize = typedArray.getDimensionPixelOffset(R.styleable.FieldMultiText_titleLineSize, 0);
+      contentDescription = typedArray.getString(R.styleable.FieldMultiText_android_contentDescription);
+      hint = typedArray.getString(R.styleable.FieldMultiText_android_hint);
 
-      a.recycle();
+      typedArray.recycle();
 
       setOrientation(LinearLayout.VERTICAL);
       setGravity(Gravity.CENTER_VERTICAL);
@@ -86,7 +86,7 @@ public class FieldMultiText extends LinearLayout implements Field
       findViewById(R.id.ib_add_field).setOnClickListener(new View.OnClickListener()
       {
          @Override
-         public void onClick(View v)
+         public void onClick(View view)
          {
             addNewField();
          }
@@ -99,36 +99,36 @@ public class FieldMultiText extends LinearLayout implements Field
       rowView.findViewById(R.id.ib_remove_field).setOnClickListener(new View.OnClickListener()
       {
          @Override
-         public void onClick(View v)
+         public void onClick(View view)
          {
-            View parentView = (View) v.getParent();
+            View parentView = (View) view.getParent();
             removeField(parentView);
          }
       });
-      final AutoCompleteTextViewX etValue = rowView.findViewById(R.id.et_value);
-      etValue.setHint(hint);
-      etValue.setContentDescription(contentDescription);
-      etValue.setAdapter(adapter);
-      etValue.setThreshold(1);
+      final AutoCompleteTextViewX valueAutoCompleteTextView = rowView.findViewById(R.id.et_value);
+      valueAutoCompleteTextView.setHint(hint);
+      valueAutoCompleteTextView.setContentDescription(contentDescription);
+      valueAutoCompleteTextView.setAdapter(adapter);
+      valueAutoCompleteTextView.setThreshold(1);
       
-      etValue.setOnItemClickListener(new OnItemClickListener()
+      valueAutoCompleteTextView.setOnItemClickListener(new OnItemClickListener()
       {
          @Override
-         public void onItemClick(AdapterView<?> adapter, View view, int position, long rowId)
+         public void onItemClick(AdapterView<?> adapterView, View view, int position, long rowId)
          {
-            Property selection = (Property) adapter.getItemAtPosition(position);
-            etValue.setText(selection.value);
-            etValue.setSelection(selection.value.length());
+            Property selection = (Property) adapterView.getItemAtPosition(position);
+            valueAutoCompleteTextView.setText(selection.value);
+            valueAutoCompleteTextView.setSelection(selection.value.length());
             onAddRemoveFieldListener.onItemSelect(rowView, selection);
          }
       });
       
-      etValue.setOnUpdateListener(new OnUpdateListener()
+      valueAutoCompleteTextView.setOnUpdateListener(new OnUpdateListener()
       {
          @Override
-         public void onUpdate(EditText et)
+         public void onUpdate(EditText editText)
          {
-            onAddRemoveFieldListener.onFieldUpdated(rowView, et.getText().toString().trim());
+            onAddRemoveFieldListener.onFieldUpdated(rowView, editText.getText().toString().trim());
          }
       });
       
@@ -137,7 +137,7 @@ public class FieldMultiText extends LinearLayout implements Field
       if(fieldsLayout.getChildCount() == 1)
          rowView.findViewById(R.id.ib_remove_field).setVisibility(View.INVISIBLE);
       else
-         etValue.requestFocus();
+         valueAutoCompleteTextView.requestFocus();
       
       return rowView;
    }
@@ -151,11 +151,11 @@ public class FieldMultiText extends LinearLayout implements Field
    {
       final View rowView = addRow();
       
-      EditText etValue = rowView.findViewById(R.id.et_value);
+      EditText valueEditText = rowView.findViewById(R.id.et_value);
       if(fieldsLayout.getChildCount() == 1)
-         etValue.setId(R.id.et_author_1);
+         valueEditText.setId(R.id.et_author_1);
 
-      etValue.setText(property.value);
+      valueEditText.setText(property.value);
       rowView.setTag(property);
    }
    
@@ -177,9 +177,9 @@ public class FieldMultiText extends LinearLayout implements Field
       return title.getTitle();
    }
    
-   public void setTitle(int resid)
+   public void setTitle(int resourceId)
    {
-      title.setText(resid);
+      title.setText(resourceId);
    }
    
    public void setTitleColor(int valueColor)

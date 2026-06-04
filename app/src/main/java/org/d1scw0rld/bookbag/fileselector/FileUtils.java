@@ -18,7 +18,7 @@ class FileUtils
     * @param file
     *           - file that will be checked if there is a specific type
     * @param filter
-    *           - criterion - the file type(for example ".jpg")
+    *           - criterion - the file type (for example ".jpg")
     * @return true - if file meets the criterion - false otherwise.
     */
    static boolean accept(final File file, final String filter)
@@ -31,13 +31,13 @@ class FileUtils
       {
          return true;
       }
-      int lastIndexOfPoint = file.getName().lastIndexOf('.');
-      if(lastIndexOfPoint == -1)
+      int dotIndex = file.getName().lastIndexOf('.');
+      if(dotIndex == -1)
       {
          return false;
       }
       String fileType = file.getName()
-                            .substring(lastIndexOfPoint)
+                            .substring(dotIndex)
                             .toLowerCase(Locale.getDefault());
       return fileType.compareTo(filter) == 0;
    }
