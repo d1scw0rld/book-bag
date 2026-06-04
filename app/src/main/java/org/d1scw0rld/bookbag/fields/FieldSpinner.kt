@@ -1,118 +1,100 @@
-package org.d1scw0rld.bookbag.fields;
+package org.d1scw0rld.bookbag.fields
 
-import org.d1scw0rld.bookbag.R;
-import android.content.Context;
-import android.content.res.TypedArray;
-import android.util.AttributeSet;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
-import android.widget.LinearLayout;
-import android.widget.Spinner;
+import android.content.Context
+import android.util.AttributeSet
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.widget.AdapterView.OnItemSelectedListener
+import android.widget.ArrayAdapter
+import android.widget.LinearLayout
+import android.widget.Spinner
+import org.d1scw0rld.bookbag.R
 
-public class FieldSpinner extends LinearLayout implements Field
-{
-   private Title   title;
-   private Spinner spinner;
+class FieldSpinner @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0,
+) : LinearLayout(context, attrs, defStyleAttr), Field {
 
-   public FieldSpinner(Context context)
-   {
-      super(context);
-      
-      init(context);
-   }
+    private lateinit var title: Title
+    private lateinit var spinner: Spinner
 
-   public FieldSpinner(Context context, AttributeSet attrs)
-   {
-      super(context, attrs);
+    init {
+        initialize(context)
 
-      init(context);
-      
-      TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.FieldSpinner, 0, 0);
-      
-      String titleText = typedArray.getString(R.styleable.FieldSpinner_title);
-      int titleValueColor = typedArray.getColor(R.styleable.FieldSpinner_titleColor, 0);
-      int titleTextSize = typedArray.getDimensionPixelOffset(R.styleable.FieldSpinner_titleTextSize, 0);
-      int titleLineSize = typedArray.getDimensionPixelOffset(R.styleable.FieldSpinner_titleLineSize, 0);
-      String contentDescription = typedArray.getString(R.styleable.FieldSpinner_android_contentDescription);
+        orientation = VERTICAL
+        gravity = Gravity.CENTER_VERTICAL
 
-      typedArray.recycle();
+        attrs?.let {
+            val typedArray = context.obtainStyledAttributes(it, R.styleable.FieldSpinner, 0, 0)
 
-      setOrientation(LinearLayout.VERTICAL);
-      setGravity(Gravity.CENTER_VERTICAL);
+            val titleText = typedArray.getString(R.styleable.FieldSpinner_title)
+            val titleValueColor = typedArray.getColor(R.styleable.FieldSpinner_titleColor, 0)
+            val titleTextSize = typedArray.getDimensionPixelOffset(R.styleable.FieldSpinner_titleTextSize, 0)
+            val titleLineSize = typedArray.getDimensionPixelOffset(R.styleable.FieldSpinner_titleLineSize, 0)
+            val contentDescription = typedArray.getString(R.styleable.FieldSpinner_android_contentDescription)
 
-      this.title.setText(titleText);
-      this.title.setColor(titleValueColor);
-      this.title.setTextSize(titleTextSize);
-      this.title.setLineSize(titleLineSize);
-      
-      spinner.setContentDescription(contentDescription);
-   }
-   
-   void init(Context context)
-   {
-      LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-      inflater.inflate(R.layout.field_spinner, this, true);
+            typedArray.recycle()
 
-      title = findViewById(R.id.title);
-      spinner = findViewById(R.id.action_select_type);
-   }
-   
-   public void setTitle(String title)
-   {
-      this.title.setText(title);
-   }
-   
-   public void setTitle(int resourceId)
-   {
-      title.setText(resourceId);
-   }
+            titleText?.let { t -> this.title.setText(t) }
+            this.title.setColor(titleValueColor)
+            this.title.setTextSize(titleTextSize)
+            this.title.setLineSize(titleLineSize)
+            spinner.contentDescription = contentDescription
+        }
+    }
 
-   @Override
-   public String getTitle()
-   {
-      return title.getTitle();
-   }
+    private fun initialize(context: Context) {
+        val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        inflater.inflate(R.layout.field_spinner, this, true)
 
-   public void setTitleColor(int valueColor)
-   {
-      title.setColor(valueColor);
-   }
-   
-   public void setTitleTextSize(int textSize)
-   {
-      title.setTextSize(textSize);
-   }
-   
-   public void setLineSize(int lineSize)
-   {
-      title.setTextSize(lineSize);
-   }
+        title = findViewById(R.id.title)
+        spinner = findViewById(R.id.action_select_type)
+    }
 
-   public void setContentDescription(String contentDescription)
-   {
-      spinner.setContentDescription(contentDescription);
-   }
-   
-   public void setAdapter(ArrayAdapter<?> adapter)
-   {
-      spinner.setAdapter(adapter);
-   }
-   
-   public void setOnItemSelectedListener(OnItemSelectedListener listener)
-   {
-      spinner.setOnItemSelectedListener(listener);
-   }
-   
-   public void setSelection(int position)
-   {
-      if(position >= 0)
-         spinner.setSelection(position);
-   }
-   
-   public interface OnUpdateListener
-   {
-      public void onUpdate(FieldSpinner fieldSpinner, int position);
-   }
+    override fun setTitle(text: String) {
+        title.setText(text)
+    }
+
+    override fun setTitle(resid: Int) {
+        title.setText(resid)
+    }
+
+    override fun getTitle(): String {
+        return title.getTitle()
+    }
+
+    override fun setTitleColor(valueColor: Int) {
+        title.setColor(valueColor)
+    }
+
+    override fun setTitleTextSize(textSize: Int) {
+        title.setTextSize(textSize)
+    }
+
+    fun setLineSize(lineSize: Int) {
+        title.setLineSize(lineSize)
+    }
+
+    fun setContentDescriptionX(contentDescription: String?) {
+        spinner.contentDescription = contentDescription
+    }
+
+    fun setAdapter(adapter: ArrayAdapter<*>?) {
+        spinner.adapter = adapter
+    }
+
+    fun setOnItemSelectedListener(listener: OnItemSelectedListener?) {
+        spinner.onItemSelectedListener = listener
+    }
+
+    fun setSelection(position: Int) {
+        if (position >= 0) {
+            spinner.setSelection(position)
+        }
+    }
+
+    interface OnUpdateListener {
+        fun onUpdate(fieldSpinner: FieldSpinner, position: Int)
+    }
 }

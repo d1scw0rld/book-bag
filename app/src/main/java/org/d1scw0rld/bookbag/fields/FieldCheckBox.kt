@@ -1,107 +1,89 @@
-package org.d1scw0rld.bookbag.fields;
+package org.d1scw0rld.bookbag.fields
 
-import org.d1scw0rld.bookbag.R;
+import android.content.Context
+import android.util.AttributeSet
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.widget.CheckBox
+import android.widget.CompoundButton.OnCheckedChangeListener
+import android.widget.LinearLayout
+import org.d1scw0rld.bookbag.R
 
-import android.content.Context;
-import android.content.res.TypedArray;
-import android.util.AttributeSet;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.widget.CheckBox;
-import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.widget.LinearLayout;
+class FieldCheckBox @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0,
+) : LinearLayout(context, attrs, defStyleAttr), Field {
 
-public class FieldCheckBox extends LinearLayout implements Field
-{
-   private Title title;
-   
-   private CheckBox checkBox;
-   
-   public FieldCheckBox(Context context)
-   {
-      super(context);
-      
-      init(context);
-   }
-   
-   public FieldCheckBox(Context context, AttributeSet attrs)
-   {
-      super(context, attrs);
+    private lateinit var title: Title
+    private lateinit var checkBox: CheckBox
 
-      init(context);
-      
-      TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.FieldCheckBox, 0, 0);
-      
-      String titleText = typedArray.getString(R.styleable.FieldCheckBox_title);
-      int titleValueColor = typedArray.getColor(R.styleable.FieldCheckBox_titleColor, 0);
-      int titleTextSize = typedArray.getDimensionPixelOffset(R.styleable.FieldCheckBox_titleTextSize, 0);
-      int titleLineSize = typedArray.getDimensionPixelOffset(R.styleable.FieldCheckBox_titleLineSize, 0);
-      boolean checked = typedArray.getBoolean(R.styleable.FieldCheckBox_android_checked, false);
+    init {
+        initialize(context)
 
-      typedArray.recycle();
+        orientation = VERTICAL
+        gravity = Gravity.CENTER_VERTICAL
 
-      setOrientation(LinearLayout.VERTICAL);
-      setGravity(Gravity.CENTER_VERTICAL);
+        attrs?.let {
+            val typedArray = context.obtainStyledAttributes(it, R.styleable.FieldCheckBox, 0, 0)
 
-      this.title.setText(titleText);
-      this.title.setColor(titleValueColor);
-      this.title.setTextSize(titleTextSize);
-      this.title.setLineSize(titleLineSize);
-      checkBox.setChecked(checked);
-   }
-   
-   void init(Context context)
-   {
-      LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-      inflater.inflate(R.layout.field_check_box, this, true);
+            val titleText = typedArray.getString(R.styleable.FieldCheckBox_title)
+            val titleValueColor = typedArray.getColor(R.styleable.FieldCheckBox_titleColor, 0)
+            val titleTextSize = typedArray.getDimensionPixelOffset(R.styleable.FieldCheckBox_titleTextSize, 0)
+            val titleLineSize = typedArray.getDimensionPixelOffset(R.styleable.FieldCheckBox_titleLineSize, 0)
+            val checked = typedArray.getBoolean(R.styleable.FieldCheckBox_android_checked, false)
 
-      title = findViewById(R.id.title);
-      checkBox = findViewById(R.id.check_box);
-   }
+            typedArray.recycle()
 
-   public void setTitle(String title)
-   {
-      this.title.setText(title);
-   }
-   
-   public void setTitle(int resourceId)
-   {
-      title.setText(resourceId);
-   }
+            titleText?.let { t -> this.title.setText(t) }
+            this.title.setColor(titleValueColor)
+            this.title.setTextSize(titleTextSize)
+            this.title.setLineSize(titleLineSize)
+            checkBox.isChecked = checked
+        }
+    }
 
-   @Override
-   public String getTitle()
-   {
-      return title.getTitle();
-   }
+    private fun initialize(context: Context) {
+        val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        inflater.inflate(R.layout.field_check_box, this, true)
 
-   public void setTitleColor(int valueColor)
-   {
-      title.setColor(valueColor);
-   }
-   
-   public void setTitleTextSize(int textSize)
-   {
-      title.setTextSize(textSize);
-   }
-   
-   public void setLineSize(int lineSize)
-   {
-      title.setTextSize(lineSize);
-   }
+        title = findViewById(R.id.title)
+        checkBox = findViewById(R.id.check_box)
+    }
 
-   public void setOnCheckedChangeListener(OnCheckedChangeListener onCheckedChangeListener)
-   {
-      checkBox.setOnCheckedChangeListener(onCheckedChangeListener);
-   }
-   
-   public void setChecked(boolean checked)
-   {
-      checkBox.setChecked(checked);
-   }
-   
-   public boolean isChecked()
-   {
-      return checkBox.isChecked();
-   }
+    override fun setTitle(text: String) {
+        title.setText(text)
+    }
+
+    override fun setTitle(resid: Int) {
+        title.setText(resid)
+    }
+
+    override fun getTitle(): String {
+        return title.getTitle()
+    }
+
+    override fun setTitleColor(valueColor: Int) {
+        title.setColor(valueColor)
+    }
+
+    override fun setTitleTextSize(textSize: Int) {
+        title.setTextSize(textSize)
+    }
+
+    fun setLineSize(lineSize: Int) {
+        title.setLineSize(lineSize)
+    }
+
+    fun setOnCheckedChangeListener(onCheckedChangeListener: OnCheckedChangeListener?) {
+        checkBox.setOnCheckedChangeListener(onCheckedChangeListener)
+    }
+
+    fun setChecked(checked: Boolean) {
+        checkBox.isChecked = checked
+    }
+
+    fun isChecked(): Boolean {
+        return checkBox.isChecked
+    }
 }

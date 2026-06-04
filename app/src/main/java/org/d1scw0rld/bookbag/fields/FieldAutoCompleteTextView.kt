@@ -1,153 +1,127 @@
-package org.d1scw0rld.bookbag.fields;
+package org.d1scw0rld.bookbag.fields
 
-import org.d1scw0rld.bookbag.R;
-import org.d1scw0rld.bookbag.fields.AutoCompleteTextViewX.Callback;
-import android.content.Context;
-import android.content.res.TypedArray;
-import android.text.Editable;
-import android.util.AttributeSet;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
-import android.widget.LinearLayout;
+import android.content.Context
+import android.text.Editable
+import android.util.AttributeSet
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.widget.AdapterView.OnItemClickListener
+import android.widget.AdapterView.OnItemSelectedListener
+import android.widget.ArrayAdapter
+import android.widget.LinearLayout
+import org.d1scw0rld.bookbag.R
 
-public class FieldAutoCompleteTextView extends LinearLayout implements Field
-{
-   
-   private Title title;
-   private AutoCompleteTextViewX autoCompleteTextViewX;
+class FieldAutoCompleteTextView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0,
+) : LinearLayout(context, attrs, defStyleAttr), Field {
 
-   public FieldAutoCompleteTextView(Context context)
-   {
-      super(context);
-      
-      init(context);
-   }
+    private lateinit var title: Title
+    private lateinit var autoCompleteTextViewX: AutoCompleteTextViewX
 
-   public FieldAutoCompleteTextView(Context context, AttributeSet attrs)
-   {
-      super(context, attrs);
-      
-      init(context);
-      
-      TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.FieldAutoCompleteTextView, 0, 0);
+    init {
+        initialize(context)
 
-      String titleText = typedArray.getString(R.styleable.FieldAutoCompleteTextView_title);
-      int titleValueColor = typedArray.getColor(R.styleable.FieldAutoCompleteTextView_titleColor, 0);
-      int titleTextSize = typedArray.getDimensionPixelOffset(R.styleable.FieldAutoCompleteTextView_titleTextSize, 0);
-      int titleLineSize = typedArray.getDimensionPixelOffset(R.styleable.FieldAutoCompleteTextView_titleLineSize, 0);
-      String text = typedArray.getString(R.styleable.FieldAutoCompleteTextView_android_text);
-      String hint = typedArray.getString(R.styleable.FieldAutoCompleteTextView_android_hint);
-      
-      typedArray.recycle();
+        orientation = VERTICAL
+        gravity = Gravity.CENTER_VERTICAL
 
-      setOrientation(LinearLayout.VERTICAL);
-      setGravity(Gravity.CENTER_VERTICAL);
+        attrs?.let {
+            val typedArray = context.obtainStyledAttributes(it, R.styleable.FieldAutoCompleteTextView, 0, 0)
 
-      title.setText(titleText);
-      title.setColor(titleValueColor);
-      title.setTextSize(titleTextSize);
-      title.setLineSize(titleLineSize);
-      
-      autoCompleteTextViewX.setText(text);
-      autoCompleteTextViewX.setHint(hint);
-   }
+            val titleText = typedArray.getString(R.styleable.FieldAutoCompleteTextView_title)
+            val titleValueColor = typedArray.getColor(R.styleable.FieldAutoCompleteTextView_titleColor, 0)
+            val titleTextSize = typedArray.getDimensionPixelOffset(R.styleable.FieldAutoCompleteTextView_titleTextSize, 0)
+            val titleLineSize = typedArray.getDimensionPixelOffset(R.styleable.FieldAutoCompleteTextView_titleLineSize, 0)
+            val text = typedArray.getString(R.styleable.FieldAutoCompleteTextView_android_text)
+            val hint = typedArray.getString(R.styleable.FieldAutoCompleteTextView_android_hint)
 
-   public void init(Context context)
-   {
-      LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-      inflater.inflate(R.layout.field_auto_complete_text_view, this, true);
+            typedArray.recycle()
 
-      title = this.findViewById(R.id.title);
-      autoCompleteTextViewX = this.findViewById(R.id.autoCompleteTextView);
-      autoCompleteTextViewX.setThreshold(1);
-   }
+            titleText?.let { t -> this.title.setText(t) }
+            this.title.setColor(titleValueColor)
+            this.title.setTextSize(titleTextSize)
+            this.title.setLineSize(titleLineSize)
 
-   public void setTitle(String title)
-   {
-      this.title.setText(title);
-   }
+            autoCompleteTextViewX.setText(text)
+            autoCompleteTextViewX.hint = hint
+        }
+    }
 
-   public void setTitle(int resourceId)
-   {
-      title.setText(resourceId);
-   }
+    private fun initialize(context: Context) {
+        val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        inflater.inflate(R.layout.field_auto_complete_text_view, this, true)
 
-   @Override
-   public String getTitle()
-   {
-      return title.getTitle();
-   }
+        title = findViewById(R.id.title)
+        autoCompleteTextViewX = findViewById(R.id.autoCompleteTextView)
+        autoCompleteTextViewX.threshold = 1
+    }
 
-   public void setTitleColor(int valueColor)
-   {
-      title.setColor(valueColor);
-   }
-   
-   public void setTitleTextSize(int textSize)
-   {
-      title.setTextSize(textSize);
-   }
-   
-   public void setLineSize(int lineSize)
-   {
-      title.setTextSize(lineSize);
-   }
-   
-   public void setText(String text)
-   {
-      autoCompleteTextViewX.setText(text);
-   }
+    override fun setTitle(text: String) {
+        title.setText(text)
+    }
 
-   public void setText(int resourceId)
-   {
-      autoCompleteTextViewX.setText(resourceId);
-   }
-   
-   public Editable getText()
-   {
-      return autoCompleteTextViewX.getText();
-   }
-   
-   public void setHint(String hint)
-   {
-      autoCompleteTextViewX.setHint(hint);
-   }
+    override fun setTitle(resid: Int) {
+        title.setText(resid)
+    }
 
-   public void setHint(int resourceId)
-   {
-      autoCompleteTextViewX.setHint(resourceId);
-   }
-   
-   public void setThreshold(int threshold)
-   {
-      autoCompleteTextViewX.setThreshold(threshold);
-   }
-   
-   public void setAdapter(ArrayAdapter<?> adapter)
-   {
-      autoCompleteTextViewX.setAdapter(adapter);
-   }
-   
-   public void setUpdateListener(AutoCompleteTextViewX.OnUpdateListener onUpdateListener)
-   {
-      autoCompleteTextViewX.setOnUpdateListener(onUpdateListener);
-   }
+    override fun getTitle(): String {
+        return title.getTitle()
+    }
 
-   public void setCallback(Callback callback)
-   {
-      autoCompleteTextViewX.setCallback(callback);
-   }   
-   
-   public void setOnItemSelectedListener(OnItemSelectedListener listener)
-   {
-      autoCompleteTextViewX.setOnItemSelectedListener(listener);
-   }
+    override fun setTitleColor(valueColor: Int) {
+        title.setColor(valueColor)
+    }
 
-   public void setOnItemClickListener(OnItemClickListener listener)
-   {
-      autoCompleteTextViewX.setOnItemClickListener(listener);
-   }
+    override fun setTitleTextSize(textSize: Int) {
+        title.setTextSize(textSize)
+    }
+
+    fun setLineSize(lineSize: Int) {
+        title.setLineSize(lineSize)
+    }
+
+    fun setText(text: String?) {
+        autoCompleteTextViewX.setText(text)
+    }
+
+    fun setText(resourceId: Int) {
+        autoCompleteTextViewX.setText(resourceId)
+    }
+
+    fun getText(): Editable? {
+        return autoCompleteTextViewX.text
+    }
+
+    fun setHint(hint: String?) {
+        autoCompleteTextViewX.hint = hint
+    }
+
+    fun setHint(resourceId: Int) {
+        autoCompleteTextViewX.setHint(resourceId)
+    }
+
+    fun setThreshold(threshold: Int) {
+        autoCompleteTextViewX.threshold = threshold
+    }
+
+    fun setAdapter(adapter: ArrayAdapter<*>?) {
+        autoCompleteTextViewX.setAdapter(adapter)
+    }
+
+    fun setUpdateListener(onUpdateListener: AutoCompleteTextViewX.OnUpdateListener?) {
+        autoCompleteTextViewX.setOnUpdateListener(onUpdateListener)
+    }
+
+    fun setCallback(callback: AutoCompleteTextViewX.Callback?) {
+        autoCompleteTextViewX.setCallback(callback)
+    }
+
+    fun setOnItemSelectedListener(listener: OnItemSelectedListener?) {
+        autoCompleteTextViewX.onItemSelectedListener = listener
+    }
+
+    fun setOnItemClickListener(listener: OnItemClickListener?) {
+        autoCompleteTextViewX.onItemClickListener = listener
+    }
 }

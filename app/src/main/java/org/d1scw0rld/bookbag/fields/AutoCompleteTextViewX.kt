@@ -1,200 +1,124 @@
-package org.d1scw0rld.bookbag.fields;
+package org.d1scw0rld.bookbag.fields
 
-import org.d1scw0rld.bookbag.R;
+import android.annotation.SuppressLint
+import android.content.Context
+import android.text.TextUtils
+import android.util.AttributeSet
+import android.view.KeyEvent
+import android.view.MotionEvent
+import android.view.inputmethod.EditorInfo
+import android.widget.ArrayAdapter
+import android.widget.EditText
+import androidx.appcompat.widget.AppCompatAutoCompleteTextView
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.widget.doOnTextChanged
+import org.d1scw0rld.bookbag.R
 
-import android.content.Context;
-import android.graphics.drawable.Drawable;
-import android.text.Editable;
-import android.text.TextUtils;
-import android.text.TextWatcher;
-import android.util.AttributeSet;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.TextView;
+class AutoCompleteTextViewX @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = androidx.appcompat.R.attr.autoCompleteTextViewStyle,
+) : AppCompatAutoCompleteTextView(context, attrs, defStyleAttr) {
 
-public class AutoCompleteTextViewX extends androidx.appcompat.widget.AppCompatAutoCompleteTextView
-{
-   private Context context;
-   
-   private OnUpdateListener onUpdateListener = null;
+    private var onUpdateListener: OnUpdateListener? = null
+    private var callback: Callback? = null
 
-   private Callback callback = null;
-
-   private final OnEditorActionListener onEditorActionListener = new OnEditorActionListener()
-   {
-      @Override
-      public boolean onEditorAction(TextView textView, int actionId, KeyEvent event)
-      {
-         if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT)
-         {
-
-            if(onUpdateListener != null)
-               onUpdateListener.onUpdate((EditText) textView);
-            if(actionId == EditorInfo.IME_ACTION_DONE)
-            {
-               InputMethodManager inputManager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-               inputManager.toggleSoftInput(0, 0);
+    private val onEditorActionListener = OnEditorActionListener { textView, actionId, _ ->
+        if ((actionId == EditorInfo.IME_ACTION_DONE) || (actionId == EditorInfo.IME_ACTION_NEXT)) {
+            onUpdateListener?.onUpdate(textView as EditText)
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                hideKeyboard()
             }
-            textView.clearFocus();
-         }
-         return false;      
-      }
-   };
-   
-   private final OnFocusChangeListener onFocusChangeListener = (view, hasFocus) -> {
-      updateDeleteIcon(hasFocus);
+            textView.clearFocus()
+        }
+        false
+    }
 
-      if(!hasFocus && onUpdateListener != null)
-      {
-         onUpdateListener.onUpdate((EditText) view);
-      }
-   };
-      
-   private final TextWatcher textWatcher = new TextWatcher()
-   {
-       @Override
-       public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) 
-       {
-       }
+    private val onFocusChangeListenerInternal = OnFocusChangeListener { view, hasFocus ->
+        updateDeleteIcon(hasFocus)
+        if (!hasFocus) {
+            onUpdateListener?.onUpdate(view as EditText)
+        }
+    }
 
-       @Override
-       public void onTextChanged(CharSequence charSequence, int start, int before, int count) 
-       {
-           updateDeleteIcon(charSequence.toString(), isFocused());
-       }
+    @SuppressLint("ClickableViewAccessibility")
+    private val onTouchListenerInternal = OnTouchListener { view, event ->
+        view.performClick()
+        val drawables = compoundDrawables
+        val rightDrawable = drawables[2]
+        if ((event.action == MotionEvent.ACTION_UP) && (rightDrawable != null)) {
+            if (event.rawX >= (right - rightDrawable.bounds.width())) {
+                callback?.beforeClear(this)
+                setText("")
+                requestFocus()
+                (adapter as? ArrayAdapter<*>)?.filter?.filter("")
+                callback?.afterClear(this)
+                return@OnTouchListener false
+            }
+        }
+        false
+    }
 
-       @Override
-       public void afterTextChanged(Editable editable) 
-       {
-       }
-   };
-   
-   private final OnTouchListener onTouchListener = (view, event) -> {
-       final int DRAWABLE_RIGHT = 2;
+    init {
+        updateDeleteIcon(isFocused)
+        setOnEditorActionListener(onEditorActionListener)
+        onFocusChangeListener = onFocusChangeListenerInternal
+        
+        doOnTextChanged { text, _, _, _ ->
+            updateDeleteIcon(text?.toString(), isFocused)
+        }
 
-       // Only for warning disposal
-       view.performClick();
+        @Suppress("DEPRECATION")
+        isSingleLine = true
+        maxLines = 1
+        setLines(1)
 
-       if (event.getAction() == MotionEvent.ACTION_UP)
-       {
-           final Drawable rightDrawable = getCompoundDrawables()[DRAWABLE_RIGHT];
-           if (rightDrawable != null && event.getRawX() >= (getRight() - rightDrawable.getBounds().width()))
-           {
-               if (callback != null) callback.beforeClear(AutoCompleteTextViewX.this);
-               setText("");
-               requestFocus();
-              ((ArrayAdapter<?>)getAdapter()).getFilter().filter("");
-               if (callback != null) callback.afterClear(AutoCompleteTextViewX.this);
-               return false;
-           }
-       }
-       return false;
-   };
-   
-   public AutoCompleteTextViewX(final Context context)
-   {
-      super(context);
-      
-      init(context);
-   }
-   
-   public AutoCompleteTextViewX(Context context, AttributeSet attrs)
-   {
-      super(context, attrs);
+        setOnTouchListener(onTouchListenerInternal)
+    }
 
-      init(context);
-   }
-   
-   public AutoCompleteTextViewX(Context context, AttributeSet attrs, int defStyle)
-   {
-      super(context, attrs, defStyle);
+    override fun onKeyPreIme(keyCode: Int, event: KeyEvent): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_ENTER) {
+            clearFocus()
+            return false
+        }
+        return false
+    }
 
-      init(context);
-   }
+    private fun hideKeyboard() {
+        val activity = context.findActivity() ?: return
+        WindowCompat.getInsetsController(activity.window, this).hide(WindowInsetsCompat.Type.ime())
+    }
 
-   private void init(Context context)
-   {
-      this.context = context;
-      
-      updateDeleteIcon(isFocused());
-      
-      setOnEditorActionListener(onEditorActionListener);
-      
-      setOnFocusChangeListener(onFocusChangeListener);      
-      
-      addTextChangedListener(textWatcher);
-      
-      setSingleLine(true);
-      setMaxLines(1);
-      setLines(1);
-      
-      // NOTE: The most important.
-      setOnTouchListener(onTouchListener);      
-   }
-   
-   // Only for warning disposal
-   @Override
-   public boolean performClick()
-   {
-      return super.performClick();
-   }
+    fun setOnUpdateListener(onUpdateListener: OnUpdateListener?) {
+        this.onUpdateListener = onUpdateListener
+    }
 
+    fun interface OnUpdateListener {
+        fun onUpdate(editText: EditText)
+    }
 
-   @Override
-   public boolean onKeyPreIme(int keyCode, KeyEvent event)
-   {
-      if (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_ENTER) 
-      {
-         clearFocus();
-         return false;
-      }         
-      return false;
-   }
+    fun setCallback(callback: Callback?) {
+        this.callback = callback
+    }
 
-   public void setOnUpdateListener(OnUpdateListener onUpdateListener)
-   {
-      this.onUpdateListener = onUpdateListener;
-   }
+    interface Callback {
+        fun beforeClear(editText: EditText)
+        fun afterClear(editText: EditText)
+    }
 
-   public interface OnUpdateListener
-   {
-      void onUpdate(EditText editText);
-   }
+    private fun updateDeleteIcon(focused: Boolean) {
+        updateDeleteIcon(null, focused)
+    }
 
-   public void setCallback(Callback callback) 
-   {
-      this.callback = callback;
-   }   
-   
-   private void updateDeleteIcon(boolean focused) 
-   {  
-      updateDeleteIcon(null, focused);
-   }
-
-   private void updateDeleteIcon(final String text, final boolean focused) 
-   {
-      final String currentText = (text != null) ? text : getText().toString();
-      post(() -> {
-          if (TextUtils.isEmpty(currentText) || !focused)
-          {
-              setCompoundDrawables(null, null, null, null);
-          }
-          else
-          {
-              setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_clear_search_api_holo_light, 0);
-          }
-      });
-   }
-   
-   public interface Callback 
-   {  
-      void beforeClear(EditText editText);
-   
-      void afterClear(EditText editText);
-   }
-   
+    private fun updateDeleteIcon(text: String?, focused: Boolean) {
+        val currentText = text ?: (this.text?.toString() ?: "")
+        post {
+            if (TextUtils.isEmpty(currentText) || !focused) {
+                setCompoundDrawables(null, null, null, null)
+            } else {
+                setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_clear_search_api_holo_light, 0)
+            }
+        }
+    }
 }

@@ -1,298 +1,215 @@
-package org.d1scw0rld.bookbag.fields;
+package org.d1scw0rld.bookbag.fields
 
-import java.util.ArrayList;
+import android.content.Context
+import android.graphics.Color
+import android.util.AttributeSet
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.View
+import android.widget.Button
+import android.widget.LinearLayout
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.AppCompatEditText
+import androidx.appcompat.widget.PopupMenu
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import org.d1scw0rld.bookbag.R
 
-import org.d1scw0rld.bookbag.R;
+class FieldMultiSpinner @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0,
+) : LinearLayout(context, attrs, defStyleAttr), Field {
 
-import android.app.Activity;
-import androidx.appcompat.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.res.TypedArray;
-import android.graphics.Color;
-import androidx.appcompat.widget.AppCompatEditText;
-import androidx.appcompat.widget.PopupMenu;
-import android.util.AttributeSet;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.View;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
-import android.widget.LinearLayout;
+    private lateinit var title: Title
+    private lateinit var selectButton: Button
+    private var hint: String = ""
+    private var items = ArrayList<Item>()
+    private var onUpdateListener: OnUpdateListener? = null
 
-public class FieldMultiSpinner extends LinearLayout implements Field
-{
-   private Title title;
-   private Button selectButton;
-   private String hint = "";
-   private Context context;
-   private ArrayList<Item> items = new ArrayList<>();
-   private OnUpdateListener onUpdateListener = null;
+    init {
+        initialize(context)
 
-   public FieldMultiSpinner(Context context)
-   {
-      super(context);
+        orientation = VERTICAL
+        gravity = Gravity.CENTER_VERTICAL
 
-      init(context);
-   }
+        attrs?.let {
+            val typedArray = context.obtainStyledAttributes(it, R.styleable.FieldMultiSpinner, 0, 0)
 
-   public FieldMultiSpinner(Context context, AttributeSet attrs)
-   {
-      super(context, attrs);
+            val titleText = typedArray.getString(R.styleable.FieldMultiSpinner_title)
+            val titleValueColor = typedArray.getColor(R.styleable.FieldMultiSpinner_titleColor, 0)
+            val titleTextSize = typedArray.getDimensionPixelOffset(R.styleable.FieldMultiSpinner_titleTextSize, 0)
+            val titleLineSize = typedArray.getDimensionPixelOffset(R.styleable.FieldMultiSpinner_titleLineSize, 0)
+            val contentDescription = typedArray.getString(R.styleable.FieldMultiSpinner_android_contentDescription)
+            hint = typedArray.getString(R.styleable.FieldMultiSpinner_android_hint) ?: ""
 
-      init(context);
+            typedArray.recycle()
 
-      TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.FieldMultiSpinner, 0, 0);
+            titleText?.let { t -> this.title.setText(t) }
+            this.title.setColor(titleValueColor)
+            this.title.setTextSize(titleTextSize)
+            this.title.setLineSize(titleLineSize)
 
-      String titleText = typedArray.getString(R.styleable.FieldMultiSpinner_title);
-      int titleValueColor = typedArray.getColor(R.styleable.FieldMultiSpinner_titleColor, 0);
-      int titleTextSize = typedArray.getDimensionPixelOffset(R.styleable.FieldMultiSpinner_titleTextSize, 0);
-      int titleLineSize = typedArray.getDimensionPixelOffset(R.styleable.FieldMultiSpinner_titleLineSize, 0);
-      String contentDescription = typedArray.getString(R.styleable.FieldMultiSpinner_android_contentDescription);
-      hint = typedArray.getString(R.styleable.FieldMultiSpinner_android_hint);
+            selectButton.contentDescription = contentDescription
+        }
+    }
 
-      typedArray.recycle();
+    private fun initialize(context: Context) {
+        val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        inflater.inflate(R.layout.field_multi_spinner, this, true)
 
-      setOrientation(LinearLayout.VERTICAL);
-      setGravity(Gravity.CENTER_VERTICAL);
+        title = findViewById(R.id.title)
+        selectButton = findViewById(R.id.action_select_type)
 
-      this.title.setText(titleText);
-      this.title.setColor(titleValueColor);
-      this.title.setTextSize(titleTextSize);
-      this.title.setLineSize(titleLineSize);
+        setButtonText(selectButton, items)
+        selectButton.setOnClickListener { v ->
+            displayPopupWindow(v, items)
+        }
+    }
 
-      selectButton.setContentDescription(contentDescription);
-   }
+    private fun setButtonText(button: Button, itemsList: ArrayList<Item>) {
+        val buttonTextBuilder = StringBuilder()
+        for (item in itemsList) {
+            if (item.isSelected) {
+                buttonTextBuilder.append(if (buttonTextBuilder.isEmpty()) "" else ", ")
+                    .append(item.title)
+            }
+        }
 
-   private void init(Context context)
-   {
-      this.context = context;
+        if (buttonTextBuilder.isNotEmpty()) {
+            button.text = buttonTextBuilder.toString()
+            button.setTextColor(Color.BLACK)
+        } else {
+            button.text = hint
+            button.setTextColor(Color.GRAY)
+        }
+    }
 
-      LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-      inflater.inflate(R.layout.field_multi_spinner, this, true);
+    private fun displayPopupWindow(anchorView: View, itemsList: ArrayList<Item>?) {
+        if (itemsList == null) return
+        val popupMenu = PopupMenu(context, anchorView)
+        initPopupMenu(popupMenu, itemsList)
 
-      title = findViewById(R.id.title);
-      selectButton = findViewById(R.id.action_select_type);
-      
-      setButtonText(selectButton, items);
-      selectButton.setOnClickListener(new OnClickListener()
-      {
-         @Override
-         public void onClick(View v)
-         {
-            displayPopupWindow(v, items);
-         }
-      });
-   }
+        popupMenu.setOnMenuItemClickListener { menuItem ->
+            if (menuItem.order < itemsList.size) {
+                menuItem.isChecked = !menuItem.isChecked
+                val item = itemsList[menuItem.order]
+                item.isSelected = menuItem.isChecked
 
-   private void setButtonText(Button button, ArrayList<Item> itemsList)
-   {
-      StringBuilder buttonTextBuilder = new StringBuilder();
-      for(Item item : itemsList)
-         if(item.isSelected())
-            buttonTextBuilder.append((buttonTextBuilder.length() == 0) ? "" : ", ")
-                       .append(item.getTitle());
+                setButtonText(anchorView as Button, itemsList)
+                onUpdateListener?.onUpdate(item)
 
-      if(buttonTextBuilder.length() > 0)
-      {
-         button.setText(buttonTextBuilder.toString());
-         button.setTextColor(Color.BLACK);
-      }
-      else
-      {
-         button.setText(hint);
-         button.setTextColor(Color.GRAY);
-      }
-   }
+                popupMenu.show()
+            } else {
+                val builder = AlertDialog.Builder(context, R.style.AppCompatAlertDialogStyle)
+                builder.setTitle(R.string.add_new)
+                val newValueEditText = AppCompatEditText(context)
+                builder.setView(newValueEditText)
+                builder.setPositiveButton(android.R.string.ok) { dialog, _ ->
+                    val newValue = newValueEditText.text.toString().trim()
+                    val item = Item(newValue)
+                    item.id = itemsList.size.toLong()
+                    item.isSelected = true
+                    itemsList.add(item)
+                    setButtonText(anchorView as Button, itemsList)
+                    onUpdateListener?.onUpdate(item)
+                    popupMenu.dismiss()
+                    initPopupMenu(popupMenu, itemsList)
 
-   private void displayPopupWindow(final View anchorView, final ArrayList<Item> itemsList)
-   {
-      if(itemsList == null)
-         return;
-      final PopupMenu popupMenu = new PopupMenu(context, anchorView);
-      initPopupMenu(popupMenu, itemsList);
+                    context.findActivity()?.let { activity ->
+                        WindowCompat.getInsetsController(activity.window, anchorView).hide(WindowInsetsCompat.Type.ime())
+                    }
+                    dialog.cancel()
+                    popupMenu.show()
+                }
 
-      popupMenu.setOnMenuItemClickListener(menuItem -> {
-         if(menuItem.getOrder() < itemsList.size())
-         {
-            menuItem.setChecked(!menuItem.isChecked());
-            Item item = itemsList.get(menuItem.getOrder());
-            item.setSelected(menuItem.isChecked());
+                builder.setNegativeButton(android.R.string.cancel) { dialog, _ ->
+                    context.findActivity()?.let { activity ->
+                        WindowCompat.getInsetsController(activity.window, anchorView).hide(WindowInsetsCompat.Type.ime())
+                    }
+                    dialog.cancel()
+                    popupMenu.show()
+                }
 
-            setButtonText((Button) anchorView, itemsList);
-            onUpdateListener.onUpdate(item);
+                builder.show()
+            }
+            true
+        }
 
-            popupMenu.show();
-         }
-         else
-         {
-            AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.AppCompatAlertDialogStyle);
-            builder.setTitle(R.string.add_new);
-            final AppCompatEditText newValueEditText = new AppCompatEditText(context);
-            builder.setView(newValueEditText);
-            builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
-            {
-               public void onClick(DialogInterface dialog, int id)
-               {
-                  String newValue = newValueEditText.getText().toString().trim();
-                  Item item = new Item(newValue);
-                  item.setId(itemsList.size());
-                  item.setSelected(true);
-                  itemsList.add(item);
-                  setButtonText((Button) anchorView, itemsList);
-                  onUpdateListener.onUpdate(item);
-                  popupMenu.dismiss();
-                  initPopupMenu(popupMenu, itemsList);
+        popupMenu.show()
+    }
 
-                  InputMethodManager imm = (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
-                  imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-                  dialog.cancel();
-                  popupMenu.show();
-               }
-            });
+    private fun initPopupMenu(popupMenu: PopupMenu, itemsList: ArrayList<Item>) {
+        popupMenu.menu.clear()
 
-            builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener()
-            {
-               public void onClick(DialogInterface dialog, int id)
-               {
-                  InputMethodManager imm = (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
-                  imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-                  dialog.cancel();
-                  popupMenu.show();
-               }
-            });
+        for (i in itemsList.indices) {
+            popupMenu.menu.add(Menu.NONE, 0, i, itemsList[i].title)
+                .setCheckable(true)
+                .setChecked(itemsList[i].isSelected)
+        }
+        popupMenu.menu.add(Menu.NONE, 0, itemsList.size, "<add>")
+    }
 
-            builder.show();
+    override fun setTitle(text: String) {
+        title.setText(text)
+    }
 
-         }
-         return true;
-      });
+    override fun setTitle(resid: Int) {
+        title.setText(resid)
+    }
 
-      popupMenu.show();
-   }
+    override fun getTitle(): String {
+        return title.getTitle()
+    }
 
-   private void initPopupMenu(PopupMenu popupMenu, final ArrayList<Item> itemsList)
-   {
-      popupMenu.getMenu().clear();
-      
-      for(int i = 0; i < itemsList.size(); i++)
-      {
-         popupMenu.getMenu().add(Menu.NONE, 0, i, itemsList.get(i).getTitle())
-         .setCheckable(true)
-         .setChecked(itemsList.get(i).isSelected());
-         
-      }
-      popupMenu.getMenu().add(Menu.NONE, 0, itemsList.size(), "<add>");
-   }
-   
-   public void setTitle(String title)
-   {
-      this.title.setText(title);
-   }
+    override fun setTitleColor(valueColor: Int) {
+        title.setColor(valueColor)
+    }
 
-   public void setTitle(int resourceId)
-   {
-      title.setText(resourceId);
-   }
+    override fun setTitleTextSize(textSize: Int) {
+        title.setTextSize(textSize)
+    }
 
-   @Override
-   public String getTitle()
-   {
-      return title.getTitle();
-   }
+    fun setLineSize(lineSize: Int) {
+        title.setLineSize(lineSize)
+    }
 
-   public void setTitleColor(int valueColor)
-   {
-      title.setColor(valueColor);
-   }
+    fun setContentDescriptionX(contentDescription: String?) {
+        selectButton.contentDescription = contentDescription
+    }
 
-   public void setTitleTextSize(int textSize)
-   {
-      title.setTextSize(textSize);
-   }
+    fun setHint(hint: String) {
+        this.hint = hint
+        setButtonText(selectButton, items)
+    }
 
-   public void setLineSize(int lineSize)
-   {
-      title.setTextSize(lineSize);
-   }
+    fun setItems(items: ArrayList<Item>) {
+        this.items = items
+        setButtonText(selectButton, items)
+    }
 
-   public void setContentDescription(String contentDescription)
-   {
-      selectButton.setContentDescription(contentDescription);
-   }
+    fun setOnUpdateListener(onUpdateListener: OnUpdateListener?) {
+        this.onUpdateListener = onUpdateListener
+    }
 
-   public void setHint(String hint)
-   {
-      this.hint = hint;
-      setButtonText(selectButton, items);
-   }
+    class Item {
+        var title: String = ""
+        var isSelected: Boolean = false
+        var id: Long = -1
 
-   public void setItems(ArrayList<Item> items)
-   {
-      this.items = items;
-      setButtonText(selectButton, items);
-   }
-   
-   public void setOnUpdateListener(OnUpdateListener onUpdateListener)
-   {
-      this.onUpdateListener = onUpdateListener;
-   }
+        constructor()
 
-   public static class Item 
-   {
-      private String title = "";
-      private boolean selected = false;
-      private long id = -1;
-      
-      public Item()
-      {
-         
-      }
-      
-      public Item(String title)
-      {
-         this.title = title;
-      }
-      
-      public Item(long id, String title)
-      {
-         this.id = id;
-      }
+        constructor(title: String) {
+            this.title = title
+        }
 
-      public String getTitle()
-      {
-         return title;
-      }
+        constructor(id: Long, title: String) {
+            this.id = id
+        }
+    }
 
-      public void setTitle(String title)
-      {
-         this.title = title;
-      }
-
-      public boolean isSelected()
-      {
-         return selected;
-      }
-
-      public void setSelected(boolean selected)
-      {
-         this.selected = selected;
-      }
-
-      public long getId()
-      {
-         return id;
-      }
-
-      public void setId(long id)
-      {
-         this.id = id;
-      }
-   }
-   
-   public interface OnUpdateListener
-   {
-      void onUpdate(Item item);
-   }
+    fun interface OnUpdateListener {
+        fun onUpdate(item: Item)
+    }
 }

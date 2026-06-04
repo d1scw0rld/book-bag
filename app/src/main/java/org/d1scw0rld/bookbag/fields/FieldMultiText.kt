@@ -1,234 +1,183 @@
-package org.d1scw0rld.bookbag.fields;
+package org.d1scw0rld.bookbag.fields
 
-import java.util.ArrayList;
+import android.content.Context
+import android.util.AttributeSet
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.EditText
+import android.widget.LinearLayout
+import org.d1scw0rld.bookbag.FilteredArrayAdapter
+import org.d1scw0rld.bookbag.R
+import org.d1scw0rld.bookbag.dto.Property
 
-import org.d1scw0rld.bookbag.FilteredArrayAdapter;
-import org.d1scw0rld.bookbag.R;
-import org.d1scw0rld.bookbag.dto.Property;
-import org.d1scw0rld.bookbag.fields.AutoCompleteTextViewX.OnUpdateListener;
+class FieldMultiText @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0,
+) : LinearLayout(context, attrs, defStyleAttr), Field {
 
-import android.content.Context;
-import android.content.res.TypedArray;
-import android.util.AttributeSet;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView;
-import android.widget.EditText;
-import android.widget.LinearLayout;
+    interface OnAddRemoveFieldListener {
+        fun onFieldRemove(view: View)
+        fun onAddNewField(view: View)
+        fun onFieldUpdated(view: View, value: String)
+        fun onItemSelect(view: View, selection: Property)
+    }
 
-public class FieldMultiText extends LinearLayout implements Field
-{
-   public interface OnAddRemoveFieldListener
-   {
+    private lateinit var inflater: LayoutInflater
+    private lateinit var title: Title
+    private lateinit var fieldsLayout: LinearLayout
+    private var hint: String = ""
+    private var contentDescription: String = ""
+    private var adapter: FilteredArrayAdapter<Property>? = null
+    private var onAddRemoveFieldListener: OnAddRemoveFieldListener? = null
 
-      void onFieldRemove(View view);
+    init {
+        initialize(context)
 
-      void onAddNewField(View view);
-      
-      void onFieldUpdated(View view, String value);
+        orientation = VERTICAL
+        gravity = Gravity.CENTER_VERTICAL
 
-      void onItemSelect(View view, Property selection);
-   }
+        attrs?.let {
+            val typedArray = context.obtainStyledAttributes(it, R.styleable.FieldMultiText, 0, 0)
 
-    private LayoutInflater inflater;
-    private Title title;
-    private LinearLayout fieldsLayout;
-    private String hint = "";
-    private String contentDescription = "";
-   private FilteredArrayAdapter<Property> adapter;
-    private OnAddRemoveFieldListener onAddRemoveFieldListener;
+            val titleText = typedArray.getString(R.styleable.FieldMultiText_title)
+            val titleValueColor = typedArray.getColor(R.styleable.FieldMultiText_titleColor, 0)
+            val titleTextSize = typedArray.getDimensionPixelOffset(R.styleable.FieldMultiText_titleTextSize, 0)
+            val titleLineSize = typedArray.getDimensionPixelOffset(R.styleable.FieldMultiText_titleLineSize, 0)
+            contentDescription = typedArray.getString(R.styleable.FieldMultiText_android_contentDescription) ?: ""
+            hint = typedArray.getString(R.styleable.FieldMultiText_android_hint) ?: ""
 
-   public FieldMultiText(Context context)
-   {
-      super(context);
-      
-      init(context);
-   }
+            typedArray.recycle()
 
-   public FieldMultiText(Context context, AttributeSet attrs)
-   {
-      super(context, attrs);
-     
-      init(context);
-      
-      TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.FieldMultiText, 0, 0);
-      
-      String titleText = typedArray.getString(R.styleable.FieldMultiText_title);
-      int titleValueColor = typedArray.getColor(R.styleable.FieldMultiText_titleColor, 0);
-      int titleTextSize = typedArray.getDimensionPixelOffset(R.styleable.FieldMultiText_titleTextSize, 0);
-      int titleLineSize = typedArray.getDimensionPixelOffset(R.styleable.FieldMultiText_titleLineSize, 0);
-      contentDescription = typedArray.getString(R.styleable.FieldMultiText_android_contentDescription);
-      hint = typedArray.getString(R.styleable.FieldMultiText_android_hint);
+            titleText?.let { t -> this.title.setText(t) }
+            this.title.setColor(titleValueColor)
+            this.title.setTextSize(titleTextSize)
+            this.title.setLineSize(titleLineSize)
+        }
+    }
 
-      typedArray.recycle();
+    private fun initialize(context: Context) {
+        inflater = LayoutInflater.from(context)
+        inflater.inflate(R.layout.field_multi_text, this, true)
 
-      setOrientation(LinearLayout.VERTICAL);
-      setGravity(Gravity.CENTER_VERTICAL);
+        title = findViewById(R.id.title)
+        fieldsLayout = findViewById(R.id.ll_fields)
 
-      this.title.setText(titleText);
-      this.title.setColor(titleValueColor);
-      this.title.setTextSize(titleTextSize);
-      this.title.setLineSize(titleLineSize);
-   }
+        findViewById<View>(R.id.ib_add_field).setOnClickListener {
+            addNewField()
+        }
+    }
 
-   void init(Context context)
-   {
-      inflater = LayoutInflater.from(context);
-      inflater.inflate(R.layout.field_multi_text, this, true);
+    private fun addRow(): View {
+        val rowView = inflater.inflate(R.layout.row_field, null)
+        rowView.findViewById<View>(R.id.ib_remove_field).setOnClickListener { view ->
+            val parentView = view.parent as View
+            removeField(parentView)
+        }
 
+        val valueAutoCompleteTextView = rowView.findViewById<AutoCompleteTextViewX>(R.id.et_value)
+        valueAutoCompleteTextView.hint = hint
+        valueAutoCompleteTextView.contentDescription = contentDescription
+        valueAutoCompleteTextView.setAdapter(adapter)
+        valueAutoCompleteTextView.threshold = 1
 
-      title = findViewById(R.id.title);
-      
-      fieldsLayout = findViewById(R.id.ll_fields);
-      findViewById(R.id.ib_add_field).setOnClickListener(new View.OnClickListener()
-      {
-         @Override
-         public void onClick(View view)
-         {
-            addNewField();
-         }
-      });
-   }
-   
-   private View addRow()
-   {
-      final View rowView = inflater.inflate(R.layout.row_field, null);
-      rowView.findViewById(R.id.ib_remove_field).setOnClickListener(new View.OnClickListener()
-      {
-         @Override
-         public void onClick(View view)
-         {
-            View parentView = (View) view.getParent();
-            removeField(parentView);
-         }
-      });
-      final AutoCompleteTextViewX valueAutoCompleteTextView = rowView.findViewById(R.id.et_value);
-      valueAutoCompleteTextView.setHint(hint);
-      valueAutoCompleteTextView.setContentDescription(contentDescription);
-      valueAutoCompleteTextView.setAdapter(adapter);
-      valueAutoCompleteTextView.setThreshold(1);
-      
-      valueAutoCompleteTextView.setOnItemClickListener(new OnItemClickListener()
-      {
-         @Override
-         public void onItemClick(AdapterView<?> adapterView, View view, int position, long rowId)
-         {
-            Property selection = (Property) adapterView.getItemAtPosition(position);
-            valueAutoCompleteTextView.setText(selection.value);
-            valueAutoCompleteTextView.setSelection(selection.value.length());
-            onAddRemoveFieldListener.onItemSelect(rowView, selection);
-         }
-      });
-      
-      valueAutoCompleteTextView.setOnUpdateListener(new OnUpdateListener()
-      {
-         @Override
-         public void onUpdate(EditText editText)
-         {
-            onAddRemoveFieldListener.onFieldUpdated(rowView, editText.getText().toString().trim());
-         }
-      });
-      
-      fieldsLayout.addView(rowView);
+        valueAutoCompleteTextView.onItemClickListener = AdapterView.OnItemClickListener { adapterView, _, position, _ ->
+            val selection = adapterView.getItemAtPosition(position) as Property
+            valueAutoCompleteTextView.setText(selection.value)
+            valueAutoCompleteTextView.setSelection(selection.value.length)
+            onAddRemoveFieldListener?.onItemSelect(rowView, selection)
+        }
 
-      if(fieldsLayout.getChildCount() == 1)
-         rowView.findViewById(R.id.ib_remove_field).setVisibility(View.INVISIBLE);
-      else
-         valueAutoCompleteTextView.requestFocus();
-      
-      return rowView;
-   }
-   
-   private void addNewField()
-   {
-      onAddRemoveFieldListener.onAddNewField(addRow());
-   }
+        valueAutoCompleteTextView.setOnUpdateListener { editText ->
+            onAddRemoveFieldListener?.onFieldUpdated(rowView, editText.text.toString().trim())
+        }
 
-   private void addField(LinearLayout fieldsLayout, Property property)
-   {
-      final View rowView = addRow();
-      
-      EditText valueEditText = rowView.findViewById(R.id.et_value);
-      if(fieldsLayout.getChildCount() == 1)
-         valueEditText.setId(R.id.et_author_1);
+        fieldsLayout.addView(rowView)
 
-      valueEditText.setText(property.value);
-      rowView.setTag(property);
-   }
-   
-   private void removeField(View fieldView)
-   {
-      onAddRemoveFieldListener.onFieldRemove(fieldView);
-      ViewGroup parent = (ViewGroup) fieldView.getParent();
-      parent.removeView(fieldView);
-   }   
-   
-   public void setTitle(String title)
-   {
-      this.title.setText(title);
-   }
-   
-   @Override
-   public String getTitle()
-   {
-      return title.getTitle();
-   }
-   
-   public void setTitle(int resourceId)
-   {
-      title.setText(resourceId);
-   }
-   
-   public void setTitleColor(int valueColor)
-   {
-      title.setColor(valueColor);
-   }
-   
-   public void setTitleTextSize(int textSize)
-   {
-      title.setTextSize(textSize);
-   }
-   
-   public void setLineSize(int lineSize)
-   {
-      title.setTextSize(lineSize);
-   }
+        if (fieldsLayout.childCount == 1) {
+            rowView.findViewById<View>(R.id.ib_remove_field).visibility = View.INVISIBLE
+        } else {
+            valueAutoCompleteTextView.requestFocus()
+        }
 
-   public void setContentDescription(String contentDescription)
-   {
-      this.contentDescription = contentDescription;
-   }
+        return rowView
+    }
 
-   public void setHint(String hint)
-   {
-      this.hint = hint;
-   }
-   
-   public void setOnAddRemoveListener(OnAddRemoveFieldListener onAddRemoveFieldListener)
-   {
-      this.onAddRemoveFieldListener = onAddRemoveFieldListener;
-   }   
+    private fun addNewField() {
+        onAddRemoveFieldListener?.onAddNewField(addRow())
+    }
 
-   public void setItems(FilteredArrayAdapter<Property> adapter, ArrayList<Property> items)
-   {
-      this.adapter = adapter;
+    private fun addField(fieldsLayout: LinearLayout, property: Property) {
+        val rowView = addRow()
 
-      boolean hasFieldsOfType = false;
-      for(Property item: items)
-      {
-         int i = adapter.getPosition(item);
-         if(i >= 0)
-         {
-            addField(fieldsLayout, item);
-            hasFieldsOfType = true;
-         }
-      }
-    
-      if(!hasFieldsOfType)
-         addNewField();
-   }
-   
+        val valueEditText = rowView.findViewById<EditText>(R.id.et_value)
+        if (fieldsLayout.childCount == 1) {
+            valueEditText.id = R.id.et_author_1
+        }
+
+        valueEditText.setText(property.value)
+        rowView.tag = property
+    }
+
+    private fun removeField(fieldView: View) {
+        onAddRemoveFieldListener?.onFieldRemove(fieldView)
+        val parent = fieldView.parent as ViewGroup
+        parent.removeView(fieldView)
+    }
+
+    override fun setTitle(text: String) {
+        title.setText(text)
+    }
+
+    override fun getTitle(): String {
+        return title.getTitle()
+    }
+
+    override fun setTitle(resid: Int) {
+        title.setText(resid)
+    }
+
+    override fun setTitleColor(valueColor: Int) {
+        title.setColor(valueColor)
+    }
+
+    override fun setTitleTextSize(textSize: Int) {
+        title.setTextSize(textSize)
+    }
+
+    fun setLineSize(lineSize: Int) {
+        title.setLineSize(lineSize)
+    }
+
+    fun setContentDescriptionX(contentDescription: String) {
+        this.contentDescription = contentDescription
+    }
+
+    fun setHint(hint: String) {
+        this.hint = hint
+    }
+
+    fun setOnAddRemoveListener(onAddRemoveFieldListener: OnAddRemoveFieldListener?) {
+        this.onAddRemoveFieldListener = onAddRemoveFieldListener
+    }
+
+    fun setItems(adapter: FilteredArrayAdapter<Property>, items: ArrayList<Property>) {
+        this.adapter = adapter
+
+        var hasFieldsOfType = false
+        for (item in items) {
+            val i = adapter.getPosition(item)
+            if (i >= 0) {
+                addField(fieldsLayout, item)
+                hasFieldsOfType = true
+            }
+        }
+
+        if (!hasFieldsOfType) {
+            addNewField()
+        }
+    }
 }

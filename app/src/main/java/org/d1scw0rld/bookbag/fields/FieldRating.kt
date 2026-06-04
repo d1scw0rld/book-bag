@@ -1,159 +1,130 @@
-package org.d1scw0rld.bookbag.fields;
+package org.d1scw0rld.bookbag.fields
 
-import org.d1scw0rld.bookbag.R;
+import android.content.Context
+import android.util.AttributeSet
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.widget.LinearLayout
+import android.widget.RatingBar.OnRatingBarChangeListener
+import androidx.appcompat.widget.AppCompatRatingBar
+import org.d1scw0rld.bookbag.R
 
-import android.content.Context;
-import android.content.res.TypedArray;
-import android.util.AttributeSet;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.widget.LinearLayout;
-import android.widget.RatingBar.OnRatingBarChangeListener;
+class FieldRating @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0,
+) : LinearLayout(context, attrs, defStyleAttr), Field {
 
-import androidx.appcompat.widget.AppCompatRatingBar;
+    private lateinit var title: Title
+    private var isIndicator: Boolean = false
+    private var numStars: Int = 5
+    private var rating: Float = 0.0f
+    private var stepSize: Float = 0.5f
+    private lateinit var ratingBar: AppCompatRatingBar
 
-public class FieldRating extends LinearLayout implements Field
-{
-   private Title title;
+    init {
+        initialize(context)
 
-   private boolean isIndicator;
-   
-   private int numStars;
-   
-   private float rating,
-                 stepSize;
+        orientation = VERTICAL
+        gravity = Gravity.CENTER_VERTICAL
 
-   private AppCompatRatingBar ratingBar;
-   
-   public FieldRating(Context context)
-   {
-      super(context);
-      
-      init(context);
-   }
-   
-   public FieldRating(Context context, AttributeSet attrs)
-   {
-      super(context, attrs);
+        attrs?.let {
+            val typedArray = context.obtainStyledAttributes(it, R.styleable.FieldRating, 0, 0)
 
-      init(context);
-      
-      TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.FieldRating, 0, 0);
-      
-      String titleText = typedArray.getString(R.styleable.FieldRating_title);
-      int titleValueColor = typedArray.getColor(R.styleable.FieldRating_titleColor, 0);
-      int titleTextSize = typedArray.getDimensionPixelOffset(R.styleable.FieldRating_titleTextSize, 0);
-      int titleLineSize = typedArray.getDimensionPixelOffset(R.styleable.FieldRating_titleLineSize, 0);
-      String contentDescription = typedArray.getString(R.styleable.FieldRating_android_contentDescription);
-      setNumStars(typedArray.getInteger(R.styleable.FieldRating_android_numStars, 5));
-      setRating(typedArray.getFloat(R.styleable.FieldRating_android_rating, 0.0f));
-      setStepSize(typedArray.getFloat(R.styleable.FieldRating_android_stepSize, 0.5f));
-      setIsIndicator(typedArray.getBoolean(R.styleable.FieldRating_android_isIndicator, false));
+            val titleText = typedArray.getString(R.styleable.FieldRating_title)
+            val titleValueColor = typedArray.getColor(R.styleable.FieldRating_titleColor, 0)
+            val titleTextSize = typedArray.getDimensionPixelOffset(R.styleable.FieldRating_titleTextSize, 0)
+            val titleLineSize = typedArray.getDimensionPixelOffset(R.styleable.FieldRating_titleLineSize, 0)
+            val contentDescription = typedArray.getString(R.styleable.FieldRating_android_contentDescription)
+            setNumStars(typedArray.getInteger(R.styleable.FieldRating_android_numStars, 5))
+            setRating(typedArray.getFloat(R.styleable.FieldRating_android_rating, 0.0f))
+            setStepSize(typedArray.getFloat(R.styleable.FieldRating_android_stepSize, 0.5f))
+            setIsIndicator(typedArray.getBoolean(R.styleable.FieldRating_android_isIndicator, false))
 
-      typedArray.recycle();
+            typedArray.recycle()
 
-      setOrientation(LinearLayout.VERTICAL);
-      setGravity(Gravity.CENTER_VERTICAL);
+            titleText?.let { t -> this.title.setText(t) }
+            this.title.setColor(titleValueColor)
+            this.title.setTextSize(titleTextSize)
+            this.title.setLineSize(titleLineSize)
+            ratingBar.contentDescription = contentDescription
+            ratingBar.numStars = numStars
+            ratingBar.rating = rating
+            ratingBar.stepSize = stepSize
+            ratingBar.setIsIndicator(isIndicator)
+        }
+    }
 
-      this.title.setText(titleText);
-      this.title.setColor(titleValueColor);
-      this.title.setTextSize(titleTextSize);
-      this.title.setLineSize(titleLineSize);
-      ratingBar.setContentDescription(contentDescription);
-      ratingBar.setNumStars(numStars);
-      ratingBar.setRating(rating);
-      ratingBar.setStepSize(stepSize);
-      ratingBar.setIsIndicator(isIndicator);
-   }
-   
-   void init(Context context)
-   {
-      LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-      inflater.inflate(R.layout.field_rating, this, true);
+    private fun initialize(context: Context) {
+        val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        inflater.inflate(R.layout.field_rating, this, true)
 
-      title = findViewById(R.id.title);
-      ratingBar = findViewById(R.id.rating_bar);
-   }
+        title = findViewById(R.id.title)
+        ratingBar = findViewById(R.id.rating_bar)
+    }
 
-   public void setTitle(String title)
-   {
-      this.title.setText(title);
-   }
-   
-   public void setTitle(int resourceId)
-   {
-      title.setText(resourceId);
-   }
+    override fun setTitle(text: String) {
+        title.setText(text)
+    }
 
-   @Override
-   public String getTitle()
-   {
-      return title.getTitle();
-   }
+    override fun setTitle(resid: Int) {
+        title.setText(resid)
+    }
 
-   public void setTitleColor(int valueColor)
-   {
-      title.setColor(valueColor);
-   }
-   
-   public void setTitleTextSize(int textSize)
-   {
-      title.setTextSize(textSize);
-   }
-   
-   public void setLineSize(int lineSize)
-   {
-      title.setTextSize(lineSize);
-   }
+    override fun getTitle(): String {
+        return title.getTitle()
+    }
 
-   public void setContentDescription(String contentDescription)
-   {
-      ratingBar.setContentDescription(contentDescription);
-   }
+    override fun setTitleColor(valueColor: Int) {
+        title.setColor(valueColor)
+    }
 
-   public int getNumStars()
-   {
-      return numStars;
-   }
+    override fun setTitleTextSize(textSize: Int) {
+        title.setTextSize(textSize)
+    }
 
-   public void setNumStars(int numStars)
-   {
-      this.numStars = numStars;
-   }
+    fun setLineSize(lineSize: Int) {
+        title.setLineSize(lineSize)
+    }
 
-   public float getRating()
-   {
-      return rating;
-   }
+    fun setContentDescriptionX(contentDescription: String?) {
+        ratingBar.contentDescription = contentDescription
+    }
 
-   public void setRating(float rating)
-   {
-      this.rating = rating;
-      ratingBar.setRating(rating);
-   }
+    fun getNumStars(): Int {
+        return numStars
+    }
 
-   public float getStepSize()
-   {
-      return stepSize;
-   }
+    fun setNumStars(numStars: Int) {
+        this.numStars = numStars
+    }
 
-   public void setStepSize(float stepSize)
-   {
-      this.stepSize = stepSize;
-   }
+    fun getRating(): Float {
+        return rating
+    }
 
-   public boolean isIndicator()
-   {
-      return isIndicator;
-   }
+    fun setRating(rating: Float) {
+        this.rating = rating
+        ratingBar.rating = rating
+    }
 
-   public void setIsIndicator(boolean isIndicator)
-   {
-      this.isIndicator = isIndicator;
-   }
+    fun getStepSize(): Float {
+        return stepSize
+    }
 
-   public void setOnRatingBarChangeListener(OnRatingBarChangeListener onRatingBarChangeListener)
-   {
-      ratingBar.setOnRatingBarChangeListener(onRatingBarChangeListener);
-   }
+    fun setStepSize(stepSize: Float) {
+        this.stepSize = stepSize
+    }
+
+    fun isIndicator(): Boolean {
+        return isIndicator
+    }
+
+    fun setIsIndicator(isIndicator: Boolean) {
+        this.isIndicator = isIndicator
+    }
+
+    fun setOnRatingBarChangeListener(onRatingBarChangeListener: OnRatingBarChangeListener?) {
+        ratingBar.onRatingBarChangeListener = onRatingBarChangeListener
+    }
 }

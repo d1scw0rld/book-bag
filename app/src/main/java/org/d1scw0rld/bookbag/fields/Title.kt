@@ -1,104 +1,93 @@
-package org.d1scw0rld.bookbag.fields;
+package org.d1scw0rld.bookbag.fields
 
-import org.d1scw0rld.bookbag.R;
-import android.content.Context;
-import android.content.res.TypedArray;
-import android.util.AttributeSet;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.content.Context
+import android.util.AttributeSet
+import android.util.TypedValue
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.core.content.res.ResourcesCompat
+import org.d1scw0rld.bookbag.R
 
-public class Title extends LinearLayout
-{
-   TextView title;
-   LinearLayout line;
-   
-   public Title(Context context)
-   {
-      this(context, null);
-   }
+class Title @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+) : LinearLayout(context, attrs) {
 
-   public Title(Context context, AttributeSet attrs)
-   {
-      super(context, attrs);
-      if(!isInEditMode())
-      {
-         TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.Title, 0, 0);
-         String titleText = typedArray.getString(R.styleable.Title_text);
-         
-         int valueColor = typedArray.getColor(R.styleable.Title_color, getResources().getColor(android.R.color.black));
-         int textSize = typedArray.getDimensionPixelOffset(R.styleable.Title_textSize, 0);
-         int lineSize = typedArray.getDimensionPixelOffset(R.styleable.Title_lineSize, 0);
-         
-         typedArray.recycle();
+    private lateinit var title: TextView
+    private lateinit var line: LinearLayout
 
-         setOrientation(LinearLayout.VERTICAL);
-         setGravity(Gravity.CENTER_VERTICAL);
+    init {
+        if (!isInEditMode) {
+            val typedArray = context.obtainStyledAttributes(attrs, R.styleable.Title, 0, 0)
+            val titleText = typedArray.getString(R.styleable.Title_text)
+            val valueColor = typedArray.getColor(
+                R.styleable.Title_color,
+                ResourcesCompat.getColor(resources, android.R.color.black, context.theme)
+            )
+            val textSize = typedArray.getDimensionPixelOffset(R.styleable.Title_textSize, 0)
+            val lineSize = typedArray.getDimensionPixelOffset(R.styleable.Title_lineSize, 0)
+            typedArray.recycle()
 
-         init(context);
+            orientation = VERTICAL
+            gravity = Gravity.CENTER_VERTICAL
 
-         title.setText(titleText);
-         title.setTextColor(valueColor);
-         if(textSize > 0)
-            title.setTextSize(textSize);
+            initialize(context)
 
-         line.setBackgroundColor(valueColor);
-         android.view.ViewGroup.LayoutParams params = line.getLayoutParams();
-         // Changes the height and width to the specified *pixels*
-         if(lineSize > 0)
-         {
-            params.height = lineSize;
-            params.width = LayoutParams.MATCH_PARENT;
-            line.setLayoutParams(params);
-         }
-      }
-   }
+            title.text = titleText
+            title.setTextColor(valueColor)
+            if (textSize > 0) {
+                title.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize.toFloat())
+            }
 
-   private void init(Context context)
-   {
-      LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-      inflater.inflate(R.layout.title, this, true);
+            line.setBackgroundColor(valueColor)
+            val params = line.layoutParams
+            if (lineSize > 0 && params != null) {
+                params.height = lineSize
+                params.width = LayoutParams.MATCH_PARENT
+                line.layoutParams = params
+            }
+        }
+    }
 
-      title = findViewById(R.id.tv_title);
-      line = findViewById(R.id.ll_line);
-   }
+    private fun initialize(context: Context) {
+        val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        inflater.inflate(R.layout.title, this, true)
 
-   public void setText(String text)
-   {
-      title.setText(text);
-   }
+        title = findViewById(R.id.tv_title)
+        line = findViewById(R.id.ll_line)
+    }
 
-   public String getTitle()
-   {
-      return title.getText().toString();
-   }
+    fun setText(text: String?) {
+        title.text = text
+    }
 
-   public void setText(int resourceId)
-   {
-      title.setText(resourceId);
-   }
-   
-   public void setTextSize(int textSize)
-   {
-      if(textSize > 0)
-         title.setTextSize(textSize);
-   }
-   
-   public void setColor(int valueColor)
-   {
-      title.setTextColor(valueColor);
-      line.setBackgroundColor(valueColor);
-   }
-   
-   public void setLineSize(int lineSize)
-   {
-      android.view.ViewGroup.LayoutParams params = line.getLayoutParams();
-      if(lineSize > 0)
-      {
-         params.height = lineSize;
-         params.width = LayoutParams.MATCH_PARENT;
-         line.setLayoutParams(params);
-      }
-   }
+    fun getTitle(): String {
+        return title.text.toString()
+    }
+
+    fun setText(resourceId: Int) {
+        title.setText(resourceId)
+    }
+
+    fun setTextSize(textSize: Int) {
+        if (textSize > 0) {
+            title.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize.toFloat())
+        }
+    }
+
+    fun setColor(valueColor: Int) {
+        title.setTextColor(valueColor)
+        line.setBackgroundColor(valueColor)
+    }
+
+    fun setLineSize(lineSize: Int) {
+        val params = line.layoutParams
+        if (lineSize > 0 && params != null) {
+            params.height = lineSize
+            params.width = LayoutParams.MATCH_PARENT
+            line.layoutParams = params
+        }
+    }
 }
