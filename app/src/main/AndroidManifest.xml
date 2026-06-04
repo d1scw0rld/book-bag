@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    android:versionCode="1400100010"
-    android:versionName="1.0.1">
+    android:versionCode="210010100"
+    android:versionName="1.1.0">
+
+<!--    The first two digits represent the minimum API level for your APK.-->
+<!--    The next digit is for either screen sizes or GL texture formats (assign zero if you don’t need to use this).-->
+<!--    Then there are two digits for the major version, two for the minor and the last two for the patch version.-->
 
    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
