@@ -471,43 +471,43 @@ public class DBAdapter
       return getBooksOrderedBy(query);
    }
 
-   void insertBook(Book oBook)
+   void insertBook(Book book)
    {
       db.beginTransaction();
       try
       {
          ContentValues values = new ContentValues();
-         values.put(KEY_TTL, oBook.csTitle.value);
-         values.put(KEY_DSCR, oBook.csDescription.value);
-         values.put(KEY_VLM, oBook.ciVolume.value);
-         values.put(KEY_PBL_DT, oBook.ciPublicationDate.value);
-         values.put(KEY_PGS, oBook.ciPages.value);
-         values.put(KEY_PRC, oBook.csPrice.value);
-         values.put(KEY_VL, oBook.csValue.value);
-         values.put(KEY_DUE_DT, oBook.ciDueDate.value);
-         values.put(KEY_RD_DT, oBook.ciReadDate.value);
-         values.put(KEY_EDN, oBook.ciEdition.value);
-         values.put(KEY_ISBN, oBook.csISBN.value);
-         values.put(KEY_WEB, oBook.csWeb.value);
+         values.put(KEY_TTL, book.title.value);
+         values.put(KEY_DSCR, book.description.value);
+         values.put(KEY_VLM, book.volume.value);
+         values.put(KEY_PBL_DT, book.publicationDate.value);
+         values.put(KEY_PGS, book.pages.value);
+         values.put(KEY_PRC, book.price.value);
+         values.put(KEY_VL, book.value.value);
+         values.put(KEY_DUE_DT, book.dueDate.value);
+         values.put(KEY_RD_DT, book.readDate.value);
+         values.put(KEY_EDN, book.edition.value);
+         values.put(KEY_ISBN, book.isbn.value);
+         values.put(KEY_WEB, book.web.value);
 
-         long iBookID = db.insert(TABLE_BOOKS, null, values);
+         long bookId = db.insert(TABLE_BOOKS, null, values);
          
-         for(int i = 0; i < oBook.alProperties.size(); i++)
+         for(int i = 0; i < book.properties.size(); i++)
          {
-            if (oBook.alProperties.get(i).iID == 0)
+            if (book.properties.get(i).id == 0)
             {
                values = new ContentValues();
-               values.put(KEY_TP_ID, oBook.alProperties.get(i).iFieldTypeID);
-               values.put(KEY_NM, oBook.alProperties.get(i).sValue);
-               oBook.alProperties.get(i).iID = db.insert(TABLE_FIELDS, null, values);
+               values.put(KEY_TP_ID, book.properties.get(i).fieldTypeId);
+               values.put(KEY_NM, book.properties.get(i).value);
+               book.properties.get(i).id = db.insert(TABLE_FIELDS, null, values);
             }
          }
 
-         for (Property oProperty : oBook.alProperties)
+         for (Property property : book.properties)
          {
             values = new ContentValues();
-            values.put(KEY_FLD_ID, oProperty.iID);
-            values.put(KEY_BK_ID, iBookID);
+            values.put(KEY_FLD_ID, property.id);
+            values.put(KEY_BK_ID, bookId);
             db.insert(TABLE_BOOK_FIELDS, null, values);
          }
 
@@ -556,13 +556,13 @@ public class DBAdapter
       return alPropertyValues;
    }
 
-   Book getBook(long iBookID)
+   Book getBook(long bookId)
    {
-      Book oBook = null;
+      Book book = null;
 
       Cursor cursor = db.query(TABLE_BOOKS,
                                null,
-                               KEY_ID + " = " + iBookID,
+                               KEY_ID + " = " + bookId,
                                null,
                                null,
                                null,
@@ -570,7 +570,7 @@ public class DBAdapter
 
       if(cursor.moveToFirst())
       {
-         oBook = new Book(Integer.parseInt(cursor.getString(ID_KEY_ID)),
+         book = new Book(Integer.parseInt(cursor.getString(ID_KEY_ID)),
                           cursor.getString(ID_KEY_TTL),
                           cursor.getString(ID_KEY_DSCR),
                           Integer.parseInt(cursor.getString(ID_KEY_VLM)),
@@ -589,36 +589,36 @@ public class DBAdapter
 
       String sql = "SELECT f." + KEY_ID + ", f." + KEY_TP_ID + ", f." + KEY_NM
                    + " FROM " + TABLE_BOOK_FIELDS + " as bf LEFT JOIN " + TABLE_FIELDS + " AS f ON bf." + KEY_FLD_ID + " = f." + KEY_ID
-                   + " WHERE bf." + KEY_BK_ID + " = " + iBookID;
+                   + " WHERE bf." + KEY_BK_ID + " = " + bookId;
 
       cursor.close();
       cursor = db.rawQuery(sql, null);
 
-      Property oProperty;
+      Property property;
       if(cursor.moveToFirst())
       {
          do
          {
-            oProperty = new Property(Integer.parseInt(cursor.getString(ID_KEY_ID)),
+            property = new Property(Integer.parseInt(cursor.getString(ID_KEY_ID)),
                                      Integer.parseInt(cursor.getString(ID_KEY_TP_ID)),
                                      cursor.getString(ID_KEY_NM));
 
-            assert oBook != null;
-            oBook.alProperties.add(oProperty);
+            assert book != null;
+            book.properties.add(property);
          } while(cursor.moveToNext());
       }
       cursor.close();
 
-      return oBook;
+      return book;
    }
 
-   void deleteBook(long iBookID)
+   void deleteBook(long bookId)
    {
       db.beginTransaction();
       try
       {
-         db.delete(TABLE_BOOK_FIELDS, KEY_BK_ID + " = " + iBookID, null);
-         db.delete(TABLE_BOOKS, KEY_ID + " = " + iBookID, null);
+         db.delete(TABLE_BOOK_FIELDS, KEY_BK_ID + " = " + bookId, null);
+         db.delete(TABLE_BOOKS, KEY_ID + " = " + bookId, null);
 
          db.setTransactionSuccessful();
       }
@@ -634,48 +634,48 @@ public class DBAdapter
 
    }
 
-   void updateBook(Book oBook)
+   void updateBook(Book book)
    {
-      ContentValues oValues;
+      ContentValues values;
 
       db.beginTransaction();
       try
       {
-         for(Property oProperty : oBook.alProperties)
+         for(Property property : book.properties)
          {
-            if(oProperty.iID == 0)
+            if(property.id == 0)
             {
-               oValues = new ContentValues();
-               oValues.put(KEY_TP_ID, oProperty.iFieldTypeID);
-               oValues.put(KEY_NM, oProperty.sValue);
-               oProperty.iID = db.insert(TABLE_FIELDS, null, oValues);
+               values = new ContentValues();
+               values.put(KEY_TP_ID, property.fieldTypeId);
+               values.put(KEY_NM, property.value);
+               property.id = db.insert(TABLE_FIELDS, null, values);
             }
          }
 
-         db.delete(TABLE_BOOK_FIELDS, KEY_BK_ID + " = " + oBook.iID, null);
+         db.delete(TABLE_BOOK_FIELDS, KEY_BK_ID + " = " + book.id, null);
 
-         for(Property oProperty : oBook.alProperties)
+         for(Property property : book.properties)
          {
-            oValues = new ContentValues();
-            oValues.put(KEY_FLD_ID, oProperty.iID);
-            oValues.put(KEY_BK_ID, oBook.iID);
-            db.insert(TABLE_BOOK_FIELDS, null, oValues);
+            values = new ContentValues();
+            values.put(KEY_FLD_ID, property.id);
+            values.put(KEY_BK_ID, book.id);
+            db.insert(TABLE_BOOK_FIELDS, null, values);
          }
 
-         oValues = new ContentValues();
-         oValues.put(KEY_TTL, oBook.csTitle.value);
-         oValues.put(KEY_DSCR, oBook.csDescription.value);
-         oValues.put(KEY_VLM, oBook.ciVolume.value);
-         oValues.put(KEY_PBL_DT, oBook.ciPublicationDate.value);
-         oValues.put(KEY_PGS, oBook.ciPages.value);
-         oValues.put(KEY_PRC, oBook.csPrice.value);
-         oValues.put(KEY_VL, oBook.csValue.value);
-         oValues.put(KEY_DUE_DT, oBook.ciDueDate.value);
-         oValues.put(KEY_RD_DT, oBook.ciReadDate.value);
-         oValues.put(KEY_EDN, oBook.ciEdition.value);
-         oValues.put(KEY_ISBN, oBook.csISBN.value);
-         oValues.put(KEY_WEB, oBook.csWeb.value);
-         db.update(TABLE_BOOKS, oValues, KEY_ID + " = " + oBook.iID, null);
+         values = new ContentValues();
+         values.put(KEY_TTL, book.title.value);
+         values.put(KEY_DSCR, book.description.value);
+         values.put(KEY_VLM, book.volume.value);
+         values.put(KEY_PBL_DT, book.publicationDate.value);
+         values.put(KEY_PGS, book.pages.value);
+         values.put(KEY_PRC, book.price.value);
+         values.put(KEY_VL, book.value.value);
+         values.put(KEY_DUE_DT, book.dueDate.value);
+         values.put(KEY_RD_DT, book.readDate.value);
+         values.put(KEY_EDN, book.edition.value);
+         values.put(KEY_ISBN, book.isbn.value);
+         values.put(KEY_WEB, book.web.value);
+         db.update(TABLE_BOOKS, values, KEY_ID + " = " + book.id, null);
 
          db.setTransactionSuccessful();
       }

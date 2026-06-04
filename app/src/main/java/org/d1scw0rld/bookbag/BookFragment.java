@@ -21,7 +21,7 @@ import androidx.navigation.ui.NavigationUI;
 public class BookFragment extends BaseFragment implements IBackPressListener
 {
    private static final String SAVED_BOOK_ID  = "saved_book_id";
-   private long iBookID = 0;
+   private long bookId = 0;
 
    @Nullable
    @Override
@@ -41,9 +41,9 @@ public class BookFragment extends BaseFragment implements IBackPressListener
 
 
       if(savedInstanceState != null)
-         iBookID = savedInstanceState.getLong(SAVED_BOOK_ID);
+         bookId = savedInstanceState.getLong(SAVED_BOOK_ID);
       else
-         iBookID = getBookID();
+         bookId = getBookID();
 
       return view;
    }
@@ -51,17 +51,17 @@ public class BookFragment extends BaseFragment implements IBackPressListener
    @Override
    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
    {
-      view.findViewById(R.id.fab_edit_book).setOnClickListener(v -> navigateToEditBook(v, iBookID));
+      view.findViewById(R.id.fab_edit_book).setOnClickListener(v -> navigateToEditBook(v, bookId));
 
       if (savedInstanceState == null)
-         loadFragment(iBookID);
+         loadFragment(bookId);
    }
 
    @Override
    public void onSaveInstanceState(@NonNull Bundle outState)
    {
       super.onSaveInstanceState(outState);
-      outState.putLong(SAVED_BOOK_ID, iBookID);
+      outState.putLong(SAVED_BOOK_ID, bookId);
    }
 
    @Override
@@ -88,7 +88,7 @@ public class BookFragment extends BaseFragment implements IBackPressListener
       }
       else if(itemId == R.id.action_duplicate)
       {
-         navigateToEditBook(requireView(), iBookID, true);
+         navigateToEditBook(requireView(), bookId, true);
          return true;
       }
       else if(itemId == R.id.action_delete)
@@ -107,10 +107,10 @@ public class BookFragment extends BaseFragment implements IBackPressListener
       return true;
    }
 
-   private void loadFragment(long iBookID)
+   private void loadFragment(long bookId)
    {
       Bundle arguments = new Bundle();
-      arguments.putLong(BookDetailFragment.BOOK_ID, iBookID);
+      arguments.putLong(BookDetailFragment.BOOK_ID, bookId);
       BookDetailFragment fragment = new BookDetailFragment();
       fragment.setArguments(arguments);
       getChildFragmentManager().beginTransaction()
@@ -118,17 +118,17 @@ public class BookFragment extends BaseFragment implements IBackPressListener
                                .commitAllowingStateLoss();
    }
 
-   private void navigateToEditBook(View view, long iBookID)
+   private void navigateToEditBook(View view, long bookId)
    {
       BookFragmentDirections.ActionBookFragmentToEditBookFragment action = BookFragmentDirections.actionBookFragmentToEditBookFragment();
-      action.setBookID(iBookID);
+      action.setBookID(bookId);
       Navigation.findNavController(view).navigate(action);
    }
 
-   private void navigateToEditBook(View view, long iBookID, boolean isCopy)
+   private void navigateToEditBook(View view, long bookId, boolean isCopy)
    {
       BookFragmentDirections.ActionBookFragmentToEditBookFragment actionBookFragmentToEditBookFragment = BookFragmentDirections.actionBookFragmentToEditBookFragment();
-      actionBookFragmentToEditBookFragment.setBookID(iBookID);
+      actionBookFragmentToEditBookFragment.setBookID(bookId);
       actionBookFragmentToEditBookFragment.setIsCopy(isCopy);
       Navigation.findNavController(view).navigate(actionBookFragmentToEditBookFragment);
    }
@@ -149,7 +149,7 @@ public class BookFragment extends BaseFragment implements IBackPressListener
    {
       DBAdapter dbAdapter = new DBAdapter(getContext());
       dbAdapter.open();
-      dbAdapter.deleteBook(iBookID);
+      dbAdapter.deleteBook(bookId);
       dbAdapter.close();
    }
 }

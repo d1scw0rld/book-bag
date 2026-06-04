@@ -6,11 +6,11 @@ package org.d1scw0rld.bookbag.dto;
 
 public class Field
 {
-   public  int     iID;
-   public  String  sName;
+   public  int     id;
+   public  String  name;
    public  boolean isVisible  = false;
-   public  byte    iType;
-   public  int     iInputType = 0;
+   public  byte    type;
+   public  int     inputType = 0;
 
    public final static byte TYPE_TEXT              = 1,
                             TYPE_TEXT_AUTOCOMPLETE = 2,
@@ -23,19 +23,19 @@ public class Field
                             TYPE_CHECK_BOX         = 9;
    
    
-   public Field(int iID, String sName, boolean isVisible, byte iType)
+   public Field(int id, String name, boolean isVisible, byte type)
    {
-      this.iID = iID;
-      this.sName = sName;
+      this.id = id;
+      this.name = name;
       this.isVisible = isVisible;
-      this.iType = iType;
+      this.type = type;
    }
 
-   public Field(int iID, String sName, byte iType)
+   public Field(int id, String name, byte type)
    {
-      this.iID = iID;
-      this.sName = sName;      
-      this.iType = iType;
+      this.id = id;
+      this.name = name;      
+      this.type = type;
    }
 
    public Field setVisibility(boolean isVisible)
@@ -44,11 +44,9 @@ public class Field
       return this;
    }
    
-   public Field setInputType(int iInputType)
+   public Field setInputType(int inputType)
    {
-      this.iInputType = iInputType;
+      this.inputType = inputType;
       return this;
    }
-
-   
 }

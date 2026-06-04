@@ -38,7 +38,7 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
    private final Book book;
    private final DBAdapter dbAdapter;
 
-   private View vPrevious = null;
+   private View previousView = null;
 
    public FieldsFactory(Context context, Book book, DBAdapter dbAdapter)
    {
@@ -49,62 +49,62 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
 
    public void addFieldText(ViewGroup rootView, Field field)
    {
-      switch(field.iID)
+      switch(field.id)
       {
          case DBAdapter.FLD_TITLE:
-            addFieldText(rootView, field, book.csTitle);
+            addFieldText(rootView, field, book.title);
             break;
 
          case DBAdapter.FLD_DESCRIPTION:
-            addFieldText(rootView, field, book.csDescription);
+            addFieldText(rootView, field, book.description);
             break;
 
          case DBAdapter.FLD_VOLUME:
-            addFieldText(rootView, field, book.ciVolume);
+            addFieldText(rootView, field, book.volume);
             break;
 
          case DBAdapter.FLD_PAGES:
-            addFieldText(rootView, field, book.ciPages);
+            addFieldText(rootView, field, book.pages);
             break;
 
          case DBAdapter.FLD_EDITION:
-            addFieldText(rootView, field, book.ciEdition);
+            addFieldText(rootView, field, book.edition);
             break;
 
          case DBAdapter.FLD_ISBN:
-            addFieldText(rootView, field, book.csISBN);
+            addFieldText(rootView, field, book.isbn);
             break;
 
          case DBAdapter.FLD_WEB:
-            addFieldText(rootView, field, book.csWeb);
+            addFieldText(rootView, field, book.web);
             break;
 
          default:
       }
    }
 
-   public  <T> void addFieldText(ViewGroup rootView, Field field, final Changeable<T> cValue)
+   public  <T> void addFieldText(ViewGroup rootView, Field field, final Changeable<T> changeableValue)
    {
       final FieldEditTextUpdatableClearable fieldEditTextUpdatableClearable = new FieldEditTextUpdatableClearable(context);
 
-      fieldEditTextUpdatableClearable.setTitle(field.sName);
+      fieldEditTextUpdatableClearable.setTitle(field.name);
       fieldEditTextUpdatableClearable.setTitleColor(ResourcesCompat.getColor(context.getResources(), R.color.primary, null));
-      fieldEditTextUpdatableClearable.setText(cValue.toString());
-      fieldEditTextUpdatableClearable.setHint(field.sName);
-      fieldEditTextUpdatableClearable.setInputType(field.iInputType);
-      if(field.iID == DBAdapter.FLD_TITLE)
+      fieldEditTextUpdatableClearable.setText(changeableValue.toString());
+      fieldEditTextUpdatableClearable.setHint(field.name);
+      fieldEditTextUpdatableClearable.setInputType(field.inputType);
+      if(field.id == DBAdapter.FLD_TITLE)
       {
-         vPrevious = fieldEditTextUpdatableClearable.findViewById(R.id.editTextX);
+         previousView = fieldEditTextUpdatableClearable.findViewById(R.id.editTextX);
       }
       fieldEditTextUpdatableClearable.setUpdateListener(editText -> {
-         Class<?> c = cValue.getGenericType();
+         Class<?> genericTypeClass = changeableValue.getGenericType();
          Class<?> clazz;
          Object object;
          try
          {
-            clazz = Class.forName(c.getName());
-            Constructor<?> ctor = clazz.getConstructor(String.class);
-            object = ctor.newInstance(editText.getText()
+            clazz = Class.forName(genericTypeClass.getName());
+            Constructor<?> constructor = clazz.getConstructor(String.class);
+            object = constructor.newInstance(editText.getText()
                                         .toString()
                                         .trim());
 
@@ -121,43 +121,43 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
             return;
          }
 
-         cValue.value = (T) object;
+         changeableValue.value = (T) object;
       });
       rootView.addView(fieldEditTextUpdatableClearable);
-      if(!field.isVisible && cValue.isEmpty())
-         hideField(fieldEditTextUpdatableClearable, field.sName);
+      if(!field.isVisible && changeableValue.isEmpty())
+         hideField(fieldEditTextUpdatableClearable, field.name);
    }
 
    public void addAutocompleteField(ViewGroup rootView, final Field field)
    {
       final FieldAutoCompleteTextView fieldAutoCompleteTextView = new FieldAutoCompleteTextView(context);
-      fieldAutoCompleteTextView.setTitle(field.sName);
+      fieldAutoCompleteTextView.setTitle(field.name);
       fieldAutoCompleteTextView.setTitleColor(ResourcesCompat.getColor(context.getResources(), R.color.primary, null));
-      fieldAutoCompleteTextView.setHint(field.sName);
-      View view = new View(context);
-      view.setNextFocusDownId(fieldAutoCompleteTextView.getId());
+      fieldAutoCompleteTextView.setHint(field.name);
+      View focusDummyView = new View(context);
+      focusDummyView.setNextFocusDownId(fieldAutoCompleteTextView.getId());
 
-      final ArrayList<Property> propertyValues = getPropertyValues(field.iID, true);
-      Property property = new Property(field.iID);
+      final ArrayList<Property> propertyValues = getPropertyValues(field.id, true);
+      Property property = new Property(field.id);
 
-      for(int i = 0; property.iID == 0 && i < book.alProperties.size(); i++)
+      for(int i = 0; property.id == 0 && i < book.properties.size(); i++)
       {
-         if(field.iID == book.alProperties.get(i).iFieldTypeID)
-            property = book.alProperties.get(i);
+         if(field.id == book.properties.get(i).fieldTypeId)
+            property = book.properties.get(i);
       }
 
-      if(property.iID == 0) // The book has not such a property
-         book.alProperties.add(property);
+      if(property.id == 0) // The book has no such property
+         book.properties.add(property);
       else
-         fieldAutoCompleteTextView.setText(property.sValue);
+         fieldAutoCompleteTextView.setText(property.value);
 
       fieldAutoCompleteTextView.setTag(property);
 
       FilteredArrayAdapter<Property> filteredArrayAdapter = new FilteredArrayAdapter<>(context, R.layout.dropdown, propertyValues);
       fieldAutoCompleteTextView.setAdapter(filteredArrayAdapter);
       fieldAutoCompleteTextView.setOnItemClickListener((adapter, view1, position, rowId) -> {
-         Property fldSelected = (Property) adapter.getItemAtPosition(position);
-         ((Property) fieldAutoCompleteTextView.getTag()).copy(fldSelected);
+         Property selectedField = (Property) adapter.getItemAtPosition(position);
+         ((Property) fieldAutoCompleteTextView.getTag()).copy(selectedField);
       });
       fieldAutoCompleteTextView.setUpdateListener(editText -> {
          boolean isFound = false;
@@ -166,7 +166,7 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
             if(editText.getText()
                  .toString()
                  .trim()
-                 .equalsIgnoreCase(p.sValue))
+                 .equalsIgnoreCase(p.value))
             {
                isFound = true;
                ((Property) fieldAutoCompleteTextView.getTag()).copy(p);
@@ -175,35 +175,35 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
          }
          if(!isFound)
          {
-            ((Property) fieldAutoCompleteTextView.getTag()).iID = 0;
-            ((Property) fieldAutoCompleteTextView.getTag()).sValue = editText.getText()
+            ((Property) fieldAutoCompleteTextView.getTag()).id = 0;
+            ((Property) fieldAutoCompleteTextView.getTag()).value = editText.getText()
                                                                        .toString();
          }
       });
 
       rootView.addView(fieldAutoCompleteTextView);
-      if(!field.isVisible && property.sValue.trim()
+      if(!field.isVisible && property.value.trim()
                                             .isEmpty())
-         hideField(fieldAutoCompleteTextView, field.sName);
+         hideField(fieldAutoCompleteTextView, field.name);
    }
 
    public void addFieldSpinner(ViewGroup rootView, Field field)
    {
       final FieldSpinner fieldSpinner = new FieldSpinner(context);
 
-      fieldSpinner.setTitle(field.sName);
+      fieldSpinner.setTitle(field.name);
       fieldSpinner.setTitleColor(ResourcesCompat.getColor(context.getResources(), R.color.primary, null));
 
-      Property property = new Property(field.iID);
-      final ArrayList<Property> propertyValues = getPropertyValues(field.iID);
+      Property property = new Property(field.id);
+      final ArrayList<Property> propertyValues = getPropertyValues(field.id);
 
-      for(int i = 0; i < book.alProperties.size() && (property.iID == 0 || property.iFieldTypeID != field.iID); i++)
+      for(int i = 0; i < book.properties.size() && (property.id == 0 || property.fieldTypeId != field.id); i++)
       {
-         if(book.alProperties.get(i).iFieldTypeID == field.iID)
-            property = book.alProperties.get(i);
+         if(book.properties.get(i).fieldTypeId == field.id)
+            property = book.properties.get(i);
       }
-      if(property.iID == 0) // The book has not such a property
-         book.alProperties.add(property);
+      if(property.id == 0) // The book has no such property
+         book.properties.add(property);
 
       ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(context, R.layout.spinner_item)
       {
@@ -237,21 +237,21 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
          }
       };
       arrayAdapter.setDropDownViewResource(R.layout.dropdown);
-      arrayAdapter.add(field.sName);
+      arrayAdapter.add(field.name);
       for(Property propertyOfType : propertyValues)
       {
-         arrayAdapter.add(propertyOfType.sValue);
+         arrayAdapter.add(propertyOfType.value);
       }
 
       fieldSpinner.setAdapter(arrayAdapter);
-      int iSelected = 0;
+      int selectedPosition = 0;
       for(int i = 0; i < propertyValues.size(); i++)
       {
          if(propertyValues.get(i)
                           .equals(property))
-            iSelected = i + 1;
+            selectedPosition = i + 1;
       }
-      fieldSpinner.setSelection(iSelected);
+      fieldSpinner.setSelection(selectedPosition);
       fieldSpinner.setTag(property);
       fieldSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
       {
@@ -269,40 +269,40 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
       });
 
       rootView.addView(fieldSpinner);
-      if(!field.isVisible && property.iID == 0)
-         hideField(fieldSpinner, field.sName);
+      if(!field.isVisible && property.id == 0)
+         hideField(fieldSpinner, field.name);
    }
 
    public void addFieldMultiText(ViewGroup rootView, final Field field)
    {
       final FieldMultiText fieldMultiText = new FieldMultiText(context);
       fieldMultiText.setId(View.generateViewId());
-      if(vPrevious != null)
-         vPrevious.setNextFocusDownId(R.id.et_author_1);
-      String[] tsNames = field.sName.split("\\|");
-      fieldMultiText.setTitle(tsNames.length > 1 ? tsNames[1] : field.sName);
+      if(previousView != null)
+         previousView.setNextFocusDownId(R.id.et_author_1);
+      String[] splitNames = field.name.split("\\|");
+      fieldMultiText.setTitle(splitNames.length > 1 ? splitNames[1] : field.name);
       fieldMultiText.setTitleColor(ResourcesCompat.getColor(context.getResources(), R.color.primary, null));
-      fieldMultiText.setHint(tsNames[0]);
+      fieldMultiText.setHint(splitNames[0]);
 
-      final ArrayList<Property> propertyValues = getPropertyValues(field.iID, true);
-      final ArrayList<Property> alItemsValues = new ArrayList<>(propertyValues);
+      final ArrayList<Property> propertyValues = getPropertyValues(field.id, true);
+      final ArrayList<Property> itemValues = new ArrayList<>(propertyValues);
 
-      final FilteredArrayAdapter<Property> filteredArrayAdapter = new FilteredArrayAdapter<>(context, R.layout.dropdown, alItemsValues);
+      final FilteredArrayAdapter<Property> filteredArrayAdapter = new FilteredArrayAdapter<>(context, R.layout.dropdown, itemValues);
 
       fieldMultiText.setOnAddRemoveListener(new FieldMultiText.OnAddRemoveFieldListener()
       {
          @Override
          public void onFieldRemove(View view)
          {
-            book.alProperties.remove((Property) view.getTag());
+            book.properties.remove((Property) view.getTag());
          }
 
          @Override
          public void onAddNewField(View view)
          {
-            Property fldNew = new Property(field.iID);
-            book.alProperties.add(fldNew);
-            view.setTag(fldNew);
+            Property fieldNew = new Property(field.id);
+            book.properties.add(fieldNew);
+            view.setTag(fieldNew);
          }
 
          @Override
@@ -311,7 +311,7 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
             boolean isExists = false;
             for(Property property : propertyValues)
             {
-               if(property.sValue.trim()
+               if(property.value.trim()
                                  .equalsIgnoreCase(value.trim()))
                {
                   ((Property) view.getTag()).copy(property);
@@ -321,8 +321,8 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
             }
             if(!isExists)
             {
-               ((Property) view.getTag()).iID = 0;
-               ((Property) view.getTag()).sValue = value;
+               ((Property) view.getTag()).id = 0;
+               ((Property) view.getTag()).value = value;
             }
          }
 
@@ -333,59 +333,59 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
          }
       });
 
-      fieldMultiText.setItems(filteredArrayAdapter, book.alProperties);
+      fieldMultiText.setItems(filteredArrayAdapter, book.properties);
 
       rootView.addView(fieldMultiText);
       fieldMultiText.clearFocus();
 
-      if(!field.isVisible && hasNotPropertiesOfType(field.iID))
-         hideField(fieldMultiText, field.sName);
+      if(!field.isVisible && hasNotPropertiesOfType(field.id))
+         hideField(fieldMultiText, field.name);
    }
 
    public void addFieldMultiSpinner(ViewGroup rootView, final Field field)
    {
       final FieldMultiSpinner fieldMultiSpinner = new FieldMultiSpinner(context);
-      String[] tsNames = field.sName.split("\\|");
-      fieldMultiSpinner.setTitle(tsNames.length > 1 ? tsNames[1] : field.sName);
+      String[] splitNames = field.name.split("\\|");
+      fieldMultiSpinner.setTitle(splitNames.length > 1 ? splitNames[1] : field.name);
       fieldMultiSpinner.setTitleColor(ResourcesCompat.getColor(context.getResources(), R.color.primary, null));
-      fieldMultiSpinner.setHint(tsNames.length > 1 ? tsNames[1] : field.sName);
+      fieldMultiSpinner.setHint(splitNames.length > 1 ? splitNames[1] : field.name);
 
-      final ArrayList<Property> propertyValues = getPropertyValues(field.iID);
-      ArrayList<FieldMultiSpinner.Item> alItems = new ArrayList<>();
+      final ArrayList<Property> propertyValues = getPropertyValues(field.id);
+      ArrayList<FieldMultiSpinner.Item> spinnerItems = new ArrayList<>();
       for(Property property : propertyValues)
       {
-         FieldMultiSpinner.Item item = new FieldMultiSpinner.Item(property.sValue);
-         item.setSelected(book.alProperties.contains(property));
-         alItems.add(item);
+         FieldMultiSpinner.Item item = new FieldMultiSpinner.Item(property.value);
+         item.setSelected(book.properties.contains(property));
+         spinnerItems.add(item);
       }
 
-      fieldMultiSpinner.setItems(alItems);
+      fieldMultiSpinner.setItems(spinnerItems);
       fieldMultiSpinner.setOnUpdateListener(item -> {
          boolean isFound = false;
          for(Property propertyValue : propertyValues)
          {
-            if(propertyValue.sValue.equalsIgnoreCase(item.getTitle()))
+            if(propertyValue.value.equalsIgnoreCase(item.getTitle()))
             {
                isFound = true;
                if(item.isSelected())
-                  book.alProperties.add(propertyValue);
+                  book.properties.add(propertyValue);
                else
-                  book.alProperties.remove(propertyValue);
+                  book.properties.remove(propertyValue);
                break;
             }
          }
          if(!isFound)
          {
-            Property newPropertyValue = new Property(field.iID, item.getTitle());
-            propertyValues.add(newPropertyValue);
-            book.alProperties.add(newPropertyValue);
+            Property newProperty = new Property(field.id, item.getTitle());
+            propertyValues.add(newProperty);
+            book.properties.add(newProperty);
          }
       });
 
       rootView.addView(fieldMultiSpinner);
 
-      if(!field.isVisible && hasNotPropertiesOfType(field.iID))
-         hideField(fieldMultiSpinner, tsNames.length > 1 ? tsNames[1] : field.sName);
+      if(!field.isVisible && hasNotPropertiesOfType(field.id))
+         hideField(fieldMultiSpinner, splitNames.length > 1 ? splitNames[1] : field.name);
 
    }
 
@@ -393,18 +393,18 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
    public void addFieldMoney(ViewGroup rootView, Field field)
    {
       final FieldMoney fieldMoney = new FieldMoney(context);
-      fieldMoney.setTitle(field.sName);
+      fieldMoney.setTitle(field.name);
       fieldMoney.setTitleColor(ResourcesCompat.getColor(context.getResources(), R.color.primary, null));
-      fieldMoney.setHint(field.sName);
+      fieldMoney.setHint(field.name);
 
-      switch(field.iID)
+      switch(field.id)
       {
          case DBAdapter.FLD_PRICE:
-            fieldMoney.setTag(book.csPrice);
+            fieldMoney.setTag(book.price);
             break;
 
          case DBAdapter.FLD_VALUE:
-            fieldMoney.setTag(book.csValue);
+            fieldMoney.setTag(book.value);
             break;
 
          default:
@@ -412,28 +412,28 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
       }
 
       final Price price = new Price(((Changeable<String>) fieldMoney.getTag()).value);
-      if(price.iValue != 0)
-         fieldMoney.setValue(price.iValue);
+      if(price.value != 0)
+         fieldMoney.setValue(price.value);
 
-      final ArrayList<Property> alCurrencies = getPropertyValues(DBAdapter.FLD_CURRENCY);
-      int iSelected = 0;
+      final ArrayList<Property> currencies = getPropertyValues(DBAdapter.FLD_CURRENCY);
+      int selectedPosition = 0;
       ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(context, R.layout.spinner_item);
-      for(int i = 0; i < alCurrencies.size(); i++)
+      for(int i = 0; i < currencies.size(); i++)
       {
-         arrayAdapter.add(alCurrencies.get(i).sValue);
-         if(price.iCurrencyID == alCurrencies.get(i).iID)
-            iSelected = i;
+         arrayAdapter.add(currencies.get(i).value);
+         if(price.currencyId == currencies.get(i).id)
+            selectedPosition = i;
       }
 
       fieldMoney.setAdapter(arrayAdapter);
-      fieldMoney.setSelection(iSelected);
+      fieldMoney.setSelection(selectedPosition);
 
       fieldMoney.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
       {
          @Override
          public void onItemSelected(AdapterView<?> parent, View view, int pos, long id)
          {
-            price.iCurrencyID = alCurrencies.get(pos).iID;
+            price.currencyId = currencies.get(pos).id;
             ((Changeable<String>) fieldMoney.getTag()).value = price.toString();
          }
 
@@ -444,21 +444,20 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
       });
 
       fieldMoney.setUpdateListener(editText -> {
-         String sValue = editText.getText()
+         String valueStr = editText.getText()
                            .toString();
-         int iValue;
-         if(sValue.isEmpty() || sValue.matches("-|,|-,"))
-            iValue = 0;
+         int intValue;
+         if(valueStr.isEmpty() || valueStr.matches("-|,|-,"))
+            intValue = 0;
          else
          {
-            String[] tsValue = sValue.split(String.format("\\%s", DBAdapter.separator));
-//               String [] tsValue = sValue.split("\\.");
+            String[] valueParts = valueStr.split(String.format("\\%s", DBAdapter.separator));
 
-            iValue = (tsValue[0].isEmpty() ? 0 : Integer.valueOf(tsValue[0]) * 100) + (tsValue.length == 2 ?
-                  (sValue.contains("-") ? -1 : 1) * (tsValue[1].length() == 1 ? 10 : 1) * Integer.valueOf(tsValue[1]) : 0);
+            intValue = (valueParts[0].isEmpty() ? 0 : Integer.valueOf(valueParts[0]) * 100) + (valueParts.length == 2 ?
+                  (valueStr.contains("-") ? -1 : 1) * (valueParts[1].length() == 1 ? 10 : 1) * Integer.valueOf(valueParts[1]) : 0);
          }
 
-         price.iValue = iValue;
+         price.value = intValue;
          ((Changeable<String>) fieldMoney.getTag()).value = price.toString();
 
       });
@@ -466,7 +465,7 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
       rootView.addView(fieldMoney);
 
       if(!field.isVisible && ((Changeable<?>) fieldMoney.getTag()).isEmpty())
-         hideField(fieldMoney, field.sName);
+         hideField(fieldMoney, field.name);
 
    }
 
@@ -476,18 +475,18 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
 
       FieldDate fieldDate;
 
-      switch(field.iID)
+      switch(field.id)
       {
          case DBAdapter.FLD_READ_DATE:
-            date = new Date(book.ciReadDate.value);
+            date = new Date(book.readDate.value);
             fieldDate = new FieldDate(context);
-            fieldDate.setTag(book.ciReadDate);
+            fieldDate.setTag(book.readDate);
             break;
 
          case DBAdapter.FLD_DUE_DATE:
-            date = new Date(book.ciDueDate.value);
+            date = new Date(book.dueDate.value);
             fieldDate = new FieldDate(context);
-            fieldDate.setTag(book.ciDueDate);
+            fieldDate.setTag(book.dueDate);
             break;
 
          default:
@@ -495,9 +494,9 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
 
       }
 
-      fieldDate.setTitle(field.sName);
+      fieldDate.setTitle(field.name);
       fieldDate.setTitleColor(ResourcesCompat.getColor(context.getResources(), R.color.primary, null));
-      fieldDate.setHint(field.sName);
+      fieldDate.setHint(field.name);
       fieldDate.setDate(date);
 
       fieldDate.setUpdateListener(new FieldDate.OnUpdateListener()
@@ -509,16 +508,16 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
 
          @SuppressWarnings("unchecked")
          @Override
-         public void onUpdate(FieldDate oFieldDate)
+         public void onUpdate(FieldDate fieldDateObj)
          {
-            ((Changeable<Integer>) oFieldDate.getTag()).value = oFieldDate.getDate()
+            ((Changeable<Integer>) fieldDateObj.getTag()).value = fieldDateObj.getDate()
                                                                           .toInt();
          }
       });
       rootView.addView(fieldDate);
 
       if(!field.isVisible && ((Changeable<Integer>) fieldDate.getTag()).value == 0)
-         hideField(fieldDate, field.sName);
+         hideField(fieldDate, field.name);
 
    }
 
@@ -526,25 +525,25 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
    {
       final FieldRating fieldRating = new FieldRating(context);
 
-      fieldRating.setTitle(field.sName);
+      fieldRating.setTitle(field.name);
       fieldRating.setTitleColor(ResourcesCompat.getColor(context.getResources(), R.color.primary, null));
 
-      final ArrayList<Property> propertyValues = getPropertyValues(field.iID);
-      Property property = new Property(field.iID);
+      final ArrayList<Property> propertyValues = getPropertyValues(field.id);
+      Property property = new Property(field.id);
 
       // Looking in book property collection for property of type
-      for(int i = 0; property.iID == 0 && i < book.alProperties.size(); i++)
+      for(int i = 0; property.id == 0 && i < book.properties.size(); i++)
       {
-         if(field.iID == book.alProperties.get(i).iFieldTypeID)
-            property = book.alProperties.get(i);
+         if(field.id == book.properties.get(i).fieldTypeId)
+            property = book.properties.get(i);
       }
 
-      if(property.iID == 0) // The book has not such a property
-         book.alProperties.add(property);
+      if(property.id == 0) // The book has no such property
+         book.properties.add(property);
       else
       {
-         float fRating = Float.parseFloat(property.sValue);
-         fieldRating.setRating(fRating);
+         float ratingValue = Float.parseFloat(property.value);
+         fieldRating.setRating(ratingValue);
       }
       fieldRating.setTag(property);
 
@@ -555,11 +554,11 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
                                      float rating,
                                      boolean fromUser)
          {
-            String sValue = String.valueOf(rating);
+            String ratingStr = String.valueOf(rating);
             boolean isFound = false;
             for(Property propertyOfType : propertyValues)
             {
-               if(propertyOfType.sValue.equalsIgnoreCase(sValue))
+               if(propertyOfType.value.equalsIgnoreCase(ratingStr))
                {
                   isFound = true;
                   ((Property) fieldRating.getTag()).copy(propertyOfType);
@@ -568,41 +567,41 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
             }
             if(!isFound)
             {
-               ((Property) fieldRating.getTag()).iID = 0;
-               ((Property) fieldRating.getTag()).sValue = sValue;
+               ((Property) fieldRating.getTag()).id = 0;
+               ((Property) fieldRating.getTag()).value = ratingStr;
             }
          }
       });
 
       rootView.addView(fieldRating);
 
-      if(!field.isVisible && property.sValue.trim().isEmpty())
-         hideField(fieldRating, field.sName);
+      if(!field.isVisible && property.value.trim().isEmpty())
+         hideField(fieldRating, field.name);
    }
 
    public void addFieldCheckBox(ViewGroup rootView, Field field)
    {
       final FieldCheckBox fieldCheckBox = new FieldCheckBox(context);
 
-      fieldCheckBox.setTitle(field.sName);
+      fieldCheckBox.setTitle(field.name);
       fieldCheckBox.setTitleColor(ResourcesCompat.getColor(context.getResources(), R.color.primary, null));
 
-      final ArrayList<Property> propertyValues = getPropertyValues(field.iID);
-      Property property = new Property(field.iID);
+      final ArrayList<Property> propertyValues = getPropertyValues(field.id);
+      Property property = new Property(field.id);
 
       // Looking in book property collection for property of type
-      for(int i = 0; property.iID == 0 && i < book.alProperties.size(); i++)
+      for(int i = 0; property.id == 0 && i < book.properties.size(); i++)
       {
-         if(field.iID == book.alProperties.get(i).iFieldTypeID)
-            property = book.alProperties.get(i);
+         if(field.id == book.properties.get(i).fieldTypeId)
+            property = book.properties.get(i);
       }
 
-      if(property.iID == 0) // The book has not such a property
-         book.alProperties.add(property);
+      if(property.id == 0) // The book has no such property
+         book.properties.add(property);
       else
       {
-         boolean bValue = Boolean.parseBoolean(property.sValue);
-         fieldCheckBox.setChecked(bValue);
+         boolean checkedValue = Boolean.parseBoolean(property.value);
+         fieldCheckBox.setChecked(checkedValue);
       }
       fieldCheckBox.setTag(property);
 
@@ -612,11 +611,11 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
          @Override
          public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
          {
-            String sValue = String.valueOf(isChecked);
+            String checkedStr = String.valueOf(isChecked);
             boolean isFound = false;
             for(Property propertyValue : propertyValues)
             {
-               if(propertyValue.sValue.equalsIgnoreCase(sValue))
+               if(propertyValue.value.equalsIgnoreCase(checkedStr))
                {
                   isFound = true;
                   ((Property) fieldCheckBox.getTag()).copy(propertyValue);
@@ -625,46 +624,41 @@ public class FieldsFactory extends BaseObservable<FieldsFactory.Listener>
             }
             if(!isFound)
             {
-               ((Property) fieldCheckBox.getTag()).iID = 0;
-               ((Property) fieldCheckBox.getTag()).sValue = sValue;
+               ((Property) fieldCheckBox.getTag()).id = 0;
+               ((Property) fieldCheckBox.getTag()).value = checkedStr;
             }
          }
       });
 
       rootView.addView(fieldCheckBox);
 
-      if(!field.isVisible && property.sValue.trim().isEmpty())
-         hideField(fieldCheckBox, field.sName);
+      if(!field.isVisible && property.value.trim().isEmpty())
+         hideField(fieldCheckBox, field.name);
    }
 
-   public ArrayList<Property> getPropertyValues(int fieldID)
+   public ArrayList<Property> getPropertyValues(int fieldId)
    {
-      return dbAdapter.getPropertyValues(fieldID);
+      return dbAdapter.getPropertyValues(fieldId);
    }
 
-   private ArrayList<Property> getPropertyValues(int fieldID, boolean isOrdered)
+   private ArrayList<Property> getPropertyValues(int fieldId, boolean isOrdered)
    {
-      return  dbAdapter.getPropertyValues(fieldID, true);
+      return  dbAdapter.getPropertyValues(fieldId, true);
    }
 
    private void hideField(View view, String name)
    {
-
       view.setVisibility(View.GONE);
       for(Listener listener : getListeners())
          listener.onFieldHide(view, name);
-
-//      pmHiddenFields.getMenu()
-//                    .add(Menu.NONE, pmHiddenFields.getMenu().size(), 0, sName);
-//      hmHiddenFileds.put(pmHiddenFields.getMenu().getItem(pmHiddenFields.getMenu().size() - 1), view);
    }
 
-   private boolean hasNotPropertiesOfType(int iTypeID)
+   private boolean hasNotPropertiesOfType(int typeId)
    {
       boolean hasPropertiesOfType = false;
-      for(Property property : book.alProperties)
+      for(Property property : book.properties)
       {
-         if(property.iFieldTypeID == iTypeID)
+         if(property.fieldTypeId == typeId)
          {
             hasPropertiesOfType = true;
             break;

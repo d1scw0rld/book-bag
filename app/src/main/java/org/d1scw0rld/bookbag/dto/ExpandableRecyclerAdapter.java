@@ -8,17 +8,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.annotation.UiThread;
-import androidx.recyclerview.widget.RecyclerView;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdapter.ListItem> extends RecyclerView.Adapter<ExpandableRecyclerAdapter.ViewHolder>
 {
-   Context mContext;
-   List<T> allItems = new ArrayList<>();
-   List<T> visibleItems = new ArrayList<>();
+   protected Context context;
+   protected List<T> allItems = new ArrayList<>();
+   protected List<T> visibleItems = new ArrayList<>();
    private List<Integer> indexList = new ArrayList<>();
    private SparseIntArray expandMap = new SparseIntArray();
    private int mode;
@@ -30,18 +27,18 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
 
    ExpandableRecyclerAdapter(Context context)
    {
-      mContext = context;
+      this.context = context;
    }
 
-   static class ListItem
+   public static class ListItem
    {
-      int ItemType;
-      String sText;
+      public int itemType;
+      public String text;
 
-      ListItem(int itemType, String sName)
+      ListItem(int itemType, String text)
       {
-         ItemType = itemType;
-         this.sText = sName;
+         this.itemType = itemType;
+         this.text = text;
       }
       
    }
@@ -58,12 +55,12 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
       return visibleItems == null ? 0 : visibleItems.size();
    }
 
-   protected View inflate(int resourceID, ViewGroup viewGroup)
+   protected View inflate(int resourceId, ViewGroup viewGroup)
    {
-      return LayoutInflater.from(mContext).inflate(resourceID, viewGroup, false);
+      return LayoutInflater.from(context).inflate(resourceId, viewGroup, false);
    }
 
-   static class ViewHolder extends RecyclerView.ViewHolder
+   public static class ViewHolder extends RecyclerView.ViewHolder
    {
       ViewHolder(View view)
       {
@@ -153,7 +150,7 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
       int index = indexList.get(position);
       int insert = position;
 
-      for(int i = index + 1; i < allItems.size() && allItems.get(i).ItemType != TYPE_HEADER; i++)
+      for(int i = index + 1; i < allItems.size() && allItems.get(i).itemType != TYPE_HEADER; i++)
       {
          insert++;
          count++;
@@ -178,7 +175,7 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
       int index = indexList.get(position);
 
       for(int i = index + 1; i < allItems.size()
-               && allItems.get(i).ItemType != TYPE_HEADER; i++)
+               && allItems.get(i).itemType != TYPE_HEADER; i++)
       {
          count++;
          visibleItems.remove(position + 1);
@@ -205,7 +202,7 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
    @Override
    public int getItemViewType(int position)
    {
-      return visibleItems.get(position).ItemType;
+      return visibleItems.get(position).itemType;
    }
 
    void setItems(List<T> items)
@@ -217,7 +214,7 @@ public abstract class ExpandableRecyclerAdapter<T extends ExpandableRecyclerAdap
 
       for(int i = 0; i < items.size(); i++)
       {
-         if(items.get(i).ItemType == TYPE_HEADER)
+         if(items.get(i).itemType == TYPE_HEADER)
          {
             indexList.add(i);
             visibleItems.add(items.get(i));

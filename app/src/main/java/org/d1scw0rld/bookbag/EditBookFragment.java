@@ -1,6 +1,5 @@
 package org.d1scw0rld.bookbag;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -9,15 +8,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
-
-import org.d1scw0rld.bookbag.dto.Book;
-import org.d1scw0rld.bookbag.dto.Field;
-import org.d1scw0rld.bookbag.fields.FieldEditTextUpdatableClearable;
-
-import java.util.HashMap;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,6 +20,12 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
+import org.d1scw0rld.bookbag.dto.Book;
+import org.d1scw0rld.bookbag.dto.Field;
+import org.d1scw0rld.bookbag.fields.FieldEditTextUpdatableClearable;
+
+import java.util.HashMap;
+
 public class EditBookFragment extends Fragment implements IBackPressListener
 {
    private Book book;
@@ -36,7 +34,7 @@ public class EditBookFragment extends Fragment implements IBackPressListener
 
    private PopupMenu hiddenFieldsPopupMenu = null;
 
-   private FieldEditTextUpdatableClearable fBookTitle = null;
+   private FieldEditTextUpdatableClearable bookTitleField = null;
 
    HashMap<MenuItem, View> hiddenFieldsHashMap = new HashMap<>();
    private FieldsFactory fieldsFactory;
@@ -75,36 +73,36 @@ public class EditBookFragment extends Fragment implements IBackPressListener
       dbAdapter.open();
 
 
-      long iBookID = getBookID();
+      long bookId = getBookID();
 
       boolean isCopy = getIsCopy();
 
-      if(iBookID != 0)
+      if(bookId != 0)
       {
-         book = dbAdapter.getBook(iBookID);
+         book = dbAdapter.getBook(bookId);
          if(isCopy)
-            book.iID = 0;
+            book.id = 0;
       }
       else
          book = new Book();
 
       fieldsFactory = new FieldsFactory(getContext(), book, dbAdapter);
 
-      final Button btnAddField = view.findViewById(R.id.btn_add_field);
-      btnAddField.setOnClickListener(v -> hiddenFieldsPopupMenu.show());
+      final Button addFieldButton = view.findViewById(R.id.btn_add_field);
+      addFieldButton.setOnClickListener(v -> hiddenFieldsPopupMenu.show());
 
-      hiddenFieldsPopupMenu = new PopupMenu(requireContext(), btnAddField);
+      hiddenFieldsPopupMenu = new PopupMenu(requireContext(), addFieldButton);
       hiddenFieldsPopupMenu.setOnMenuItemClickListener(menuItem -> {
-         View view1 = hiddenFieldsHashMap.get(menuItem);
-         if(view1 != null)
+         View fieldView = hiddenFieldsHashMap.get(menuItem);
+         if(fieldView != null)
          {
-            view1.setVisibility(View.VISIBLE);
-            view1.requestFocus();
+            fieldView.setVisibility(View.VISIBLE);
+            fieldView.requestFocus();
          }
          hiddenFieldsPopupMenu.getMenu()
                               .removeItem(menuItem.getItemId());
          if(hiddenFieldsPopupMenu.getMenu().size() == 0)
-            btnAddField.setEnabled(false);
+            addFieldButton.setEnabled(false);
          return false;
       });
 
@@ -195,12 +193,12 @@ public class EditBookFragment extends Fragment implements IBackPressListener
    {
       for(Field field : DBAdapter.FIELDS)
       {
-         switch(field.iType)
+         switch(field.type)
          {
             case Field.TYPE_TEXT:
                fieldsFactory.addFieldText(rootView, field);
-               if(field.iID == DBAdapter.FLD_TITLE)
-                  fBookTitle = (FieldEditTextUpdatableClearable) rootView.getChildAt(rootView.getChildCount()-1);
+               if(field.id == DBAdapter.FLD_TITLE)
+                  bookTitleField = (FieldEditTextUpdatableClearable) rootView.getChildAt(rootView.getChildCount()-1);
                break;
 
             case Field.TYPE_MULTIFIELD:
@@ -247,13 +245,13 @@ public class EditBookFragment extends Fragment implements IBackPressListener
 
       hideKeyboard();
 
-      if(book.csTitle.value.trim().isEmpty())
-         fBookTitle.setError(getResources().getString(R.string.err_emp_ttl));
+      if(book.title.value.trim().isEmpty())
+         bookTitleField.setError(getResources().getString(R.string.err_emp_ttl));
       else
       {
-         fBookTitle.setError(null);
+         bookTitleField.setError(null);
          saveBook();
-         if(book.iID == 0)
+         if(book.id == 0)
             navigateToBookList();
          else
             navigateBack();
@@ -264,7 +262,7 @@ public class EditBookFragment extends Fragment implements IBackPressListener
    {
       clearEmptyFields();
 
-      if(book.iID != 0)
+      if(book.id != 0)
          dbAdapter.updateBook(book);
       else
          dbAdapter.insertBook(book);
@@ -272,10 +270,10 @@ public class EditBookFragment extends Fragment implements IBackPressListener
 
    private void clearEmptyFields()
    {
-      for(int i = book.alProperties.size() - 1; i >= 0; i--)
+      for(int i = book.properties.size() - 1; i >= 0; i--)
       {
-         if(book.alProperties.get(i).sValue.trim().isEmpty())
-            book.alProperties.remove(i);
+         if(book.properties.get(i).value.trim().isEmpty())
+            book.properties.remove(i);
       }
    }
 
@@ -292,16 +290,20 @@ public class EditBookFragment extends Fragment implements IBackPressListener
    private void hideKeyboard()
    {
       View view = requireActivity().getCurrentFocus();
-      if (view != null) {
-         InputMethodManager imm = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+      if(view != null)
+      {
+         android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) requireActivity().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
          imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
       }
    }
 
-   private void showHomeTitle(boolean isShown)
+   private void showHomeTitle(boolean show)
    {
-      actionBar.setDisplayShowHomeEnabled(isShown);
-      actionBar.setDisplayShowTitleEnabled(isShown);
-      actionBar.setDisplayShowCustomEnabled(!isShown);
+      ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
+      if (actionBar != null)
+      {
+         actionBar.setDisplayShowTitleEnabled(show);
+         actionBar.setDisplayShowHomeEnabled(show);
+      }
    }
 }

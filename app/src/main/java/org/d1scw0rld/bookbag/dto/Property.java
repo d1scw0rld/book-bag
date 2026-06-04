@@ -1,50 +1,51 @@
 package org.d1scw0rld.bookbag.dto;
 
-
 import androidx.annotation.NonNull;
 
 public class Property
 {
-   public int    iFieldTypeID;
-   public long   iID = 0;
-   public String sValue = "";
+   public int    fieldTypeId;
+   public long   id = 0;
+   public String value = "";
 
-   public Property(int iFieldTypeID)
+   public Property(int fieldTypeId)
    {
-      this.iFieldTypeID = iFieldTypeID;
+      this.fieldTypeId = fieldTypeId;
    }
 
-   public Property(int iFieldTypeID, String sValue)
+   public Property(int fieldTypeId, String value)
    {
-      this.iFieldTypeID = iFieldTypeID;
-      this.sValue = sValue;
+      this.fieldTypeId = fieldTypeId;
+      this.value = value;
    }
 
-   public Property(long iID, int iFieldTypeID, String sValue)
+   public Property(long id, int fieldTypeId, String value)
    {
-      this.iID = iID;
-      this.iFieldTypeID = iFieldTypeID;
-      this.sValue = sValue;
+      this.id = id;
+      this.fieldTypeId = fieldTypeId;
+      this.value = value;
    }
 
-   public void copy(Property f)
+   public void copy(Property other)
    {
-      iID = f.iID;
-      iFieldTypeID = f.iFieldTypeID;
-      sValue = f.sValue;
+      id = other.id;
+      fieldTypeId = other.fieldTypeId;
+      value = other.value;
    }
 
    @NonNull
    @Override
    public String toString()
    {
-      return sValue;
+      return value;
    }
 
    @Override
-   public boolean equals(Object o)
+   public boolean equals(Object other)
    {
-      Property f = (Property) o;
-      return o != null && iID == f.iID && iFieldTypeID == f.iFieldTypeID && sValue.equalsIgnoreCase(f.sValue);
+      if (this == other) return true;
+      if (other == null || getClass() != other.getClass()) return false;
+      Property property = (Property) other;
+      return id == property.id && fieldTypeId == property.fieldTypeId && value.equalsIgnoreCase(property.value);
    }
 }
