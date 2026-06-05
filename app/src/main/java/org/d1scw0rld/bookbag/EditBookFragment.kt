@@ -10,18 +10,25 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
-import android.widget.Button
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.d1scw0rld.bookbag.databinding.FragmentEditBookBinding
 import org.d1scw0rld.bookbag.dto.Book
 import org.d1scw0rld.bookbag.dto.Field
 import org.d1scw0rld.bookbag.fields.FieldEditTextUpdatableClearable
 
 class EditBookFragment : Fragment(), IBackPressListener {
+
+    private var _binding: FragmentEditBookBinding? = null
+    private val binding get() = _binding!!
 
     private lateinit var book: Book
     private lateinit var dbAdapter: DBAdapter
@@ -34,14 +41,14 @@ class EditBookFragment : Fragment(), IBackPressListener {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_edit_book, container, false)
+    ): View {
+        _binding = FragmentEditBookBinding.inflate(inflater, container, false)
         @Suppress("DEPRECATION")
         setHasOptionsMenu(true)
 
         requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
 
-        val toolbar = view.findViewById<Toolbar>(R.id.toolbar)
+        val toolbar = binding.toolbar
         (requireActivity() as AppCompatActivity).setSupportActionBar(toolbar)
 
         val actionBar = (requireActivity() as AppCompatActivity).supportActionBar
@@ -59,21 +66,7 @@ class EditBookFragment : Fragment(), IBackPressListener {
         dbAdapter = DBAdapter(requireContext())
         dbAdapter.open()
 
-        val bookId = getBookID()
-        val isCopy = getIsCopy()
-
-        if (bookId != 0L) {
-            book = dbAdapter.getBook(bookId) ?: Book()
-            if (isCopy) {
-                book.id = 0
-            }
-        } else {
-            book = Book()
-        }
-
-        fieldsFactory = FieldsFactory(requireContext(), book, dbAdapter)
-
-        val addFieldButton = view.findViewById<Button>(R.id.btn_add_field)
+        val addFieldButton = binding.btnAddField
         addFieldButton.setOnClickListener {
             hiddenFieldsPopupMenu?.show()
         }
@@ -93,11 +86,39 @@ class EditBookFragment : Fragment(), IBackPressListener {
             }
         }
 
-        val fieldsRoot = view.findViewById<LinearLayout>(R.id.ll_fields)
-        addFields(fieldsRoot)
-        createAddFieldsPopupMenu(fieldsRoot)
+        val fieldsRoot = binding.llFields
 
-        return view
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+            val bookId = getBookID()
+            val isCopy = getIsCopy()
+
+            val loadedBook = if (bookId != 0L) {
+                dbAdapter.getBook(bookId) ?: Book()
+            } else {
+                Book()
+            }
+
+            if (isCopy) {
+                loadedBook.id = 0
+            }
+
+            withContext(Dispatchers.Main) {
+                if (!isAdded) return@withContext
+                val ctx = context ?: return@withContext
+
+                book = loadedBook
+                fieldsFactory = FieldsFactory(ctx, loadedBook, dbAdapter)
+                addFields(fieldsRoot)
+                createAddFieldsPopupMenu(fieldsRoot)
+            }
+        }
+
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onPause() {
@@ -186,11 +207,15 @@ class EditBookFragment : Fragment(), IBackPressListener {
             bookTitleField?.setError(resources.getString(R.string.err_emp_ttl))
         } else {
             bookTitleField?.setError(null)
-            saveBook()
-            if (book.id == 0L) {
-                navigateToBookList()
-            } else {
-                navigateBack()
+            viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                saveBook()
+                withContext(Dispatchers.Main) {
+                    if (book.id == 0L) {
+                        navigateToBookList()
+                    } else {
+                        navigateBack()
+                    }
+                }
             }
         }
     }

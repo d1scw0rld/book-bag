@@ -70,11 +70,20 @@ class DBAdapter(private val context: Context) {
         dbHelper.close()
     }
 
+    private fun getDatabase(): SQLiteDatabase? {
+        val currentDb = db
+        if (currentDb != null && currentDb.isOpen) {
+            return currentDb
+        }
+        open()
+        return db
+    }
+
     private fun getBooksOrderedBy(query: String): ArrayList<ParentResult>? {
         if (Debug.ON) {
             return null
         }
-        val database = db ?: return null
+        val database = getDatabase() ?: return null
         val parentResults = ArrayList<ParentResult>()
 
         database.rawQuery(query, null).use { cursor ->
@@ -121,7 +130,7 @@ class DBAdapter(private val context: Context) {
     }
 
     fun insertBook(book: Book) {
-        val database = db ?: return
+        val database = getDatabase() ?: return
         database.transaction {
             try {
                 val values = ContentValues().apply {
@@ -172,7 +181,7 @@ class DBAdapter(private val context: Context) {
 
     fun getPropertyValues(typeId: Int, isOrdered: Boolean): ArrayList<Property> {
         val propertyValues = ArrayList<Property>()
-        val database = db ?: return propertyValues
+        val database = getDatabase() ?: return propertyValues
 
         var sql = "SELECT f.$KEY_ID, f.$KEY_TP_ID, f.$KEY_NM" +
                 " FROM $TABLE_FIELDS as f " +
@@ -199,7 +208,7 @@ class DBAdapter(private val context: Context) {
     }
 
     fun getBook(bookId: Long): Book? {
-        val database = db ?: return null
+        val database = getDatabase() ?: return null
         var book: Book? = null
 
         database.query(
@@ -251,7 +260,7 @@ class DBAdapter(private val context: Context) {
     }
 
     fun deleteBook(bookId: Long) {
-        val database = db ?: return
+        val database = getDatabase() ?: return
         database.transaction {
             try {
                 delete(TABLE_BOOK_FIELDS, "$KEY_BK_ID = $bookId", null)
@@ -264,7 +273,7 @@ class DBAdapter(private val context: Context) {
     }
 
     fun updateBook(book: Book) {
-        val database = db ?: return
+        val database = getDatabase() ?: return
         database.transaction {
             try {
                 for (property in book.properties) {
@@ -311,7 +320,7 @@ class DBAdapter(private val context: Context) {
     }
 
     private fun shrink() {
-        db?.execSQL("VACUUM")
+        getDatabase()?.execSQL("VACUUM")
     }
 
     fun importDatabase(dbPath: String): Boolean {

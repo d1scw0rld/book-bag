@@ -8,11 +8,18 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.d1scw0rld.bookbag.databinding.FragmentBookBinding
 
 class BookFragment : BaseFragment(), IBackPressListener {
+
+    private var _binding: FragmentBookBinding? = null
+    private val binding get() = _binding!!
 
     private var bookId: Long = 0
     private val args: BookFragmentArgs by navArgs()
@@ -25,33 +32,36 @@ class BookFragment : BaseFragment(), IBackPressListener {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_book, container, false)
+    ): View {
+        _binding = FragmentBookBinding.inflate(inflater, container, false)
         @Suppress("DEPRECATION")
         setHasOptionsMenu(true)
 
-        val toolbar = view.findViewById<Toolbar>(R.id.detail_toolbar)
+        val toolbar = binding.detailToolbar
         val activity = requireActivity() as AppCompatActivity
-        if (toolbar != null) {
-            activity.setSupportActionBar(toolbar)
-            activity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
-            activity.supportActionBar?.setHomeButtonEnabled(true)
-        }
+        activity.setSupportActionBar(toolbar)
+        activity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        activity.supportActionBar?.setHomeButtonEnabled(true)
 
         bookId = savedInstanceState?.getLong(SAVED_BOOK_ID) ?: getBookID()
 
-        return view
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        view.findViewById<View>(R.id.fab_edit_book).setOnClickListener { v ->
+        binding.fabEditBook.setOnClickListener { v ->
             navigateToEditBook(v, bookId)
         }
 
         if (savedInstanceState == null) {
             loadFragment(bookId)
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -77,8 +87,12 @@ class BookFragment : BaseFragment(), IBackPressListener {
                 true
             }
             R.id.action_delete -> {
-                deleteBook()
-                navigateToBookList(requireView())
+                viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                    deleteBook()
+                    withContext(Dispatchers.Main) {
+                        navigateToBookList(requireView())
+                    }
+                }
                 true
             }
             else -> super.onOptionsItemSelected(item)

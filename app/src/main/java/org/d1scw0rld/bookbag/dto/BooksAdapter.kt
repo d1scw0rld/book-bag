@@ -59,14 +59,13 @@ class BooksAdapter(
         this.onHeaderClickListener = onHeaderClickListener
     }
 
-    class BookListItem : ExpandableRecyclerAdapter.ListItem {
-        var id: Long = -1
-
-        constructor(group: String) : super(TYPE_HEADER, group)
-
-        constructor(id: Long, item: String) : super(TYPE_ITEM, item) {
-            this.id = id
-        }
+    class BookListItem(
+        var id: Long = -1,
+        itemType: Int,
+        text: String
+    ) : ListItem(itemType, text) {
+        constructor(group: String) : this(-1, TYPE_HEADER, group)
+        constructor(id: Long, item: String) : this(id, TYPE_ITEM, item)
     }
 
     inner class HeaderViewHolder(val view: View) : ExpandableRecyclerAdapter<BookListItem>.HeaderViewHolder(view) {
@@ -170,21 +169,18 @@ class BooksAdapter(
             setItems(listItemsNotFiltered)
             allChildrenCount = listItemsNotFiltered.count { it.itemType == TYPE_ITEM }
         } else {
-            val tempBookListItems = ArrayList<BookListItem>()
-            for (bookListItem in listItemsNotFiltered) {
-                if (bookListItem.itemType == TYPE_HEADER || bookListItem.text.lowercase(Locale.getDefault()).contains(query)) {
-                    if (bookListItem.itemType == TYPE_HEADER &&
-                        tempBookListItems.isNotEmpty() &&
-                        tempBookListItems.last().itemType == TYPE_HEADER
-                    ) {
-                        tempBookListItems.removeAt(tempBookListItems.size - 1)
-                    }
-                    tempBookListItems.add(bookListItem)
+            val tempBookListItems = ArrayList(listItemsNotFiltered.filter {
+                it.itemType == TYPE_HEADER || it.text.lowercase(Locale.getDefault()).contains(query)
+            })
+
+            for (i in tempBookListItems.indices.reversed()) {
+                if (tempBookListItems[i].itemType == TYPE_HEADER &&
+                    (i == tempBookListItems.size - 1 || tempBookListItems[i + 1].itemType == TYPE_HEADER)
+                ) {
+                    tempBookListItems.removeAt(i)
                 }
             }
-            if (tempBookListItems.isNotEmpty() && tempBookListItems.last().itemType == TYPE_HEADER) {
-                tempBookListItems.removeAt(tempBookListItems.size - 1)
-            }
+
             allChildrenCount = tempBookListItems.count { it.itemType == TYPE_ITEM }
             setItems(tempBookListItems)
         }

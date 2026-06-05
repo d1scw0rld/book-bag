@@ -1,11 +1,9 @@
 package org.d1scw0rld.bookbag
 
 import android.Manifest
-import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -19,17 +17,13 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
 import androidx.appcompat.widget.SearchView
-import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.Navigation
 import androidx.navigation.ui.NavigationUI
 import androidx.preference.PreferenceManager
@@ -37,7 +31,10 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.d1scw0rld.bookbag.databinding.FragmentBookListBinding
 import org.d1scw0rld.bookbag.dto.BooksAdapter
 import org.d1scw0rld.bookbag.fileselector.FileOperation
 import org.d1scw0rld.bookbag.fileselector.FileSelectorDialog
@@ -54,6 +51,9 @@ class BookListFragment : BaseFragment() {
         private const val PREF_EXPORT_FOLDER = "pref_export_folder"
     }
 
+    private var _binding: FragmentBookListBinding? = null
+    private val binding get() = _binding!!
+
     private val fileFilter = arrayOf("*.*", ".db")
     private val orderItems = ArrayList<OrderItem>()
 
@@ -69,15 +69,12 @@ class BookListFragment : BaseFragment() {
     private var bookId: Long = 0
     private var exportFolderAbsPath: String = ""
 
-    private lateinit var booksOrderTextView: TextView
-    private lateinit var booksCountTextView: TextView
     private lateinit var dbAdapter: DBAdapter
     private lateinit var booksAdapter: BooksAdapter
     private lateinit var preferences: SharedPreferences
     private var selectedBookView: View? = null
     private lateinit var recyclerView: RecyclerView
     private var actionMode: ActionMode? = null
-    private lateinit var fragmentManager: FragmentManager
     private var fileSelectorDialog: FileSelectorDialog? = null
 
     private val requestPermissionLauncher =
@@ -173,31 +170,45 @@ class BookListFragment : BaseFragment() {
     }
 
     private fun deleteBook() {
-        dbAdapter.deleteBook(bookId)
-        booksAdapter.removeAt(clickedItemIndex)
-        booksCountTextView.text = resources.getQuantityString(
-            R.plurals.books,
-            booksAdapter.getAllChildrenCount(),
-            booksAdapter.getAllChildrenCount()
-        )
-        deselectBookAndHideDetails()
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+            dbAdapter.deleteBook(bookId)
+            withContext(Dispatchers.Main) {
+                booksAdapter.removeAt(clickedItemIndex)
+                binding.include.tvBooksCount.text = resources.getQuantityString(
+                    R.plurals.books,
+                    booksAdapter.getAllChildrenCount(),
+                    booksAdapter.getAllChildrenCount()
+                )
+                deselectBookAndHideDetails()
+            }
+        }
     }
 
     private val onLoadFileListener = OnHandleFileListener { filePath ->
-        dbAdapter.close()
-        if (dbAdapter.importDatabase(filePath)) {
-            showToast(R.string.prf_imp_db_scs)
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+            dbAdapter.close()
+            val result = dbAdapter.importDatabase(filePath)
+            dbAdapter.open()
+            withContext(Dispatchers.Main) {
+                if (result) {
+                    showToast(R.string.prf_imp_db_scs)
+                }
+                setupRecyclerView(recyclerView, orderId)
+            }
         }
-        dbAdapter.open()
-        setupRecyclerView(recyclerView, orderId)
     }
 
     private val onSaveFileListener = OnHandleFileListener { filePath ->
-        dbAdapter.close()
-        if (dbAdapter.exportDatabase(filePath)) {
-            showToast(R.string.prf_xpr_db_scs)
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+            dbAdapter.close()
+            val result = dbAdapter.exportDatabase(filePath)
+            dbAdapter.open()
+            withContext(Dispatchers.Main) {
+                if (result) {
+                    showToast(R.string.prf_xpr_db_scs)
+                }
+            }
         }
-        dbAdapter.open()
     }
 
     private val onSharedPreferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, key ->
@@ -214,19 +225,17 @@ class BookListFragment : BaseFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_book_list, container, false)
+    ): View {
+        _binding = FragmentBookListBinding.inflate(inflater, container, false)
         @Suppress("DEPRECATION")
         setHasOptionsMenu(true)
 
         val actionBar = requireActivity().actionBar
         actionBar?.hide()
 
-        val toolbar = view.findViewById<Toolbar>(R.id.toolbar)
+        val toolbar = binding.toolbar
         toolbar.title = requireActivity().title
         (requireActivity() as AppCompatActivity).setSupportActionBar(toolbar)
-
-        fragmentManager = requireActivity().supportFragmentManager
 
         preferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
         preferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
@@ -237,28 +246,29 @@ class BookListFragment : BaseFragment() {
 
         getOrderItems()
 
-        return view
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        booksOrderTextView = view.findViewById(R.id.tv_books_order)
-        booksCountTextView = view.findViewById(R.id.tv_books_count)
+        binding.fabAddBook.setOnClickListener { navigateToEditBook(it) }
 
-        val fab = view.findViewById<FloatingActionButton>(R.id.fab_add_book)
-        fab.setOnClickListener { navigateToEditBook(it) }
-
-        view.findViewById<RecyclerView>(R.id.book_list)?.let { rv ->
-            recyclerView = rv
-            recyclerView.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-            recyclerView.itemAnimator = DefaultItemAnimator()
-            recyclerView.layoutManager = LinearLayoutManager(context)
+        recyclerView = binding.include.bookList.apply {
+            addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
+            itemAnimator = DefaultItemAnimator()
+            layoutManager = LinearLayoutManager(context)
         }
 
+        // We can check book_detail_container through normal findView as it's outside the main included view in w900 layouts
         if (view.findViewById<View>(R.id.book_detail_container) != null) {
             isTwoPane = true
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onResume() {
@@ -289,7 +299,7 @@ class BookListFragment : BaseFragment() {
             override fun onQueryTextChange(newText: String?): Boolean {
                 booksAdapter.expandAll()
                 booksAdapter.filter(newText ?: "")
-                booksCountTextView.text = resources.getQuantityString(
+                binding.include.tvBooksCount.text = resources.getQuantityString(
                     R.plurals.books,
                     booksAdapter.getAllChildrenCount(),
                     booksAdapter.getAllChildrenCount()
@@ -458,17 +468,17 @@ class BookListFragment : BaseFragment() {
         val fragment = BookDetailFragment().apply {
             this.arguments = arguments
         }
-        requireActivity().supportFragmentManager
+        parentFragmentManager
             .beginTransaction()
             .replace(R.id.book_detail_container, fragment)
             .commit()
     }
 
     private fun hideBookDetails() {
-        val fragment = requireActivity().supportFragmentManager
+        val fragment = parentFragmentManager
             .findFragmentById(R.id.book_detail_container)
         if (fragment != null) {
-            requireActivity().supportFragmentManager
+            parentFragmentManager
                 .beginTransaction()
                 .remove(fragment)
                 .commit()
@@ -483,7 +493,7 @@ class BookListFragment : BaseFragment() {
             onLoadFileListener,
             fileFilter
         )
-        fileSelectorDialog?.show(fragmentManager, null)
+        fileSelectorDialog?.show(parentFragmentManager, null)
     }
 
     private fun showExportDbDialog() {
@@ -495,7 +505,7 @@ class BookListFragment : BaseFragment() {
             onSaveFileListener,
             fileFilter
         )
-        fileSelectorDialog?.show(fragmentManager, null)
+        fileSelectorDialog?.show(parentFragmentManager, null)
     }
 
     private fun getFileName(): String {
@@ -532,22 +542,30 @@ class BookListFragment : BaseFragment() {
     }
 
     private fun setupRecyclerView(recyclerView: RecyclerView, orderId: Int) {
-        booksAdapter = BooksAdapter(requireContext(), dbAdapter.getBooks(orderId) ?: ArrayList())
-        booksAdapter.setBookClickListener(onBookClickListener)
-        booksAdapter.setBookLongClickListener(onBookLongClickListener)
-        booksAdapter.setHeaderClickListener(onCategoryClickListener)
-        if (isExpandAll) {
-            booksAdapter.expandAll()
-        }
-        recyclerView.adapter = booksAdapter
-        for (orderItem in orderItems) {
-            if (orderItem.id == orderId) {
-                booksOrderTextView.text = orderItem.title
-                booksCountTextView.text = resources.getQuantityString(
-                    R.plurals.books,
-                    booksAdapter.getAllChildrenCount(),
-                    booksAdapter.getAllChildrenCount()
-                )
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+            val books = dbAdapter.getBooks(orderId) ?: ArrayList()
+            withContext(Dispatchers.Main) {
+                if (!isAdded) return@withContext
+                val ctx = context ?: return@withContext
+
+                booksAdapter = BooksAdapter(ctx, books)
+                booksAdapter.setBookClickListener(onBookClickListener)
+                booksAdapter.setBookLongClickListener(onBookLongClickListener)
+                booksAdapter.setHeaderClickListener(onCategoryClickListener)
+                if (isExpandAll) {
+                    booksAdapter.expandAll()
+                }
+                recyclerView.adapter = booksAdapter
+                for (orderItem in orderItems) {
+                    if (orderItem.id == orderId) {
+                        binding.include.tvBooksOrder.text = orderItem.title
+                        binding.include.tvBooksCount.text = resources.getQuantityString(
+                            R.plurals.books,
+                            booksAdapter.getAllChildrenCount(),
+                            booksAdapter.getAllChildrenCount()
+                        )
+                    }
+                }
             }
         }
     }

@@ -4,17 +4,23 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.appbar.CollapsingToolbarLayout
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.d1scw0rld.bookbag.databinding.FragmentBookDetailBinding
 import org.d1scw0rld.bookbag.dto.Book
 
 class BookDetailFragment : Fragment() {
 
+    private var _binding: FragmentBookDetailBinding? = null
+    private val binding get() = _binding!!
+
     private var book: Book? = null
     private val dbAdapter: DBAdapter by lazy { DBAdapter(requireContext()) }
     private var bookDetailFieldsFactory: BookDetailFieldsFactory? = null
-    private lateinit var categoriesLayout: LinearLayout
 
     companion object {
         const val BOOK_ID = "book_id"
@@ -23,32 +29,43 @@ class BookDetailFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         dbAdapter.open()
-
-        arguments?.let { args ->
-            if (args.containsKey(BOOK_ID)) {
-                book = dbAdapter.getBook(args.getLong(BOOK_ID))
-                bookDetailFieldsFactory = BookDetailFieldsFactory(requireContext(), dbAdapter, book)
-            }
-        }
     }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_book_detail, container, false)
+    ): View {
+        _binding = FragmentBookDetailBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val appBarLayout = requireActivity().findViewById<CollapsingToolbarLayout>(R.id.toolbar_layout)
-        book?.let { b ->
-            appBarLayout?.title = b.title.value
-        }
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+            val bookIdArg = arguments?.getLong(BOOK_ID) ?: 0L
+            if (bookIdArg != 0L) {
+                val loadedBook = dbAdapter.getBook(bookIdArg)
+                withContext(Dispatchers.Main) {
+                    if (!isAdded) return@withContext
+                    val ctx = context ?: return@withContext
 
-        categoriesLayout = view.findViewById(R.id.ll_categories)
+                    book = loadedBook
+                    val appBarLayout = activity?.findViewById<CollapsingToolbarLayout>(R.id.toolbar_layout)
+                    loadedBook?.let { b ->
+                        appBarLayout?.title = b.title.value
+                    }
+                    bookDetailFieldsFactory = BookDetailFieldsFactory(ctx, dbAdapter, loadedBook)
+                    bookDetailFieldsFactory?.addFields(binding.llCategories)
+                }
+            }
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onPause() {
@@ -59,8 +76,5 @@ class BookDetailFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         dbAdapter.open()
-        if (book != null) {
-            bookDetailFieldsFactory?.addFields(categoriesLayout)
-        }
     }
 }
