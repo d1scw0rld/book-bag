@@ -1,6 +1,7 @@
 import java.util.regex.Pattern
 
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 apply plugin: 'androidx.navigation.safeargs'
 
 android {
@@ -9,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId "org.d1scw0rld.bookbag"
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdkVersion 37
     }
 
@@ -39,22 +40,28 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+    buildFeatures {
+        viewBinding true
+    }
     namespace 'org.d1scw0rld.bookbag'
 }
 
 dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'com.google.android.material:material:1.13.0'
     implementation "androidx.preference:preference:1.2.1"
     // Keep this lower version, because of ugly preferences screen look
     implementation 'com.wdullaer:materialdatetimepicker:3.6.4'
+//    implementation 'com.wdullaer:materialdatetimepicker:4.2.3'
 
-    implementation 'androidx.navigation:navigation-fragment:2.8.9'
-    implementation 'androidx.navigation:navigation-ui:2.8.9'
+
+    implementation 'androidx.navigation:navigation-fragment:2.9.8'
+    implementation 'androidx.navigation:navigation-ui:2.9.8'
 
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
-    implementation 'org.jetbrains:annotations:23.0.0'
-//    implementation 'com.wdullaer:materialdatetimepicker:4.2.3'
-    implementation 'com.google.android.material:material:1.13.0'
-    implementation 'androidx.core:core:1.15.0'
+    implementation 'org.jetbrains:annotations:26.1.0'
+    implementation 'androidx.core:core:1.19.0'
 }
