@@ -1,6 +1,5 @@
-package org.d1scw0rld.bookbag;
+package org.d1scw0rld.bookbag
 
-public interface IBackPressListener
-{
-   boolean onBackPressed();
+interface IBackPressListener {
+    fun onBackPressed(): Boolean
 }

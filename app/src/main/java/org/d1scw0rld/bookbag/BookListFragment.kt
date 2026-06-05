@@ -1,697 +1,570 @@
-package org.d1scw0rld.bookbag;
+package org.d1scw0rld.bookbag
 
-import android.app.ActionBar;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Environment;
-import android.provider.Settings;
-import android.util.Log;
-import android.view.ActionMode;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
+import android.Manifest
+import android.content.Context
+import android.content.Intent
+import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.graphics.Color
+import android.net.Uri
+import android.os.Build
+import android.os.Bundle
+import android.os.Environment
+import android.provider.Settings
+import android.util.Log
+import android.view.ActionMode
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.PopupMenu
+import androidx.appcompat.widget.SearchView
+import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.navigation.Navigation
+import androidx.navigation.ui.NavigationUI
+import androidx.preference.PreferenceManager
+import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import org.d1scw0rld.bookbag.dto.BooksAdapter
+import org.d1scw0rld.bookbag.fileselector.FileOperation
+import org.d1scw0rld.bookbag.fileselector.FileSelectorDialog
+import org.d1scw0rld.bookbag.fileselector.OnHandleFileListener
+import java.io.File
+import java.util.Calendar
+import java.util.Locale
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+class BookListFragment : BaseFragment() {
 
-import org.d1scw0rld.bookbag.dto.BooksAdapter;
-import org.d1scw0rld.bookbag.fileselector.FileOperation;
-import org.d1scw0rld.bookbag.fileselector.FileSelectorDialog;
-import org.d1scw0rld.bookbag.fileselector.OnHandleFileListener;
+    companion object {
+        private const val PREF_ORDER_ID = "order_id"
+        private const val PREF_EXPAND_ALL = "pref_expand_all"
+        private const val PREF_EXPORT_FOLDER = "pref_export_folder"
+    }
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Locale;
+    private val fileFilter = arrayOf("*.*", ".db")
+    private val orderItems = ArrayList<OrderItem>()
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
-import android.Manifest;
-import android.content.pm.PackageManager;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.PopupMenu;
-import androidx.appcompat.widget.SearchView;
-import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.navigation.NavController;
-import androidx.navigation.NavDirections;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.NavigationUI;
-import androidx.preference.PreferenceManager;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+    private enum class PendingAction {
+        NONE, IMPORT, EXPORT
+    }
 
-public class BookListFragment extends BaseFragment
-{
-   private final static String PREF_ORDER_ID = "order_id",
-                               PREF_EXPAND_ALL = "pref_expand_all",
-                               PREF_EXPORT_FOLDER = "pref_export_folder";
+    private var pendingAction = PendingAction.NONE
+    private var isExpandAll = false
+    private var isTwoPane = false
+    private var orderId = DBAdapter.SRT_TTL
+    private var clickedItemIndex = -1
+    private var bookId: Long = 0
+    private var exportFolderAbsPath: String = ""
 
-   private final String[] fileFilter = {"*.*",
-                                         ".db"};
+    private lateinit var booksOrderTextView: TextView
+    private lateinit var booksCountTextView: TextView
+    private lateinit var dbAdapter: DBAdapter
+    private lateinit var booksAdapter: BooksAdapter
+    private lateinit var preferences: SharedPreferences
+    private var selectedBookView: View? = null
+    private lateinit var recyclerView: RecyclerView
+    private var actionMode: ActionMode? = null
+    private lateinit var fragmentManager: FragmentManager
+    private var fileSelectorDialog: FileSelectorDialog? = null
 
-   private final ArrayList<OrderItem> orderItems = new ArrayList<>();
-
-   private enum PendingAction
-   {
-      NONE,
-      IMPORT,
-      EXPORT
-   }
-
-   private PendingAction pendingAction = PendingAction.NONE;
-
-   private boolean isExpandAll = false;
-   /**
-    * Whether or not the activity is in two-pane mode, i.e. running on a tablet
-    * device.
-    */
-   private boolean isTwoPane;
-
-   private int orderId  = DBAdapter.SRT_TTL,
-               clickedItemIndex = -1;
-
-   private long bookId;
-
-   private String exportFolderAbsPath;
-
-   private TextView booksOrderTextView,
-         booksCountTextView;
-
-   private DBAdapter dbAdapter = null;
-
-   private BooksAdapter booksAdapter;
-
-   private SharedPreferences preferences;
-
-   private View selectedBookView = null;
-
-   private RecyclerView recyclerView;
-
-   private ActionMode actionMode;
-
-   private FragmentManager fragmentManager;
-
-   private FileSelectorDialog fileSelectorDialog;
-
-   private final ActivityResultLauncher<String> requestPermissionLauncher =
-         registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-            if (isGranted)
-            {
-               checkCreateExportFolder(exportFolderAbsPath);
-               executePendingAction();
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                checkCreateExportFolder(exportFolderAbsPath)
+                executePendingAction()
+            } else {
+                showToast(R.string.msg_acc_dnd)
+                pendingAction = PendingAction.NONE
             }
-            else
-            {
-               showToast(R.string.msg_acc_dnd);
-               pendingAction = PendingAction.NONE;
+        }
+
+    private val manageStorageLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                if (Environment.isExternalStorageManager()) {
+                    checkCreateExportFolder(exportFolderAbsPath)
+                    executePendingAction()
+                } else {
+                    showToast(R.string.msg_acc_dnd)
+                    pendingAction = PendingAction.NONE
+                }
             }
-         });
+        }
 
-   private final ActivityResultLauncher<Intent> manageStorageLauncher =
-         registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R)
-            {
-               if (android.os.Environment.isExternalStorageManager())
-               {
-                  checkCreateExportFolder(exportFolderAbsPath);
-                  executePendingAction();
-               }
-               else
-               {
-                  showToast(R.string.msg_acc_dnd);
-                  pendingAction = PendingAction.NONE;
-               }
+    private fun executePendingAction() {
+        if (pendingAction == PendingAction.IMPORT) {
+            showImportDbDialog()
+        } else if (pendingAction == PendingAction.EXPORT) {
+            showExportDbDialog()
+        }
+        pendingAction = PendingAction.NONE
+    }
+
+    private val onCategoryClickListener = View.OnClickListener { deselectBookView() }
+
+    private val onBookClickListener = View.OnClickListener { v ->
+        getSelectedBook(v)
+
+        actionMode?.finish()
+
+        if (isTwoPane) {
+            selectBookView(v)
+            showBookDetails()
+        } else {
+            navigateToBookDetails(v)
+        }
+    }
+
+    private val onBookLongClickListener = View.OnLongClickListener { v ->
+        getSelectedBook(v)
+
+        if (actionMode != null) return@OnLongClickListener false
+
+        actionMode = requireActivity().startActionMode(onActionModeCallback)
+
+        if (isTwoPane) {
+            selectBookView(v)
+            showBookDetails()
+        }
+        true
+    }
+
+    private val onActionModeCallback = object : ActionMode.Callback {
+        override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
+            mode.menuInflater.inflate(R.menu.menu_context, menu)
+            return true
+        }
+
+        override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
+            return false
+        }
+
+        override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
+            val itemId = item.itemId
+            if (itemId == R.id.action_edit) {
+                navigateToEditBook(requireView(), bookId, false)
+            } else if (itemId == R.id.action_duplicate) {
+                navigateToEditBook(requireView(), bookId, true)
+            } else if (itemId == R.id.action_delete) {
+                deleteBook()
+            } else {
+                return false
             }
-         });
+            mode.finish()
+            return true
+        }
 
-   private void executePendingAction()
-   {
-      if (pendingAction == PendingAction.IMPORT)
-      {
-         showImportDbDialog();
-      }
-      else if (pendingAction == PendingAction.EXPORT)
-      {
-         showExportDbDialog();
-      }
-      pendingAction = PendingAction.NONE;
-   }
+        override fun onDestroyActionMode(mode: ActionMode) {
+            actionMode = null
+        }
+    }
 
-   private final View.OnClickListener onCategoryClickListener = v -> deselectBookView();
+    private fun deleteBook() {
+        dbAdapter.deleteBook(bookId)
+        booksAdapter.removeAt(clickedItemIndex)
+        booksCountTextView.text = resources.getQuantityString(
+            R.plurals.books,
+            booksAdapter.getAllChildrenCount(),
+            booksAdapter.getAllChildrenCount()
+        )
+        deselectBookAndHideDetails()
+    }
 
-   private final View.OnClickListener onBookClickListener = v -> {
-         getSelectedBook(v);
+    private val onLoadFileListener = OnHandleFileListener { filePath ->
+        dbAdapter.close()
+        if (dbAdapter.importDatabase(filePath)) {
+            showToast(R.string.prf_imp_db_scs)
+        }
+        dbAdapter.open()
+        setupRecyclerView(recyclerView, orderId)
+    }
 
-         if(actionMode != null)
-            actionMode.finish();
+    private val onSaveFileListener = OnHandleFileListener { filePath ->
+        dbAdapter.close()
+        if (dbAdapter.exportDatabase(filePath)) {
+            showToast(R.string.prf_xpr_db_scs)
+        }
+        dbAdapter.open()
+    }
 
+    private val onSharedPreferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, key ->
+        if (key.equals(PREF_EXPAND_ALL, ignoreCase = true)) {
+            isExpandAll = prefs.getBoolean(PREF_EXPAND_ALL, false)
+        }
+        if (key.equals(PREF_EXPORT_FOLDER, ignoreCase = true)) {
+            exportFolderAbsPath = getExportFolderAbsPath(prefs.getString(PREF_EXPORT_FOLDER, getString(R.string.app_name)) ?: getString(R.string.app_name))
+            checkCreateExportFolder(exportFolderAbsPath)
+        }
+    }
 
-         if(isTwoPane)
-         {
-            selectBookView(v);
-            showBookDetails();
-         }
-         else
-            navigateToBookDetails(v);
-   };
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val view = inflater.inflate(R.layout.fragment_book_list, container, false)
+        @Suppress("DEPRECATION")
+        setHasOptionsMenu(true)
 
-   private final View.OnLongClickListener onBookLongClickListener = new View.OnLongClickListener()
-   {
-      @Override
-      public boolean onLongClick(View v)
-      {
-         getSelectedBook(v);
+        val actionBar = requireActivity().actionBar
+        actionBar?.hide()
 
-         if(actionMode != null)
-            return false;
+        val toolbar = view.findViewById<Toolbar>(R.id.toolbar)
+        toolbar.title = requireActivity().title
+        (requireActivity() as AppCompatActivity).setSupportActionBar(toolbar)
 
-         // Start the CAB using the ActionMode.Callback defined above
-         actionMode = requireActivity().startActionMode(onActionModeCallback);
+        fragmentManager = requireActivity().supportFragmentManager
 
-         if(isTwoPane)
-         {
-            selectBookView(v);
-            showBookDetails();
-         }
-         return true;
-      }
-   };
-   private final ActionMode.Callback onActionModeCallback = new ActionMode.Callback()
-   {
-      // Called when the action mode is created; startActionMode() was called
-      @Override
-      public boolean onCreateActionMode(ActionMode mode, Menu menu)
-      {
-         // Inflate a menu resource providing context menu items
-         MenuInflater inflater = mode.getMenuInflater();
-         inflater.inflate(R.menu.menu_context, menu);
-         return true;
-      }
+        preferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        preferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
+        loadPreferences()
+        checkCreateExportFolder(exportFolderAbsPath)
 
-      // Called each time the action mode is shown. Always called after onCreateActionMode, but
-      // may be called multiple times if the mode is invalidated.
-      @Override
-      public boolean onPrepareActionMode(ActionMode mode, Menu menu)
-      {
-         return false; // Return false if nothing is done
-      }
+        dbAdapter = DBAdapter(requireContext())
 
-      // Called when the user selects a contextual menu item
-      @Override
-      public boolean onActionItemClicked(ActionMode mode, MenuItem item)
-      {
-         int itemId = item.getItemId();
-         if(itemId == R.id.action_edit)
-            navigateToEditBook(requireView(), bookId, false);
-         else if(itemId == R.id.action_duplicate)
-            navigateToEditBook(requireView(), bookId, true);
-         else if(itemId == R.id.action_delete)
-            deleteBook();
-         else
-            return false;
+        getOrderItems()
 
-         mode.finish(); // Action picked, so close the CAB
-         return true;
-      }
+        return view
+    }
 
-      // Called when the user exits the action mode
-      @Override
-      public void onDestroyActionMode(ActionMode mode)
-      {
-         actionMode = null;
-      }
-   };
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-   private void deleteBook()
-   {
-      dbAdapter.deleteBook(bookId);
-      booksAdapter.removeAt(clickedItemIndex);
-      booksCountTextView.setText(getResources().getQuantityString(R.plurals.books,
-                                                            booksAdapter.getAllChildrenCount(),
-                                                            booksAdapter.getAllChildrenCount()));
-      deselectBookAndHideDetails();
-   }
+        booksOrderTextView = view.findViewById(R.id.tv_books_order)
+        booksCountTextView = view.findViewById(R.id.tv_books_count)
 
-   private final OnHandleFileListener onLoadFileListener = new OnHandleFileListener()
-   {
-      @Override
-      public void handleFile(final String filePath)
-      {
-         dbAdapter.close();
-         if(dbAdapter.importDatabase(filePath))
-            showToast(R.string.prf_imp_db_scs);
-         dbAdapter.open();
-         setupRecyclerView(recyclerView, orderId);
-      }
-   };
+        val fab = view.findViewById<FloatingActionButton>(R.id.fab_add_book)
+        fab.setOnClickListener { navigateToEditBook(it) }
 
-   private final OnHandleFileListener onSaveFileListener = filePath -> {
-      dbAdapter.close();
-      if(dbAdapter.exportDatabase(filePath))
-      {
-         showToast(R.string.prf_xpr_db_scs);
-      }
-      dbAdapter.open();
-   };
+        view.findViewById<RecyclerView>(R.id.book_list)?.let { rv ->
+            recyclerView = rv
+            recyclerView.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
+            recyclerView.itemAnimator = DefaultItemAnimator()
+            recyclerView.layoutManager = LinearLayoutManager(context)
+        }
 
-   private final SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = (prefs, key) -> {
-      if(key.equalsIgnoreCase(PREF_EXPAND_ALL))
-      {
-         isExpandAll = preferences.getBoolean(PREF_EXPAND_ALL, false);
-      }
-      if(key.equalsIgnoreCase(PREF_EXPORT_FOLDER))
-      {
-         exportFolderAbsPath = getExportFolderAbsPath(preferences.getString(PREF_EXPORT_FOLDER, getString(R.string.app_name)));
-         checkCreateExportFolder(exportFolderAbsPath);
-      }
-   };
+        if (view.findViewById<View>(R.id.book_detail_container) != null) {
+            isTwoPane = true
+        }
+    }
 
-   @Nullable
-   @Override
-   public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
-   {
-      View view = inflater.inflate(R.layout.fragment_book_list, container, false);
-      setHasOptionsMenu(true);
+    override fun onResume() {
+        super.onResume()
+        dbAdapter.open()
+        if (::recyclerView.isInitialized) {
+            setupRecyclerView(recyclerView, orderId)
+        }
+    }
 
-      ActionBar actionBar = requireActivity().getActionBar();
-      if(actionBar !=null)
-      {
-         actionBar.hide();
-      }
-      Toolbar toolbar = view.findViewById(R.id.toolbar);
-      toolbar.setTitle(requireActivity().getTitle());
-      ((AppCompatActivity)requireActivity()).setSupportActionBar(toolbar);
+    override fun onPause() {
+        dbAdapter.close()
+        super.onPause()
+    }
 
-      fragmentManager = requireActivity().getSupportFragmentManager();
+    @Suppress("DEPRECATION")
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu_book_list, menu)
 
-      preferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
-      preferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
-      loadPreferences();
-      checkCreateExportFolder(exportFolderAbsPath);
+        val searchItem = menu.findItem(R.id.action_search)
+        val searchView = searchItem.actionView as SearchView
 
-      dbAdapter = new DBAdapter(getContext());
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
 
-      getOrderItems();
+            override fun onQueryTextChange(newText: String?): Boolean {
+                booksAdapter.expandAll()
+                booksAdapter.filter(newText ?: "")
+                booksCountTextView.text = resources.getQuantityString(
+                    R.plurals.books,
+                    booksAdapter.getAllChildrenCount(),
+                    booksAdapter.getAllChildrenCount()
+                )
+                return true
+            }
+        })
+    }
 
-      return view;
-   }
+    @Suppress("DEPRECATION")
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val navController = Navigation.findNavController(requireActivity(), R.id.fragment)
+        return NavigationUI.onNavDestinationSelected(item, navController) || optionsItemSelect(item)
+    }
 
-   @Override
-   public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
-   {
-      super.onViewCreated(view, savedInstanceState);
+    private fun getExportFolderAbsPath(exportFolder: String): String {
+        @Suppress("DEPRECATION")
+        return Environment.getExternalStorageDirectory().toString() + File.separator + exportFolder + File.separator
+    }
 
-      booksOrderTextView = view.findViewById(R.id.tv_books_order);
-      booksCountTextView = view.findViewById(R.id.tv_books_count);
+    private fun checkAndRequestPermissions(action: PendingAction): Boolean {
+        pendingAction = action
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!Environment.isExternalStorageManager()) {
+                showRationaleDialog {
+                    var intent: Intent? = null
+                    try {
+                        intent = Intent(
+                            Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+                            Uri.fromParts("package", requireContext().packageName, null)
+                        )
+                    } catch (e: Exception) {
+                        // fallback
+                    }
+                    if (intent == null) {
+                        intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
+                    }
+                    manageStorageLauncher.launch(intent)
+                }
+                return false
+            }
+        } else {
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED
+            ) {
+                showRationaleDialog {
+                    requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                }
+                return false
+            }
+        }
+        pendingAction = PendingAction.NONE
+        return true
+    }
 
-      FloatingActionButton fab = view.findViewById(R.id.fab_add_book);
-      fab.setOnClickListener(this::navigateToEditBook);
-
-      if((recyclerView = view.findViewById(R.id.book_list)) != null)
-      {
-         recyclerView.addItemDecoration(new DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL));
-         recyclerView.setItemAnimator(new DefaultItemAnimator());
-         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-      }
-
-      if(view.findViewById(R.id.book_detail_container) != null)
-      {
-         // The detail container view will be present only in the
-         // large-screen layouts (res/values-w900dp).
-         // If this view is present, then the
-         // activity should be in two-pane mode.
-         isTwoPane = true;
-      }
-   }
-
-   @Override
-   public void onResume()
-   {
-      super.onResume();
-
-      dbAdapter.open();
-      setupRecyclerView(recyclerView, orderId);
-   }
-
-   @Override
-   public void onPause()
-   {
-      dbAdapter.close();
-
-      super.onPause();
-   }
-
-   @Override
-   public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater)
-   {
-      inflater.inflate(R.menu.menu_book_list, menu);
-
-      final MenuItem searchItem = menu.findItem(R.id.action_search);
-      final SearchView searchView = (SearchView) searchItem.getActionView();
-
-      searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
-      {
-         @Override
-         public boolean onQueryTextSubmit(String arg0)
-         {
-            return false;
-         }
-
-         @Override
-         public boolean onQueryTextChange(String arg0)
-         {
-            booksAdapter.expandAll();
-            booksAdapter.filter(arg0);
-            booksCountTextView.setText(getResources().getQuantityString(R.plurals.books,
-                                                                  booksAdapter.getAllChildrenCount(),
-                                                                  booksAdapter.getAllChildrenCount()));
-            return true;
-         }
-      });
-   }
-
-   @Override
-   public boolean onOptionsItemSelected(@NonNull MenuItem item)
-   {
-      NavController navController = Navigation.findNavController(requireActivity(), R.id.fragment);
-      return NavigationUI.onNavDestinationSelected(item, navController)
-            || optionsItemSelect(item);
-   }
-   @SuppressWarnings("deprecation")
-   private String getExportFolderAbsPath(String exportFolder)
-   {
-      return Environment.getExternalStorageDirectory() + File.separator + exportFolder + File.separator;
-   }
-
-   private boolean checkAndRequestPermissions(PendingAction action)
-   {
-      pendingAction = action;
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
-      {
-         if (!android.os.Environment.isExternalStorageManager())
-         {
-            showRationaleDialog(() -> {
-               Intent intent = null;
-               try
-               {
-                  intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
-                        Uri.fromParts("package", requireContext().getPackageName(), null));
-               }
-               catch (Exception e)
-               {
-                  // fallback to general manage permission settings if package specific settings fail
-               }
-               if (intent == null)
-               {
-                  intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
-               }
-               manageStorageLauncher.launch(intent);
-            });
-            return false;
-         }
-      }
-      else
-      {
-         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
-               != PackageManager.PERMISSION_GRANTED)
-         {
-            showRationaleDialog(() -> requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE));
-            return false;
-         }
-      }
-       pendingAction = PendingAction.NONE;
-       return true;
-   }
-
-   private void showRationaleDialog(Runnable onConfirm)
-   {
-      new AlertDialog.Builder(requireContext(), R.style.AppCompatAlertDialogStyle)
+    private fun showRationaleDialog(onConfirm: Runnable) {
+        AlertDialog.Builder(requireContext(), R.style.AppCompatAlertDialogStyle)
             .setTitle(R.string.permission_required_title)
             .setMessage(R.string.permission_required_message)
-            .setPositiveButton(R.string.permission_required_button, (dialog, which) -> onConfirm.run())
-            .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss())
-            .show();
-   }
+            .setPositiveButton(R.string.permission_required_button) { _, _ -> onConfirm.run() }
+            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+            .show()
+    }
 
-   private void checkCreateExportFolder(String exportFolderAbsPath)
-   {
-      File file = new File(exportFolderAbsPath);
-      if(!file.isDirectory())
-      {
-         if(!file.mkdirs())
-         {
-            Log.w("BookListFragment", "Can't create export folder: " + exportFolderAbsPath);
-         }
-      }
-   }
+    private fun checkCreateExportFolder(exportFolderAbsPath: String) {
+        val file = File(exportFolderAbsPath)
+        if (!file.isDirectory) {
+            if (!file.mkdirs()) {
+                Log.w("BookListFragment", "Can't create export folder: $exportFolderAbsPath")
+            }
+        }
+    }
 
-   private void getOrderItems()
-   {
-      orderItems.add(new OrderItem(DBAdapter.SRT_TTL, getString(R.string.srt_title)));
-      orderItems.add(new OrderItem(DBAdapter.SRT_AUT, getString(R.string.srt_author)));
-      orderItems.add(new OrderItem(DBAdapter.SRT_WNT_PBL_TTL, getString(R.string.srt_wanted_pbl_ttl)));
-      orderItems.add(new OrderItem(DBAdapter.SRT_WNT_PBL_AUT, getString(R.string.srt_wanted_pbl_aut)));
-      orderItems.add(new OrderItem(DBAdapter.SRT_RD_AUT, getString(R.string.srt_read_aut)));
-      orderItems.add(new OrderItem(DBAdapter.SRT_RD_TTL, getString(R.string.srt_read_ttl)));
-      orderItems.add(new OrderItem(DBAdapter.SRT_NOT_RD_AUT, getString(R.string.srt_not_read_aut)));
-      orderItems.add(new OrderItem(DBAdapter.SRT_NOT_RD_TTL, getString(R.string.srt_not_read_ttl)));
-      orderItems.add(new OrderItem(DBAdapter.SRT_PBL_AUT, getString(R.string.srt_pbl_aut)));
-      orderItems.add(new OrderItem(DBAdapter.SRT_PBL_TTL, getString(R.string.srt_pbl_ttl)));
-      orderItems.add(new OrderItem(DBAdapter.SRT_LND_TTL, getString(R.string.srt_lnd_ttl)));
-      orderItems.add(new OrderItem(DBAdapter.SRT_LND_BRW, getString(R.string.srt_lnd_brw)));
-   }
+    private fun getOrderItems() {
+        orderItems.add(OrderItem(DBAdapter.SRT_TTL, getString(R.string.srt_title)))
+        orderItems.add(OrderItem(DBAdapter.SRT_AUT, getString(R.string.srt_author)))
+        orderItems.add(OrderItem(DBAdapter.SRT_WNT_PBL_TTL, getString(R.string.srt_wanted_pbl_ttl)))
+        orderItems.add(OrderItem(DBAdapter.SRT_WNT_PBL_AUT, getString(R.string.srt_wanted_pbl_aut)))
+        orderItems.add(OrderItem(DBAdapter.SRT_RD_AUT, getString(R.string.srt_read_aut)))
+        orderItems.add(OrderItem(DBAdapter.SRT_RD_TTL, getString(R.string.srt_read_ttl)))
+        orderItems.add(OrderItem(DBAdapter.SRT_NOT_RD_AUT, getString(R.string.srt_not_read_aut)))
+        orderItems.add(OrderItem(DBAdapter.SRT_NOT_RD_TTL, getString(R.string.srt_not_read_ttl)))
+        orderItems.add(OrderItem(DBAdapter.SRT_PBL_AUT, getString(R.string.srt_pbl_aut)))
+        orderItems.add(OrderItem(DBAdapter.SRT_PBL_TTL, getString(R.string.srt_pbl_ttl)))
+        orderItems.add(OrderItem(DBAdapter.SRT_LND_TTL, getString(R.string.srt_lnd_ttl)))
+        orderItems.add(OrderItem(DBAdapter.SRT_LND_BRW, getString(R.string.srt_lnd_brw)))
+    }
 
-   private boolean optionsItemSelect(MenuItem item)
-   {
-      deselectBookAndHideDetails();
+    private fun optionsItemSelect(item: MenuItem): Boolean {
+        deselectBookAndHideDetails()
 
-      int itemId = item.getItemId();
-      if(itemId == R.id.action_imp_db)
-      {
-         if (checkAndRequestPermissions(PendingAction.IMPORT))
-         {
-            showImportDbDialog();
-         }
-         return true;
-      }
-      else if(itemId == R.id.action_exp_db)
-      {
-         if (checkAndRequestPermissions(PendingAction.EXPORT))
-         {
-            showExportDbDialog();
-         }
-         return true;
-      }
-      else if(itemId == R.id.action_exp_all)
-      {
-         booksAdapter.expandAll();
-         return true;
-      }
-      else if(itemId == R.id.action_clp_all)
-      {
-         booksAdapter.collapseAll();
-         return true;
-      }
-      else if(itemId == R.id.action_sort)
-      {
-         View menuItemView = requireActivity().findViewById(item.getItemId()); // SAME ID AS MENU ID
-         showOrderPopupMenu(menuItemView);
-         return true;
-      }
+        val itemId = item.itemId
+        return when (itemId) {
+            R.id.action_imp_db -> {
+                if (checkAndRequestPermissions(PendingAction.IMPORT)) {
+                    showImportDbDialog()
+                }
+                true
+            }
+            R.id.action_exp_db -> {
+                if (checkAndRequestPermissions(PendingAction.EXPORT)) {
+                    showExportDbDialog()
+                }
+                true
+            }
+            R.id.action_exp_all -> {
+                booksAdapter.expandAll()
+                true
+            }
+            R.id.action_clp_all -> {
+                booksAdapter.collapseAll()
+                true
+            }
+            R.id.action_sort -> {
+                val menuItemView = requireActivity().findViewById<View>(item.itemId)
+                showOrderPopupMenu(menuItemView)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
 
-      return super.onOptionsItemSelected(item);
-   }
+    private fun getSelectedBook(v: View) {
+        clickedItemIndex = recyclerView.getChildLayoutPosition(v)
+        bookId = booksAdapter.getItemId(clickedItemIndex)
+        v.isSelected = true
+    }
 
-   private void getSelectedBook(View v)
-   {
-      clickedItemIndex = recyclerView.getChildLayoutPosition(v);
-      bookId = booksAdapter.getItemId(clickedItemIndex);
-      v.setSelected(true);
-   }
+    private fun navigateToBookDetails(v: View) {
+        val action = BookListFragmentDirections.actionBookListFragmentToBookFragment(bookId)
+        Navigation.findNavController(v).navigate(action)
+    }
 
-   private void navigateToBookDetails(View v)
-   {
-      NavDirections action = BookListFragmentDirections.actionBookListFragmentToBookFragment(bookId);
-      Navigation.findNavController(v)
-                .navigate(action);
-   }
+    private fun navigateToEditBook(v: View) {
+        val action = BookListFragmentDirections.actionBookListFragmentToEditBookFragment()
+        Navigation.findNavController(v).navigate(action)
+    }
 
-   private void navigateToEditBook(View v)
-   {
-      NavDirections action = BookListFragmentDirections.actionBookListFragmentToEditBookFragment();
-      Navigation.findNavController(v)
-                .navigate(action);
-   }
+    private fun navigateToEditBook(v: View, bookId: Long, isCopy: Boolean) {
+        val action = BookListFragmentDirections.actionBookListFragmentToEditBookFragment()
+        action.bookID = bookId
+        action.isCopy = isCopy
+        Navigation.findNavController(v).navigate(action)
+    }
 
-   private void navigateToEditBook(View v, long bookId, boolean isCopy)
-   {
-      BookListFragmentDirections.ActionBookListFragmentToEditBookFragment actionBookListFragmentToEditBookFragment = BookListFragmentDirections.actionBookListFragmentToEditBookFragment();
-      actionBookListFragmentToEditBookFragment.setBookID(bookId);
-      actionBookListFragmentToEditBookFragment.setIsCopy(isCopy);
-      Navigation.findNavController(v)
-                .navigate(actionBookListFragmentToEditBookFragment);
-   }
+    private fun selectBookView(view: View) {
+        if (selectedBookView != null && selectedBookView != view) {
+            selectedBookView?.isSelected = false
+        }
+        selectedBookView = view
+    }
 
-   private void selectBookView(View view)
-   {
-      if(selectedBookView != null && !selectedBookView.equals(view))
-         selectedBookView.setSelected(false);
-      selectedBookView = view;
-   }
+    private fun deselectBookView() {
+        selectedBookView?.isSelected = false
+    }
 
-   private void deselectBookView()
-   {
-      if(selectedBookView != null)
-         selectedBookView.setSelected(false);
-   }
+    private fun deselectBookAndHideDetails() {
+        deselectBookView()
+        hideBookDetails()
+    }
 
-   private void deselectBookAndHideDetails()
-   {
-      deselectBookView();
-      hideBookDetails();
-   }
+    private fun showBookDetails() {
+        val arguments = Bundle().apply {
+            putLong(BookDetailFragment.BOOK_ID, bookId)
+        }
+        val fragment = BookDetailFragment().apply {
+            this.arguments = arguments
+        }
+        requireActivity().supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.book_detail_container, fragment)
+            .commit()
+    }
 
-   private void showBookDetails()
-   {
-      Bundle arguments = new Bundle();
-      arguments.putLong(BookDetailFragment.BOOK_ID, bookId);
-      BookDetailFragment fragment = new BookDetailFragment();
-      fragment.setArguments(arguments);
-      requireActivity().getSupportFragmentManager()
-                       .beginTransaction()
-                       .replace(R.id.book_detail_container, fragment)
-                       .commit();
-   }
+    private fun hideBookDetails() {
+        val fragment = requireActivity().supportFragmentManager
+            .findFragmentById(R.id.book_detail_container)
+        if (fragment != null) {
+            requireActivity().supportFragmentManager
+                .beginTransaction()
+                .remove(fragment)
+                .commit()
+        }
+    }
 
-   private void hideBookDetails()
-   {
-      Fragment fragment = requireActivity().getSupportFragmentManager()
-                                           .findFragmentById(R.id.book_detail_container);
-      if(fragment != null)
-      {
-         requireActivity().getSupportFragmentManager()
-                          .beginTransaction()
-                          .remove(fragment)
-                          .commit();
-      }
-   }
+    private fun showImportDbDialog() {
+        val importFolder = File(exportFolderAbsPath)
+        fileSelectorDialog = FileSelectorDialog.newInstance(
+            importFolder,
+            FileOperation.LOAD,
+            onLoadFileListener,
+            fileFilter
+        )
+        fileSelectorDialog?.show(fragmentManager, null)
+    }
 
-   private void showImportDbDialog()
-   {
-      File importFolder = new File(exportFolderAbsPath);
+    private fun showExportDbDialog() {
+        val fileName = getFileName()
+        val exportFile = File(exportFolderAbsPath + fileName)
+        fileSelectorDialog = FileSelectorDialog.newInstance(
+            exportFile,
+            FileOperation.SAVE,
+            onSaveFileListener,
+            fileFilter
+        )
+        fileSelectorDialog?.show(fragmentManager, null)
+    }
 
-      fileSelectorDialog = FileSelectorDialog.newInstance(importFolder,
-                                                          FileOperation.LOAD,
-                                                          onLoadFileListener,
-                                                          fileFilter);
-      fileSelectorDialog.show(fragmentManager, null);
-   }
+    private fun getFileName(): String {
+        val calendar = Calendar.getInstance(Locale.getDefault())
+        val extIndex = DBAdapter.DATABASE_NAME.lastIndexOf(".")
+        return String.format(
+            getString(R.string.fmt_fl_nm),
+            DBAdapter.DATABASE_NAME.substring(0, extIndex),
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH) + 1,
+            calendar.get(Calendar.DAY_OF_MONTH),
+            calendar.get(Calendar.HOUR_OF_DAY),
+            calendar.get(Calendar.MINUTE),
+            DBAdapter.DATABASE_NAME.substring(extIndex + 1)
+        )
+    }
 
-   private void showExportDbDialog()
-   {
-      String fileName = getFileName();
-      File exportFile = new File(exportFolderAbsPath
-                                       + fileName);
-      fileSelectorDialog = FileSelectorDialog.newInstance(exportFile,
-                                                          FileOperation.SAVE,
-                                                          onSaveFileListener,
-                                                          fileFilter);
-      fileSelectorDialog.show(fragmentManager, null);
-   }
+    private fun showOrderPopupMenu(view: View) {
+        val popupMenu = PopupMenu(requireContext(), view)
+        for (orderItem in orderItems) {
+            popupMenu.menu
+                .add(1, orderItem.id, 0, orderItem.title)
+                .setCheckable(true)
+                .setChecked(orderItem.id == orderId)
+        }
+        popupMenu.menu.setGroupCheckable(1, true, true)
+        popupMenu.setOnMenuItemClickListener { menuItem ->
+            orderId = menuItem.itemId
+            saveOrderID(orderId)
+            setupRecyclerView(recyclerView, orderId)
+            true
+        }
+        popupMenu.show()
+    }
 
-   private String getFileName()
-   {
-      Calendar calendar = Calendar.getInstance(Locale.getDefault());
-      int extIndex = DBAdapter.DATABASE_NAME.lastIndexOf(".");
-      return String.format(getString(R.string.fmt_fl_nm),
-                           DBAdapter.DATABASE_NAME.substring(0, extIndex),
-                           calendar.get(Calendar.YEAR),
-                           calendar.get(Calendar.MONTH) + 1,
-                           calendar.get(Calendar.DAY_OF_MONTH),
-                           calendar.get(Calendar.HOUR_OF_DAY),
-                           calendar.get(Calendar.MINUTE),
-                           DBAdapter.DATABASE_NAME.substring(extIndex + 1));
-   }
+    private fun setupRecyclerView(recyclerView: RecyclerView, orderId: Int) {
+        booksAdapter = BooksAdapter(requireContext(), dbAdapter.getBooks(orderId) ?: ArrayList())
+        booksAdapter.setBookClickListener(onBookClickListener)
+        booksAdapter.setBookLongClickListener(onBookLongClickListener)
+        booksAdapter.setHeaderClickListener(onCategoryClickListener)
+        if (isExpandAll) {
+            booksAdapter.expandAll()
+        }
+        recyclerView.adapter = booksAdapter
+        for (orderItem in orderItems) {
+            if (orderItem.id == orderId) {
+                booksOrderTextView.text = orderItem.title
+                booksCountTextView.text = resources.getQuantityString(
+                    R.plurals.books,
+                    booksAdapter.getAllChildrenCount(),
+                    booksAdapter.getAllChildrenCount()
+                )
+            }
+        }
+    }
 
-   private void showOrderPopupMenu(View view)
-   {
-      PopupMenu popupMenu = new PopupMenu(requireContext(), view);
-      for(OrderItem orderItem : orderItems)
-      {
-         popupMenu.getMenu()
-                  .add(1, orderItem.id, 0, orderItem.title)
-                  .setCheckable(true)
-                  .setChecked(orderItem.id == orderId);
-      }
-      popupMenu.getMenu()
-               .setGroupCheckable(1, true, true);
-      popupMenu.setOnMenuItemClickListener(menuItem -> {
-         orderId = menuItem.getItemId();
-         saveOrderID(orderId);
-         setupRecyclerView(recyclerView, orderId);
-         return true;
-      });
-      popupMenu.show();
-   }
+    private fun loadPreferences() {
+        orderId = preferences.getInt(PREF_ORDER_ID, DBAdapter.SRT_TTL)
+        isExpandAll = preferences.getBoolean(PREF_EXPAND_ALL, false)
+        exportFolderAbsPath = getExportFolderAbsPath(
+            preferences.getString(PREF_EXPORT_FOLDER, getString(R.string.app_name)) ?: getString(R.string.app_name)
+        )
+    }
 
-   private void setupRecyclerView(@NonNull RecyclerView recyclerView, int orderId)
-   {
-      booksAdapter = new BooksAdapter(getContext(), dbAdapter.getBooks(orderId));
-      booksAdapter.setBookClickListener(onBookClickListener);
-      booksAdapter.setBookLongClickListener(onBookLongClickListener);
-      booksAdapter.setHeaderClickListener(onCategoryClickListener);
-      if(isExpandAll)
-         booksAdapter.expandAll();
-      recyclerView.setAdapter(booksAdapter);
-      for(OrderItem orderItem : orderItems)
-      {
-         if(orderItem.id == orderId)
-         {
-            booksOrderTextView.setText(orderItem.title);
-            booksCountTextView.setText(getResources().getQuantityString(R.plurals.books,
-                                                                  booksAdapter.getAllChildrenCount(),
-                                                                  booksAdapter.getAllChildrenCount()));
-         }
-      }
-   }
+    private fun saveOrderID(orderId: Int) {
+        val editor = preferences.edit()
+        editor.putInt(PREF_ORDER_ID, orderId)
+        editor.apply()
+    }
 
-   private void loadPreferences()
-   {
-      orderId = preferences.getInt(PREF_ORDER_ID, DBAdapter.SRT_TTL);
-      isExpandAll = preferences.getBoolean(PREF_EXPAND_ALL, false);
-      exportFolderAbsPath = getExportFolderAbsPath(preferences.getString(PREF_EXPORT_FOLDER, getString(R.string.app_name)));
-   }
-
-   private void saveOrderID(int orderId)
-   {
-      SharedPreferences.Editor editor = preferences.edit();
-      editor.putInt(PREF_ORDER_ID, orderId);
-      editor.apply();
-   }
-   private static class OrderItem
-   {
-
-      int id;
-      String title;
-
-      OrderItem(int id, String title)
-      {
-         this.id = id;
-         this.title = title;
-      }
-   }
+    private class OrderItem(var id: Int, var title: String)
 }

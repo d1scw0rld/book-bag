@@ -1,308 +1,238 @@
-package org.d1scw0rld.bookbag;
+package org.d1scw0rld.bookbag
 
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.LinearLayout;
+import android.content.Context
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
+import android.widget.Button
+import android.widget.LinearLayout
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.PopupMenu
+import androidx.appcompat.widget.Toolbar
+import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.NavHostFragment
+import org.d1scw0rld.bookbag.dto.Book
+import org.d1scw0rld.bookbag.dto.Field
+import org.d1scw0rld.bookbag.fields.FieldEditTextUpdatableClearable
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.PopupMenu;
-import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.Fragment;
-import androidx.navigation.fragment.NavHostFragment;
+class EditBookFragment : Fragment(), IBackPressListener {
 
-import org.d1scw0rld.bookbag.dto.Book;
-import org.d1scw0rld.bookbag.dto.Field;
-import org.d1scw0rld.bookbag.fields.FieldEditTextUpdatableClearable;
+    private lateinit var book: Book
+    private lateinit var dbAdapter: DBAdapter
+    private var hiddenFieldsPopupMenu: PopupMenu? = null
+    private var bookTitleField: FieldEditTextUpdatableClearable? = null
+    private val hiddenFieldsHashMap = HashMap<MenuItem, View>()
+    private lateinit var fieldsFactory: FieldsFactory
 
-import java.util.HashMap;
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val view = inflater.inflate(R.layout.fragment_edit_book, container, false)
+        @Suppress("DEPRECATION")
+        setHasOptionsMenu(true)
 
-public class EditBookFragment extends Fragment implements IBackPressListener
-{
-   private Book book;
+        requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
 
-   private DBAdapter dbAdapter = null;
+        val toolbar = view.findViewById<Toolbar>(R.id.toolbar)
+        (requireActivity() as AppCompatActivity).setSupportActionBar(toolbar)
 
-   private PopupMenu hiddenFieldsPopupMenu = null;
+        val actionBar = (requireActivity() as AppCompatActivity).supportActionBar
+        if (actionBar != null) {
+            showHomeTitle(false)
+            actionBar.displayOptions = androidx.appcompat.app.ActionBar.DISPLAY_SHOW_CUSTOM
+            actionBar.setCustomView(R.layout.actionbar_custom_view_done)
 
-   private FieldEditTextUpdatableClearable bookTitleField = null;
+            (actionBar.customView.parent as Toolbar).setContentInsetsAbsolute(0, 0)
+            actionBar.customView.findViewById<View>(R.id.actionbar_done).setOnClickListener { v ->
+                onBookSave(v)
+            }
+        }
 
-   HashMap<MenuItem, View> hiddenFieldsHashMap = new HashMap<>();
-   private FieldsFactory fieldsFactory;
+        dbAdapter = DBAdapter(requireContext())
+        dbAdapter.open()
 
-    @Nullable
-   @Override
-   public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
-   {
-      View view = inflater.inflate(R.layout.fragment_edit_book, container, false);
-      setHasOptionsMenu(true);
+        val bookId = getBookID()
+        val isCopy = getIsCopy()
 
-      requireActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+        if (bookId != 0L) {
+            book = dbAdapter.getBook(bookId) ?: Book()
+            if (isCopy) {
+                book.id = 0
+            }
+        } else {
+            book = Book()
+        }
 
+        fieldsFactory = FieldsFactory(requireContext(), book, dbAdapter)
 
-      Toolbar toolbar = view.findViewById(R.id.toolbar);
-      ((AppCompatActivity)requireActivity()).setSupportActionBar(toolbar);
+        val addFieldButton = view.findViewById<Button>(R.id.btn_add_field)
+        addFieldButton.setOnClickListener {
+            hiddenFieldsPopupMenu?.show()
+        }
 
-       ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
-      if(actionBar != null)
-      {
-         showHomeTitle(false);
-         actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
-         actionBar.setCustomView(R.layout.actionbar_custom_view_done);
+        hiddenFieldsPopupMenu = PopupMenu(requireContext(), addFieldButton).apply {
+            setOnMenuItemClickListener { menuItem ->
+                val fieldView = hiddenFieldsHashMap[menuItem]
+                if (fieldView != null) {
+                    fieldView.visibility = View.VISIBLE
+                    fieldView.requestFocus()
+                }
+                menu.removeItem(menuItem.itemId)
+                if (menu.size() == 0) {
+                    addFieldButton.isEnabled = false
+                }
+                false
+            }
+        }
 
+        val fieldsRoot = view.findViewById<LinearLayout>(R.id.ll_fields)
+        addFields(fieldsRoot)
+        createAddFieldsPopupMenu(fieldsRoot)
 
-         ((Toolbar) actionBar.getCustomView()
-                             .getParent()).setContentInsetsAbsolute(0, 0);
-         actionBar.getCustomView()
-                  .findViewById(R.id.actionbar_done)
-                  .setOnClickListener(this::onBookSave);
+        return view
+    }
 
-      }
+    override fun onPause() {
+        dbAdapter.close()
+        super.onPause()
+    }
 
-      dbAdapter = new DBAdapter(getContext());
-      dbAdapter.open();
+    override fun onResume() {
+        super.onResume()
+        dbAdapter.open()
+    }
 
+    override fun onDestroy() {
+        showHomeTitle(true)
+        super.onDestroy()
+    }
 
-      long bookId = getBookID();
+    @Suppress("DEPRECATION")
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.cancel, menu)
+    }
 
-      boolean isCopy = getIsCopy();
+    @Suppress("DEPRECATION")
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.cancel) {
+            hideKeyboard()
+            navigateBack()
+            return true
+        }
+        return super.onOptionsItemSelected(item)
+    }
 
-      if(bookId != 0)
-      {
-         book = dbAdapter.getBook(bookId);
-         if(isCopy)
-            book.id = 0;
-      }
-      else
-         book = new Book();
+    override fun onBackPressed(): Boolean {
+        navigateBack()
+        return true
+    }
 
-      fieldsFactory = new FieldsFactory(getContext(), book, dbAdapter);
+    private fun getIsCopy(): Boolean {
+        return EditBookFragmentArgs.fromBundle(requireArguments()).isCopy
+    }
 
-      final Button addFieldButton = view.findViewById(R.id.btn_add_field);
-      addFieldButton.setOnClickListener(v -> hiddenFieldsPopupMenu.show());
+    private fun getBookID(): Long {
+        return EditBookFragmentArgs.fromBundle(requireArguments()).bookID
+    }
 
-      hiddenFieldsPopupMenu = new PopupMenu(requireContext(), addFieldButton);
-      hiddenFieldsPopupMenu.setOnMenuItemClickListener(menuItem -> {
-         View fieldView = hiddenFieldsHashMap.get(menuItem);
-         if(fieldView != null)
-         {
-            fieldView.setVisibility(View.VISIBLE);
-            fieldView.requestFocus();
-         }
-         hiddenFieldsPopupMenu.getMenu()
-                              .removeItem(menuItem.getItemId());
-         if(hiddenFieldsPopupMenu.getMenu().size() == 0)
-            addFieldButton.setEnabled(false);
-         return false;
-      });
+    private fun createAddFieldsPopupMenu(fieldsRoot: LinearLayout) {
+        for (i in 0 until fieldsRoot.childCount) {
+            val child = fieldsRoot.getChildAt(i)
+            if (child.visibility == View.GONE) {
+                val menu = hiddenFieldsPopupMenu?.menu ?: continue
+                menu.add(Menu.NONE, menu.size(), 0, (child as org.d1scw0rld.bookbag.fields.Field).getTitle())
+                hiddenFieldsHashMap[menu.getItem(menu.size() - 1)] = child
+            }
+        }
+    }
 
-      LinearLayout fieldsRoot = view.findViewById(R.id.ll_fields);
+    private fun addFields(rootView: ViewGroup) {
+        for (field in DBAdapter.FIELDS) {
+            when (field.type) {
+                Field.TYPE_TEXT -> {
+                    fieldsFactory.addFieldText(rootView, field)
+                    if (field.id == DBAdapter.FLD_TITLE) {
+                        bookTitleField = rootView.getChildAt(rootView.childCount - 1) as FieldEditTextUpdatableClearable
+                    }
+                }
+                Field.TYPE_MULTIFIELD -> fieldsFactory.addFieldMultiText(rootView, field)
+                Field.TYPE_TEXT_AUTOCOMPLETE -> fieldsFactory.addAutocompleteField(rootView, field)
+                Field.TYPE_SPINNER -> fieldsFactory.addFieldSpinner(rootView, field)
+                Field.TYPE_MULTI_SPINNER -> fieldsFactory.addFieldMultiSpinner(rootView, field)
+                Field.TYPE_MONEY -> fieldsFactory.addFieldMoney(rootView, field)
+                Field.TYPE_DATE -> fieldsFactory.addFieldDate(rootView, field)
+                Field.TYPE_RATING -> fieldsFactory.addFieldRating(rootView, field)
+                Field.TYPE_CHECK_BOX -> fieldsFactory.addFieldCheckBox(rootView, field)
+            }
+        }
+    }
 
-      addFields(fieldsRoot);
+    private fun onBookSave(view: View) {
+        val currentFocus = requireActivity().currentFocus
+        currentFocus?.clearFocus()
+        view.requestFocus()
 
-      createAddFieldsPopupMenu(fieldsRoot);
+        hideKeyboard()
 
-      return view;
+        if (book.title.value.trim().isEmpty()) {
+            bookTitleField?.setError(resources.getString(R.string.err_emp_ttl))
+        } else {
+            bookTitleField?.setError(null)
+            saveBook()
+            if (book.id == 0L) {
+                navigateToBookList()
+            } else {
+                navigateBack()
+            }
+        }
+    }
 
-   }
+    private fun saveBook() {
+        clearEmptyFields()
+        if (book.id != 0L) {
+            dbAdapter.updateBook(book)
+        } else {
+            dbAdapter.insertBook(book)
+        }
+    }
 
-   @Override
-   public void onPause()
-   {
-      dbAdapter.close();
+    private fun clearEmptyFields() {
+        for (i in book.properties.indices.reversed()) {
+            if (book.properties[i].value.trim().isEmpty()) {
+                book.properties.removeAt(i)
+            }
+        }
+    }
 
-      super.onPause();
-   }
+    private fun navigateToBookList() {
+        NavHostFragment.findNavController(this).navigate(R.id.action_to_book_list)
+    }
 
-   @Override
-   public void onResume()
-   {
-      super.onResume();
+    private fun navigateBack() {
+        NavHostFragment.findNavController(this).navigateUp()
+    }
 
-      dbAdapter.open();
-   }
+    private fun hideKeyboard() {
+        val view = requireActivity().currentFocus
+        if (view != null) {
+            val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(view.windowToken, 0)
+        }
+    }
 
-   @Override
-   public void onDestroy()
-   {
-      showHomeTitle(true);
-
-      super.onDestroy();
-   }
-
-   @Override
-   public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater)
-   {
-      inflater.inflate(R.menu.cancel, menu);
-   }
-
-   @Override
-   public boolean onOptionsItemSelected(MenuItem item)
-   {
-      if(item.getItemId() == R.id.cancel)
-      {
-         hideKeyboard();
-         navigateBack();
-         return true;
-      }
-      return super.onOptionsItemSelected(item);
-   }
-
-   @Override
-   public boolean onBackPressed()
-   {
-      navigateBack();
-      return true;
-   }
-
-   private boolean getIsCopy()
-   {
-      return EditBookFragmentArgs.fromBundle(requireArguments()).getIsCopy();
-   }
-
-   private long getBookID()
-   {
-      return EditBookFragmentArgs.fromBundle(requireArguments()).getBookID();
-   }
-
-   private void createAddFieldsPopupMenu(LinearLayout fieldsRoot)
-   {
-      for(int i = 0; i < fieldsRoot.getChildCount(); i++)
-      {
-         if(fieldsRoot.getChildAt(i).getVisibility() == View.GONE)
-         {
-            hiddenFieldsPopupMenu.getMenu()
-                                 .add(Menu.NONE, hiddenFieldsPopupMenu.getMenu().size(), 0, ((org.d1scw0rld.bookbag.fields.Field)fieldsRoot.getChildAt(i)).getTitle());
-            hiddenFieldsHashMap.put(hiddenFieldsPopupMenu.getMenu().getItem(hiddenFieldsPopupMenu.getMenu().size() - 1), fieldsRoot.getChildAt(i));
-
-         }
-      }
-   }
-
-   private void addFields(ViewGroup rootView)
-   {
-      for(Field field : DBAdapter.FIELDS)
-      {
-         switch(field.type)
-         {
-            case Field.TYPE_TEXT:
-               fieldsFactory.addFieldText(rootView, field);
-               if(field.id == DBAdapter.FLD_TITLE)
-                  bookTitleField = (FieldEditTextUpdatableClearable) rootView.getChildAt(rootView.getChildCount()-1);
-               break;
-
-            case Field.TYPE_MULTIFIELD:
-               fieldsFactory.addFieldMultiText(rootView, field);
-               break;
-
-            case Field.TYPE_TEXT_AUTOCOMPLETE:
-               fieldsFactory.addAutocompleteField(rootView, field);
-               break;
-
-            case Field.TYPE_SPINNER:
-               fieldsFactory.addFieldSpinner(rootView, field);
-               break;
-
-            case Field.TYPE_MULTI_SPINNER:
-               fieldsFactory.addFieldMultiSpinner(rootView, field);
-               break;
-
-            case Field.TYPE_MONEY:
-               fieldsFactory.addFieldMoney(rootView, field);
-               break;
-
-            case Field.TYPE_DATE:
-               fieldsFactory.addFieldDate(rootView, field);
-               break;
-
-            case Field.TYPE_RATING:
-               fieldsFactory.addFieldRating(rootView, field);
-               break;
-
-            case Field.TYPE_CHECK_BOX:
-               fieldsFactory.addFieldCheckBox(rootView, field);
-               break;
-         }
-      }
-   }
-
-   private void onBookSave(View view)
-   {
-      View currentFocus = requireActivity().getCurrentFocus();
-      if(currentFocus != null)
-         currentFocus.clearFocus();
-      view.requestFocus();
-
-      hideKeyboard();
-
-      if(book.title.value.trim().isEmpty())
-         bookTitleField.setError(getResources().getString(R.string.err_emp_ttl));
-      else
-      {
-         bookTitleField.setError(null);
-         saveBook();
-         if(book.id == 0)
-            navigateToBookList();
-         else
-            navigateBack();
-      }
-   }
-
-   private void saveBook()
-   {
-      clearEmptyFields();
-
-      if(book.id != 0)
-         dbAdapter.updateBook(book);
-      else
-         dbAdapter.insertBook(book);
-   }
-
-   private void clearEmptyFields()
-   {
-      for(int i = book.properties.size() - 1; i >= 0; i--)
-      {
-         if(book.properties.get(i).value.trim().isEmpty())
-            book.properties.remove(i);
-      }
-   }
-
-   private void navigateToBookList()
-   {
-      NavHostFragment.findNavController(this).navigate(R.id.action_to_book_list);
-   }
-
-   private void navigateBack()
-   {
-      NavHostFragment.findNavController(this).navigateUp();
-   }
-
-   private void hideKeyboard()
-   {
-      View view = requireActivity().getCurrentFocus();
-      if(view != null)
-      {
-         android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) requireActivity().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
-         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-      }
-   }
-
-   private void showHomeTitle(boolean show)
-   {
-      ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
-      if (actionBar != null)
-      {
-         actionBar.setDisplayShowTitleEnabled(show);
-         actionBar.setDisplayShowHomeEnabled(show);
-      }
-   }
+    private fun showHomeTitle(show: Boolean) {
+        val actionBar = (requireActivity() as AppCompatActivity).supportActionBar
+        if (actionBar != null) {
+            actionBar.setDisplayShowTitleEnabled(show)
+            actionBar.setDisplayShowHomeEnabled(show)
+        }
+    }
 }

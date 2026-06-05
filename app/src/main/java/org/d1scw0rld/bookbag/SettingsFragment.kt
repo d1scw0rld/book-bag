@@ -1,57 +1,41 @@
-package org.d1scw0rld.bookbag;
+package org.d1scw0rld.bookbag
 
-import android.os.Bundle;
-import android.view.MenuItem;
-import android.view.View;
+import android.os.Bundle
+import android.view.MenuItem
+import android.view.View
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.navigation.Navigation
+import androidx.preference.PreferenceFragmentCompat
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.navigation.Navigation;
-import androidx.preference.PreferenceFragmentCompat;
+class SettingsFragment : PreferenceFragmentCompat() {
 
-public class SettingsFragment extends PreferenceFragmentCompat
-{
-   @Override
-   public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
-   {
-      super.onViewCreated(view, savedInstanceState);
-      setHasOptionsMenu(true);
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        @Suppress("DEPRECATION")
+        setHasOptionsMenu(true)
 
-      Toolbar toolbar = view.findViewById(R.id.toolbar);
-      toolbar.setTitle("Settings");
+        val toolbar = view.findViewById<Toolbar>(R.id.toolbar)
+        toolbar?.title = "Settings"
 
-      AppCompatActivity appCompatActivity = requireActivity() instanceof AppCompatActivity ? (AppCompatActivity) requireActivity() : null;
+        val appCompatActivity = requireActivity() as? AppCompatActivity
+        if (appCompatActivity != null && toolbar != null) {
+            appCompatActivity.setSupportActionBar(toolbar)
+            appCompatActivity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            appCompatActivity.supportActionBar?.setHomeButtonEnabled(true)
+        }
+    }
 
-      if(appCompatActivity != null)
-      {
-         appCompatActivity.setSupportActionBar(toolbar);
-         if (appCompatActivity.getSupportActionBar() != null)
-         {
-            appCompatActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            appCompatActivity.getSupportActionBar().setHomeButtonEnabled(true);
-         }
-      }
-   }
+    @Suppress("DEPRECATION")
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == android.R.id.home) {
+            Navigation.findNavController(requireView()).navigateUp()
+            return true
+        }
+        return super.onOptionsItemSelected(item)
+    }
 
-   @Override
-   public boolean onOptionsItemSelected(MenuItem item)
-   {
-      if(item.getItemId() == android.R.id.home)
-      {
-         Navigation.findNavController(requireView())
-                   .navigateUp();
-         return true;
-      }
-
-      return super.onOptionsItemSelected(item);
-   }
-
-
-   @Override
-   public void onCreatePreferences(Bundle savedInstanceState, String rootKey)
-   {
-      setPreferencesFromResource(R.xml.preference_screen, rootKey);
-   }
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        setPreferencesFromResource(R.xml.preference_screen, rootKey)
+    }
 }

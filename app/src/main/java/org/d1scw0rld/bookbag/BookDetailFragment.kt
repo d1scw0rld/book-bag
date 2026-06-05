@@ -1,91 +1,66 @@
-package org.d1scw0rld.bookbag;
+package org.d1scw0rld.bookbag
 
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.LinearLayout
+import androidx.fragment.app.Fragment
+import com.google.android.material.appbar.CollapsingToolbarLayout
+import org.d1scw0rld.bookbag.dto.Book
 
-import com.google.android.material.appbar.CollapsingToolbarLayout;
+class BookDetailFragment : Fragment() {
 
-import org.d1scw0rld.bookbag.dto.Book;
+    private var book: Book? = null
+    private val dbAdapter: DBAdapter by lazy { DBAdapter(requireContext()) }
+    private var bookDetailFieldsFactory: BookDetailFieldsFactory? = null
+    private lateinit var categoriesLayout: LinearLayout
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
+    companion object {
+        const val BOOK_ID = "book_id"
+    }
 
-/**
- * A fragment representing a single book detail screen.
- * This fragment is either contained in a {@link MainActivity}
- * in two-pane mode (on tablets) or a {@link BookFragment}
- * on handsets.
- */
-public class BookDetailFragment extends Fragment
-{
-   /**
-    * The fragment argument representing the book ID that this fragment
-    * represents.
-    */
-   public static final String BOOK_ID = "book_id";
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        dbAdapter.open()
 
-   private Book book;
-   
-   private DBAdapter dbAdapter = null;
+        arguments?.let { args ->
+            if (args.containsKey(BOOK_ID)) {
+                book = dbAdapter.getBook(args.getLong(BOOK_ID))
+                bookDetailFieldsFactory = BookDetailFieldsFactory(requireContext(), dbAdapter, book)
+            }
+        }
+    }
 
-   private BookDetailFieldsFactory bookDetailFieldsFactory;
-   private LinearLayout categoriesLayout;
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.fragment_book_detail, container, false)
+    }
 
-   @Override
-   public void onCreate(Bundle savedInstanceState)
-   {
-      super.onCreate(savedInstanceState);
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-      dbAdapter = new DBAdapter(getActivity());
-      dbAdapter.open();
+        val appBarLayout = requireActivity().findViewById<CollapsingToolbarLayout>(R.id.toolbar_layout)
+        book?.let { b ->
+            appBarLayout?.title = b.title.value
+        }
 
-      if(getArguments() != null && getArguments().containsKey(BOOK_ID))
-      {
-         book = dbAdapter.getBook(getArguments().getLong(BOOK_ID));
+        categoriesLayout = view.findViewById(R.id.ll_categories)
+    }
 
-         bookDetailFieldsFactory = new BookDetailFieldsFactory(getContext(), dbAdapter, book);
-      }
-   }
+    override fun onPause() {
+        dbAdapter.close()
+        super.onPause()
+    }
 
-   @Override
-   public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-   {
-      return inflater.inflate(R.layout.fragment_book_detail, container, false);
-   }
-
-   @Override
-   public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
-   {
-      super.onViewCreated(view, savedInstanceState);
-
-      CollapsingToolbarLayout appBarLayout = requireActivity().findViewById(R.id.toolbar_layout);
-
-      if(appBarLayout != null)
-         appBarLayout.setTitle(book.title.value);
-
-      categoriesLayout = view.findViewById(R.id.ll_categories);
-   }
-
-   @Override
-   public void onPause()
-   {
-      dbAdapter.close();
-
-      super.onPause();
-   }
-
-   @Override
-   public void onResume()
-   {
-      super.onResume();
-
-      dbAdapter.open();
-
-      if (book != null)
-         bookDetailFieldsFactory.addFields(categoriesLayout);
-   }
+    override fun onResume() {
+        super.onResume()
+        dbAdapter.open()
+        if (book != null) {
+            bookDetailFieldsFactory?.addFields(categoriesLayout)
+        }
+    }
 }

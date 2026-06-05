@@ -1,25 +1,20 @@
-package org.d1scw0rld.bookbag;
+package org.d1scw0rld.bookbag
 
-import java.util.Collections;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Collections
+import java.util.concurrent.ConcurrentHashMap
 
-public class BaseObservable<LISTENER_CLASS>
-{
-   private final Set<LISTENER_CLASS> listeners = Collections.newSetFromMap(new ConcurrentHashMap<>(1));
+open class BaseObservable<LISTENER_CLASS> {
+    private val listeners: MutableSet<LISTENER_CLASS> = Collections.newSetFromMap(ConcurrentHashMap(1))
 
-   public final void registerListener(LISTENER_CLASS listener)
-   {
-      listeners.add(listener);
-   }
+    fun registerListener(listener: LISTENER_CLASS) {
+        listeners.add(listener)
+    }
 
-   public final void unregisterListener(LISTENER_CLASS listener)
-   {
-      listeners.remove(listener);
-   }
+    fun unregisterListener(listener: LISTENER_CLASS) {
+        listeners.remove(listener)
+    }
 
-   protected Set<LISTENER_CLASS> getListeners()
-   {
-      return Collections.unmodifiableSet(listeners);
-   }
+    protected fun getListeners(): Set<LISTENER_CLASS> {
+        return Collections.unmodifiableSet(listeners)
+    }
 }

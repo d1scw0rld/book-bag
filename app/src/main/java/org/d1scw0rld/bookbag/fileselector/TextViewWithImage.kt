@@ -1,64 +1,57 @@
-package org.d1scw0rld.bookbag.fileselector;
+package org.d1scw0rld.bookbag.fileselector
 
-import android.content.Context;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.content.Context
+import android.util.AttributeSet
+import android.view.View
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.TextView
 
 /**
  * Class which combines ImageView and TextView in LinearLayout with horizontal
  * orientation
  */
-public class TextViewWithImage extends LinearLayout
-{
+class TextViewWithImage @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0,
+) : LinearLayout(context, attrs, defStyleAttr) {
 
-   /**
-    * Image - in this project will be used to display icon representing the file
-    * type
-    */
-   private final ImageView imageView;
-   /** Text - in this project will be used to display the file name */
-   private final TextView textView;
+    private val imageView: ImageView
+    private val textView: TextView
 
-   public TextViewWithImage(Context context)
-   {
-      super(context);
-      setOrientation(HORIZONTAL);
-      imageView = new ImageView(context);
-      textView = new TextView(context);
+    init {
+        orientation = HORIZONTAL
+        imageView = ImageView(context)
+        textView = TextView(context)
 
-      LayoutParams layoutParams = new LayoutParams(0, LayoutParams.WRAP_CONTENT, 1);
-      layoutParams.weight = 1;
-      addView(imageView, layoutParams);
-      layoutParams = new LayoutParams(0, LayoutParams.WRAP_CONTENT, 3);
-      addView(textView, layoutParams);
-   }
+        val imageParams = LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)
+        addView(imageView, imageParams)
 
-   /** Simple wrapper around the TextView.getText() method. */
-   public CharSequence getText()
-   {
-      return textView.getText();
-   }
+        val textParams = LayoutParams(0, LayoutParams.WRAP_CONTENT, 3f)
+        addView(textView, textParams)
+    }
 
-   /**
-    * Simple wrapper around ImageView.setImageResource() method, but if resourceId is
-    * equal to -1 this method sets Image's visibility as GONE.
-    */
-   public void setImageResource(int resourceId)
-   {
-      if(resourceId == -1)
-      {
-         imageView.setVisibility(View.GONE);
-         return;
-      }
-      imageView.setImageResource(resourceId);
-   }
+    /** Simple wrapper around the TextView.getText() method. */
+    fun getText(): CharSequence {
+        return textView.text
+    }
 
-   /** Simple wrapper around TextView.setText() method. */
-   public void setText(String text)
-   {
-      textView.setText(text);
-   }
+    /**
+     * Simple wrapper around ImageView.setImageResource() method, but if resourceId is
+     * equal to -1 this method sets Image's visibility as GONE.
+     */
+    fun setImageResource(resourceId: Int) {
+        if (resourceId == -1) {
+            imageView.visibility = View.GONE
+            return
+        }
+        imageView.visibility = View.VISIBLE
+        imageView.setImageResource(resourceId)
+    }
 
+    /** Simple wrapper around TextView.setText() method. */
+    fun setText(text: String) {
+        textView.text = text
+    }
 }

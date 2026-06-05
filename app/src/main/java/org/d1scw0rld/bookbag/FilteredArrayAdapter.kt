@@ -1,106 +1,77 @@
-package org.d1scw0rld.bookbag;
+package org.d1scw0rld.bookbag
 
-import android.content.Context;
+import android.content.Context
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.Filter
+import android.widget.TextView
+import androidx.core.os.ConfigurationCompat
+import java.util.Locale
 
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.Filter;
-import android.widget.TextView;
+class FilteredArrayAdapter<T>(
+    context: Context,
+    viewResourceId: Int,
+    private val items: ArrayList<T>
+) : ArrayAdapter<T>(context, viewResourceId, items) {
 
-import androidx.annotation.NonNull;
-import androidx.core.os.ConfigurationCompat;
+    private val nameFilter: FieldFilter by lazy { FieldFilter(items) }
 
-import java.util.ArrayList;
-import java.util.List;
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+        val view = super.getView(position, convertView, parent) as TextView
+        val item = getItem(position)
+        requireNotNull(item)
+        view.text = item.toString()
+        return view
+    }
 
-public class FilteredArrayAdapter<T> extends ArrayAdapter<T>
-{
-   private final Context context;
-   private final ArrayList<T> items;
-   private FieldFilter  nameFilter;
+    override fun getFilter(): Filter {
+        return nameFilter
+    }
 
-   public FilteredArrayAdapter(Context context, int viewResourceId, ArrayList<T> items)
-   {
-      super(context, viewResourceId, items);
-      this.items = items;
-      this.context = context;
-   }
+    private inner class FieldFilter(objects: List<T>) : Filter() {
+        private val suggestions = ArrayList<T>()
 
-   @NonNull
-   public View getView(int position, View convertView, @NonNull ViewGroup parent)
-   {
-      TextView view = (TextView) super.getView(position, convertView, parent);
-      T item = getItem(position);
-      assert item != null;
-      view.setText(item.toString());
-      return view;
-   }
-
-   @NonNull
-   @Override
-   public Filter getFilter()
-   {
-      if(nameFilter == null)
-         nameFilter = new FieldFilter(items);
-      return nameFilter;
-   }
-
-   private class FieldFilter extends Filter
-   {
-      private final ArrayList<T> suggestions;
-
-      FieldFilter(List<T> objects)
-      {
-         suggestions = new ArrayList<>();
-         synchronized(this)
-         {
-            suggestions.addAll(objects);
-         }
-      }
-
-      @Override
-      protected FilterResults performFiltering(CharSequence charSequence)
-      {
-         FilterResults result = new FilterResults();
-         if(charSequence != null && charSequence.length() > 0)
-         {
-            String filterSeq = charSequence.toString().toLowerCase();
-            ArrayList<T> filteredSuggestions = new ArrayList<>();
-
-            for(T object : suggestions)
-            {
-               if(object.toString()
-                        .toLowerCase(ConfigurationCompat.getLocales(context.getResources().getConfiguration()).get(0))
-                        .startsWith(filterSeq))
-                  filteredSuggestions.add(object);
+        init {
+            synchronized(this) {
+                suggestions.addAll(objects)
             }
-            result.count = filteredSuggestions.size();
-            result.values = filteredSuggestions;
-         }
-         else
-         {
-            synchronized(this)
-            {
-               result.values = suggestions;
-               result.count = suggestions.size();
+        }
+
+        override fun performFiltering(charSequence: CharSequence?): FilterResults {
+            val result = FilterResults()
+            if (!charSequence.isNullOrEmpty()) {
+                val filterSeq = charSequence.toString().lowercase(Locale.getDefault())
+                val filteredSuggestions = ArrayList<T>()
+
+                val locales = ConfigurationCompat.getLocales(context.resources.configuration)
+                val locale = if (locales.size() > 0) locales[0] ?: Locale.getDefault() else Locale.getDefault()
+                for (obj in suggestions) {
+                    if (obj.toString().lowercase(locale).startsWith(filterSeq)) {
+                        filteredSuggestions.add(obj)
+                    }
+                }
+                result.count = filteredSuggestions.size
+                result.values = filteredSuggestions
+            } else {
+                synchronized(this) {
+                    result.values = suggestions
+                    result.count = suggestions.size
+                }
             }
-         }
-         return result;
-      }
-      @SuppressWarnings("unchecked")
-      @Override
-      protected void publishResults(CharSequence charSequence, FilterResults filterResults)
-      {
-         if(filterResults != null && filterResults.count > 0)
-         {
-            ArrayList<T> filtered = (ArrayList<T>) filterResults.values;
-            notifyDataSetChanged();
-            clear();
-            addAll(filtered);
-         }
-         else
-            notifyDataSetInvalidated();
-      }
-   }
+            return result
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        override fun publishResults(charSequence: CharSequence?, filterResults: FilterResults?) {
+            if (filterResults != null && filterResults.count > 0) {
+                val filtered = filterResults.values as ArrayList<T>
+                notifyDataSetChanged()
+                clear()
+                addAll(filtered)
+            } else {
+                notifyDataSetInvalidated()
+            }
+        }
+    }
 }
