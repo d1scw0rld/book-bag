@@ -13,7 +13,7 @@ import org.d1scw0rld.bookbag.R
 import org.d1scw0rld.bookbag.dto.Date
 import java.util.Calendar
 
-class FieldDate @JvmOverloads constructor(
+class FieldDate(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,

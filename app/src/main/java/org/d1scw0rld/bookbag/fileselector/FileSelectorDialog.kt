@@ -352,7 +352,6 @@ class FileSelectorDialog : DialogFragment() {
         private const val KEY_OPERATION = "key_operation"
         private const val KEY_FILE_FILTERS = "key_file_filters"
 
-        @JvmStatic
         fun newInstance(
             currentFile: File?,
             operation: FileOperation,

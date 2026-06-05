@@ -20,7 +20,6 @@ internal object FileUtils {
      *           - criterion - the file type (for example ".jpg")
      * @return true - if file meets the criterion - false otherwise.
      */
-    @JvmStatic
     fun accept(file: File, filter: String): Boolean {
         if (filter == FILTER_ALLOW_ALL) {
             return true

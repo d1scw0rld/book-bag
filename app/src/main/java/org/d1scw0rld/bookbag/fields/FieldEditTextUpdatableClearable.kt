@@ -11,7 +11,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.LinearLayout
 import org.d1scw0rld.bookbag.R
 
-class FieldEditTextUpdatableClearable @JvmOverloads constructor(
+class FieldEditTextUpdatableClearable(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,

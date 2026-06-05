@@ -3,9 +3,9 @@ package org.d1scw0rld.bookbag.dto
 import java.util.Locale
 
 data class Date(
-    @JvmField val day: Int,
-    @JvmField val month: Int,
-    @JvmField val year: Int
+    val day: Int,
+    val month: Int,
+    val year: Int
 ) : Comparable<Date> {
 
     // Default constructor (sets day=1, month=1, year=1900 as in original)

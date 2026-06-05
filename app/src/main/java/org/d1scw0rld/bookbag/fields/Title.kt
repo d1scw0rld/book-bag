@@ -10,15 +10,14 @@ import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import org.d1scw0rld.bookbag.R
 
-class Title @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-) : LinearLayout(context, attrs) {
+class Title : LinearLayout {
 
     private lateinit var title: TextView
     private lateinit var line: LinearLayout
 
-    init {
+    constructor(context: Context) : this(context, null)
+
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
         if (!isInEditMode) {
             val typedArray = context.obtainStyledAttributes(attrs, R.styleable.Title, 0, 0)
             val titleText = typedArray.getString(R.styleable.Title_text)

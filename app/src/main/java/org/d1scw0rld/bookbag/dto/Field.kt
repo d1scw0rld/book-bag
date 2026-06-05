@@ -1,12 +1,12 @@
 package org.d1scw0rld.bookbag.dto
 
-class Field @JvmOverloads constructor(
-    @JvmField var id: Int = 0,
-    @JvmField var name: String = "",
-    @JvmField var isVisible: Boolean = false,
-    @JvmField var type: Byte = 0
+class Field(
+    var id: Int = 0,
+    var name: String = "",
+    var isVisible: Boolean = false,
+    var type: Byte = 0
 ) {
-    @JvmField var inputType: Int = 0
+    var inputType: Int = 0
 
     companion object {
         const val TYPE_TEXT: Byte = 1

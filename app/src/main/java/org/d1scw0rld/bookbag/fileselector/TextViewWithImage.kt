@@ -11,7 +11,7 @@ import android.widget.TextView
  * Class which combines ImageView and TextView in LinearLayout with horizontal
  * orientation
  */
-class TextViewWithImage @JvmOverloads constructor(
+class TextViewWithImage(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,

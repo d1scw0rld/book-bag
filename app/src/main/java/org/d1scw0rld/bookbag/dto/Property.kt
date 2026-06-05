@@ -2,14 +2,11 @@ package org.d1scw0rld.bookbag.dto
 
 /**
  * Data Transfer Object representing a custom field property of a Book.
- *
- * This class uses Kotlin's primary constructor with default values and [JvmOverloads]
- * to allow seamless usage from Java (e.g., direct field access via [JvmField] and overload constructors).
  */
-class Property @JvmOverloads constructor(
-    @JvmField var fieldTypeId: Int = 0,
-    @JvmField var value: String = "",
-    @JvmField var id: Long = 0
+class Property(
+    var fieldTypeId: Int = 0,
+    var value: String = "",
+    var id: Long = 0
 ) {
 
     /**

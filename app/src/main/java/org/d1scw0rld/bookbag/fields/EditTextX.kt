@@ -16,11 +16,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doOnTextChanged
 import org.d1scw0rld.bookbag.R
 
-class EditTextX @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyleAttr: Int = android.R.attr.editTextStyle,
-) : AppCompatEditText(context, attrs, defStyleAttr) {
+class EditTextX : AppCompatEditText {
 
     private var onUpdateListener: OnUpdateListener? = null
     private var callback: Callback? = null
@@ -62,7 +58,15 @@ class EditTextX @JvmOverloads constructor(
         false
     }
 
-    init {
+    constructor(context: Context) : this(context, null)
+
+    constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, android.R.attr.editTextStyle)
+
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+        initializeView()
+    }
+
+    private fun initializeView() {
         updateDeleteIcon(isFocused)
         setOnEditorActionListener(onEditorActionListener)
         onFocusChangeListener = onFocusChangeListenerInternal

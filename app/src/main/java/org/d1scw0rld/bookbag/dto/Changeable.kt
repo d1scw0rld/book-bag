@@ -1,6 +1,6 @@
 package org.d1scw0rld.bookbag.dto
 
-class Changeable<T : Any>(@JvmField var value: T) {
+class Changeable<T : Any>(var value: T) {
 
     override fun toString(): String {
         return value.toString()

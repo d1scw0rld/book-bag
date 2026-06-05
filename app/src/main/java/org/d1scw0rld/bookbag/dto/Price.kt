@@ -2,13 +2,10 @@ package org.d1scw0rld.bookbag.dto
 
 /**
  * Data Transfer Object representing a Price.
- *
- * This class uses Kotlin's primary constructor with default values and [JvmOverloads]
- * to allow seamless usage from Java (e.g., direct field access via [JvmField] and overloaded constructors).
  */
-data class Price @JvmOverloads constructor(
-    @JvmField var value: Int = 0,
-    @JvmField var currencyId: Long = 0
+data class Price(
+    var value: Int = 0,
+    var currencyId: Long = 0
 ) {
     /**
      * Parses a Price from a serialized string format (e.g., "value|currencyId").

@@ -15,11 +15,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doOnTextChanged
 import org.d1scw0rld.bookbag.R
 
-class AutoCompleteTextViewX @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyleAttr: Int = androidx.appcompat.R.attr.autoCompleteTextViewStyle,
-) : AppCompatAutoCompleteTextView(context, attrs, defStyleAttr) {
+class AutoCompleteTextViewX : AppCompatAutoCompleteTextView {
 
     private var onUpdateListener: OnUpdateListener? = null
     private var callback: Callback? = null
@@ -60,7 +56,15 @@ class AutoCompleteTextViewX @JvmOverloads constructor(
         false
     }
 
-    init {
+    constructor(context: Context) : this(context, null)
+
+    constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, androidx.appcompat.R.attr.autoCompleteTextViewStyle)
+
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+        initializeView()
+    }
+
+    private fun initializeView() {
         updateDeleteIcon(isFocused)
         setOnEditorActionListener(onEditorActionListener)
         onFocusChangeListener = onFocusChangeListenerInternal

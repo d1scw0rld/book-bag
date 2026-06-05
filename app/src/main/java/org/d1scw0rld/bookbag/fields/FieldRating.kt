@@ -9,7 +9,7 @@ import android.widget.RatingBar.OnRatingBarChangeListener
 import androidx.appcompat.widget.AppCompatRatingBar
 import org.d1scw0rld.bookbag.R
 
-class FieldRating @JvmOverloads constructor(
+class FieldRating(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,

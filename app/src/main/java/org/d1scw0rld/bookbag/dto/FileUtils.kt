@@ -5,7 +5,6 @@ import java.io.FileOutputStream
 import java.io.IOException
 
 object FileUtils {
-    @JvmStatic
     @Throws(IOException::class)
     fun copyFile(fromFile: FileInputStream, toFile: FileOutputStream) {
         fromFile.channel.use { fromChannel ->

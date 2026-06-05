@@ -11,7 +11,7 @@ import android.widget.ArrayAdapter
 import android.widget.LinearLayout
 import org.d1scw0rld.bookbag.R
 
-class FieldAutoCompleteTextView @JvmOverloads constructor(
+class FieldAutoCompleteTextView(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,

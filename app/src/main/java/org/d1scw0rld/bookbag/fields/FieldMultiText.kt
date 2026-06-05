@@ -13,7 +13,7 @@ import org.d1scw0rld.bookbag.FilteredArrayAdapter
 import org.d1scw0rld.bookbag.R
 import org.d1scw0rld.bookbag.dto.Property
 
-class FieldMultiText @JvmOverloads constructor(
+class FieldMultiText(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,

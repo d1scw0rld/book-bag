@@ -14,7 +14,7 @@ import org.d1scw0rld.bookbag.DBAdapter
 import org.d1scw0rld.bookbag.R
 import java.util.regex.Pattern
 
-class FieldMoney @JvmOverloads constructor(
+class FieldMoney(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,

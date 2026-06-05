@@ -2,31 +2,28 @@ package org.d1scw0rld.bookbag.dto
 
 /**
  * Data Transfer Object representing a Book.
- *
- * This class uses Kotlin's primary constructor with default values and [JvmOverloads]
- * to allow seamless usage from Java (e.g., direct field access via [JvmField] and overload constructors).
  */
-class Book @JvmOverloads constructor(
-    @JvmField var id: Long = 0,
+class Book(
+    var id: Long = 0,
 
-    @JvmField var title: Changeable<String> = Changeable(""),
-    @JvmField var description: Changeable<String> = Changeable(""),
-    @JvmField var price: Changeable<String> = Changeable(""),
-    @JvmField var value: Changeable<String> = Changeable(""),
-    @JvmField var isbn: Changeable<String> = Changeable(""),
-    @JvmField var web: Changeable<String> = Changeable(""),
+    var title: Changeable<String> = Changeable(""),
+    var description: Changeable<String> = Changeable(""),
+    var price: Changeable<String> = Changeable(""),
+    var value: Changeable<String> = Changeable(""),
+    var isbn: Changeable<String> = Changeable(""),
+    var web: Changeable<String> = Changeable(""),
 
-    @JvmField var volume: Changeable<Int> = Changeable(0),
-    @JvmField var pages: Changeable<Int> = Changeable(0),
-    @JvmField var publicationDate: Changeable<Int> = Changeable(0),
-    @JvmField var edition: Changeable<Int> = Changeable(0),
-    @JvmField var readDate: Changeable<Int> = Changeable(0),
-    @JvmField var dueDate: Changeable<Int> = Changeable(0),
+    var volume: Changeable<Int> = Changeable(0),
+    var pages: Changeable<Int> = Changeable(0),
+    var publicationDate: Changeable<Int> = Changeable(0),
+    var edition: Changeable<Int> = Changeable(0),
+    var readDate: Changeable<Int> = Changeable(0),
+    var dueDate: Changeable<Int> = Changeable(0),
 
-    @JvmField var properties: ArrayList<Property> = ArrayList()
+    var properties: ArrayList<Property> = ArrayList()
 ) {
     /**
-     * Secondary constructor designed for database initialization or Java clients passing raw types.
+     * Secondary constructor designed for database initialization.
      * Maps primitives directly to [Changeable] wrappers.
      */
     constructor(

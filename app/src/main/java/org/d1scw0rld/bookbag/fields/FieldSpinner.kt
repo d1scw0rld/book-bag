@@ -10,7 +10,7 @@ import android.widget.LinearLayout
 import android.widget.Spinner
 import org.d1scw0rld.bookbag.R
 
-class FieldSpinner @JvmOverloads constructor(
+class FieldSpinner(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,

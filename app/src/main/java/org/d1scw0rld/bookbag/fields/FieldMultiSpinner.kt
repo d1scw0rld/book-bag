@@ -16,7 +16,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import org.d1scw0rld.bookbag.R
 
-class FieldMultiSpinner @JvmOverloads constructor(
+class FieldMultiSpinner(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,

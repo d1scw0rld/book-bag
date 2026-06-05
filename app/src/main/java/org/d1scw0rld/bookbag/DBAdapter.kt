@@ -491,7 +491,6 @@ class DBAdapter(private val context: Context) {
                 + KEY_BK_ID + " INTEGER, "
                 + KEY_FLD_ID + " INTEGER)")
 
-        @JvmField
         val separator: Char = DecimalFormatSymbols.getInstance().decimalSeparator
 
         const val FLD_AUTHOR = 1
@@ -534,7 +533,6 @@ class DBAdapter(private val context: Context) {
         const val SRT_LND_TTL = 11
         const val SRT_LND_BRW = 12
 
-        @JvmField
         val FIELDS = ArrayList<Field>()
 
         const val QR_TTL = ("SELECT UPPER(SUBSTR(b." + KEY_TTL + ", 1, 1)) AS parent, b." + KEY_ID + " AS child_id, COALESCE(b." + KEY_TTL + " || \" - \" || GROUP_CONCAT(f_name, \", \"), b." + KEY_TTL + ") AS child"

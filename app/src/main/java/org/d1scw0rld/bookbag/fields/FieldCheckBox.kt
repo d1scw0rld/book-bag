@@ -9,7 +9,7 @@ import android.widget.CompoundButton.OnCheckedChangeListener
 import android.widget.LinearLayout
 import org.d1scw0rld.bookbag.R
 
-class FieldCheckBox @JvmOverloads constructor(
+class FieldCheckBox(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
