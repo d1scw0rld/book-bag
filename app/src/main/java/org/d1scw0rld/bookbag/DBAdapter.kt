@@ -9,18 +9,18 @@ import android.database.sqlite.SQLiteException
 import android.database.sqlite.SQLiteOpenHelper
 import android.text.InputType
 import android.util.Log
+import androidx.core.database.sqlite.transaction
 import org.d1scw0rld.bookbag.dto.Book
 import org.d1scw0rld.bookbag.dto.BookResult
 import org.d1scw0rld.bookbag.dto.Field
-import org.d1scw0rld.bookbag.dto.FileUtils
 import org.d1scw0rld.bookbag.dto.ParentResult
 import org.d1scw0rld.bookbag.dto.Property
+import org.d1scw0rld.bookbag.fileselector.FileUtils.copyFile
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.text.DecimalFormatSymbols
-import androidx.core.database.sqlite.transaction
 
 class DBAdapter(private val context: Context) {
 
@@ -329,7 +329,7 @@ class DBAdapter(private val context: Context) {
         val oldDb = context.getDatabasePath(DATABASE_NAME)
         if (newDb.exists()) {
             try {
-                FileUtils.copyFile(FileInputStream(newDb), FileOutputStream(oldDb))
+                copyFile(FileInputStream(newDb), FileOutputStream(oldDb))
             } catch (e: IOException) {
                 e.printStackTrace()
                 Log.e(TAG, e.message ?: "")
@@ -346,7 +346,7 @@ class DBAdapter(private val context: Context) {
         val newDb = File(dbPath)
         val oldDb = context.getDatabasePath(DATABASE_NAME)
         return try {
-            FileUtils.copyFile(FileInputStream(oldDb), FileOutputStream(newDb))
+            copyFile(FileInputStream(oldDb), FileOutputStream(newDb))
             true
         } catch (e: IOException) {
             e.printStackTrace()
