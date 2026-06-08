@@ -16,6 +16,9 @@ interface BookDao {
     @Query("DELETE FROM books WHERE _id = :bookId")
     suspend fun deleteBook(bookId: Long)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertField(field: org.d1scw0rld.bookbag.data.entity.FieldEntity): Long
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertBookFieldCrossRef(crossRef: BookFieldCrossRef)
 
