@@ -2,20 +2,24 @@ package org.d1scw0rld.bookbag
 
 import android.content.Context
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.LinearLayout
 import android.widget.RatingBar
 import android.widget.TextView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import org.d1scw0rld.bookbag.data.DbConstants
+import org.d1scw0rld.bookbag.data.dao.BookDao
 import org.d1scw0rld.bookbag.dto.Book
 import org.d1scw0rld.bookbag.dto.Date
 import org.d1scw0rld.bookbag.dto.Field
 import org.d1scw0rld.bookbag.dto.Price
+import org.d1scw0rld.bookbag.dto.Property
 
 class BookDetailFieldsFactory(
     private val context: Context,
-    private val dbAdapter: DBAdapter,
+    private val dbDao: BookDao,
     private val book: Book?
 ) {
     private val inflater: LayoutInflater = LayoutInflater.from(context)
@@ -29,9 +33,13 @@ class BookDetailFieldsFactory(
         if (book == null) return
 
         val categoriesLayout = rootView.findViewById<LinearLayout>(R.id.ll_categories) ?: return
-        val currencies = dbAdapter.getPropertyValues(DBAdapter.FLD_CURRENCY)
+        val currencies = runBlocking(Dispatchers.IO) {
+            dbDao.getFieldsByTypeId(DbConstants.FLD_CURRENCY).map { 
+                Property(fieldTypeId = it.typeId, value = it.name, id = it.id) 
+            }
+        }
 
-        for (field in DBAdapter.FIELDS) {
+        for (field in DbConstants.FIELDS) {
             var name = field.name
             val valueBuilder = StringBuilder()
 
@@ -39,21 +47,21 @@ class BookDetailFieldsFactory(
                 when (field.type) {
                     Field.TYPE_TEXT -> {
                         val textValue = @Suppress("UNREACHABLE_CODE") when (field.id) {
-                            DBAdapter.FLD_TITLE -> book.title.value
-                            DBAdapter.FLD_DESCRIPTION -> book.description.value
-                            DBAdapter.FLD_VOLUME -> if (book.volume.value != 0) book.volume.value.toString() else ""
-                            DBAdapter.FLD_PAGES -> if (book.pages.value != 0) book.pages.value.toString() else ""
-                            DBAdapter.FLD_EDITION -> if (book.edition.value != 0) book.edition.value.toString() else ""
-                            DBAdapter.FLD_ISBN -> book.isbn.value
-                            DBAdapter.FLD_WEB -> book.web.value
+                            DbConstants.FLD_TITLE -> book.title.value
+                            DbConstants.FLD_DESCRIPTION -> book.description.value
+                            DbConstants.FLD_VOLUME -> if (book.volume.value != 0) book.volume.value.toString() else ""
+                            DbConstants.FLD_PAGES -> if (book.pages.value != 0) book.pages.value.toString() else ""
+                            DbConstants.FLD_EDITION -> if (book.edition.value != 0) book.edition.value.toString() else ""
+                            DbConstants.FLD_ISBN -> book.isbn.value
+                            DbConstants.FLD_WEB -> book.web.value
                             else -> ""
                         }
                         valueBuilder.append(textValue)
                     }
                     Field.TYPE_MONEY -> {
                         val price = when (field.id) {
-                            DBAdapter.FLD_PRICE -> Price(book.price.value)
-                            DBAdapter.FLD_VALUE -> Price(book.value.value)
+                            DbConstants.FLD_PRICE -> Price(book.price.value)
+                            DbConstants.FLD_VALUE -> Price(book.value.value)
                             else -> null
                         }
 
@@ -63,14 +71,14 @@ class BookDetailFieldsFactory(
                                 String.format(
                                     context.resources.getString(R.string.amn_vl),
                                     price.value / 100,
-                                    DBAdapter.separator,
+                                    DbConstants.separator,
                                     price.value % 100
                                 )
                             } else {
                                 String.format(
                                     context.resources.getString(R.string.amn_vl_crn),
                                     price.value / 100,
-                                    DBAdapter.separator,
+                                    DbConstants.separator,
                                     price.value % 100,
                                     fieldCurrency.value
                                 )
@@ -80,8 +88,8 @@ class BookDetailFieldsFactory(
                     }
                     Field.TYPE_DATE -> {
                         val date = when (field.id) {
-                            DBAdapter.FLD_READ_DATE -> Date(book.readDate.value)
-                            DBAdapter.FLD_DUE_DATE -> Date(book.dueDate.value)
+                            DbConstants.FLD_READ_DATE -> Date(book.readDate.value)
+                            DbConstants.FLD_DUE_DATE -> Date(book.dueDate.value)
                             else -> null
                         }
                         if (date != null && date.toInt() != 0) {

@@ -13,8 +13,11 @@ import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import org.d1scw0rld.bookbag.data.AppDatabase
 import org.d1scw0rld.bookbag.databinding.FragmentBookBinding
+import androidx.navigation.findNavController
 
 class BookFragment : BaseFragment(), IBackPressListener {
 
@@ -119,18 +122,18 @@ class BookFragment : BaseFragment(), IBackPressListener {
     private fun navigateToEditBook(view: View, bookId: Long) {
         val action = BookFragmentDirections.actionBookFragmentToEditBookFragment()
         action.bookID = bookId
-        Navigation.findNavController(view).navigate(action)
+        view.findNavController().navigate(action)
     }
 
     private fun navigateToEditBook(view: View, bookId: Long, isCopy: Boolean) {
         val action = BookFragmentDirections.actionBookFragmentToEditBookFragment()
         action.bookID = bookId
         action.isCopy = isCopy
-        Navigation.findNavController(view).navigate(action)
+        view.findNavController().navigate(action)
     }
 
     private fun navigateToBookList(view: View) {
-        Navigation.findNavController(view).navigateUp()
+        view.findNavController().navigateUp()
     }
 
     private fun getBookID(): Long {
@@ -138,9 +141,10 @@ class BookFragment : BaseFragment(), IBackPressListener {
     }
 
     private fun deleteBook() {
-        val dbAdapter = DBAdapter(requireContext())
-        dbAdapter.open()
-        dbAdapter.deleteBook(bookId)
-        dbAdapter.close()
+        val dbDao = AppDatabase.getDatabase(requireContext(), viewLifecycleOwner.lifecycleScope).bookDao()
+        runBlocking(Dispatchers.IO) {
+            dbDao.deleteBookFields(bookId)
+            dbDao.deleteBook(bookId)
+        }
     }
 }

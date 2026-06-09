@@ -10,8 +10,8 @@ import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.ArrayAdapter
 import android.widget.LinearLayout
 import android.widget.Spinner
-import org.d1scw0rld.bookbag.DBAdapter
 import org.d1scw0rld.bookbag.R
+import org.d1scw0rld.bookbag.data.DbConstants
 import java.util.regex.Pattern
 
 class FieldMoney(
@@ -21,7 +21,7 @@ class FieldMoney(
 ) : LinearLayout(context, attrs, defStyleAttr), Field {
 
     companion object {
-        val FILTER = "0*[1-9]?\\d{0,3}(\\" + DBAdapter.separator + "\\d{0,2})?"
+        val FILTER = "0*[1-9]?\\d{0,3}(\\" + DbConstants.separator + "\\d{0,2})?"
     }
 
     private lateinit var title: Title
@@ -83,7 +83,7 @@ class FieldMoney(
             String.format(
                 resources.getString(R.string.amn_vl),
                 value / 100,
-                DBAdapter.separator,
+                DbConstants.separator,
                 value % 100
             )
         )

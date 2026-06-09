@@ -10,6 +10,8 @@ import com.google.android.material.appbar.CollapsingToolbarLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.d1scw0rld.bookbag.data.AppDatabase
+import org.d1scw0rld.bookbag.data.relation.toDto
 import org.d1scw0rld.bookbag.databinding.FragmentBookDetailBinding
 import org.d1scw0rld.bookbag.dto.Book
 
@@ -19,16 +21,11 @@ class BookDetailFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var book: Book? = null
-    private val dbAdapter: DBAdapter by lazy { DBAdapter(requireContext()) }
+    private val dbDao get() = AppDatabase.getDatabase(requireContext(), viewLifecycleOwner.lifecycleScope).bookDao()
     private var bookDetailFieldsFactory: BookDetailFieldsFactory? = null
 
     companion object {
         const val BOOK_ID = "book_id"
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        dbAdapter.open()
     }
 
     override fun onCreateView(
@@ -46,7 +43,8 @@ class BookDetailFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             val bookIdArg = arguments?.getLong(BOOK_ID) ?: 0L
             if (bookIdArg != 0L) {
-                val loadedBook = dbAdapter.getBook(bookIdArg)
+                val loadedBookWithFields = dbDao.getBookWithFields(bookIdArg)
+                val loadedBook = loadedBookWithFields?.toDto()
                 withContext(Dispatchers.Main) {
                     if (!isAdded) return@withContext
                     val ctx = context ?: return@withContext
@@ -56,7 +54,7 @@ class BookDetailFragment : Fragment() {
                     loadedBook?.let { b ->
                         appBarLayout?.title = b.title.value
                     }
-                    bookDetailFieldsFactory = BookDetailFieldsFactory(ctx, dbAdapter, loadedBook)
+                    bookDetailFieldsFactory = BookDetailFieldsFactory(ctx, dbDao, loadedBook)
                     bookDetailFieldsFactory?.addFields(binding.llCategories)
                 }
             }
@@ -66,15 +64,5 @@ class BookDetailFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    override fun onPause() {
-        dbAdapter.close()
-        super.onPause()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        dbAdapter.open()
     }
 }

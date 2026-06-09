@@ -1,15 +1,12 @@
 package org.d1scw0rld.bookbag.fileselector
 
 import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.IOException
 import java.util.Locale
 
 /**
  * A set of tools for file operations
  */
-internal object FileUtils {
+object FileUtils {
 
     /** Filter which accepts every file */
     const val FILTER_ALLOW_ALL = "*.*"
@@ -40,12 +37,4 @@ internal object FileUtils {
         return fileType == filter
     }
 
-    @Throws(IOException::class)
-    fun copyFile(fromFile: FileInputStream, toFile: FileOutputStream) {
-        fromFile.channel.use { fromChannel ->
-            toFile.channel.use { toChannel ->
-                fromChannel.transferTo(0, fromChannel.size(), toChannel)
-            }
-        }
-    }
 }
