@@ -538,9 +538,11 @@ class BookListFragment : BaseFragment() {
     }
 
     private fun setupRecyclerView(recyclerView: RecyclerView, orderId: Int) {
+        showProgressBar()
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             val books = dbDao.getAllBooksWithFields()
             withContext(Dispatchers.Main) {
+                hideProgressBar()
                 if (!isAdded) return@withContext
                 val ctx = context ?: return@withContext
 
