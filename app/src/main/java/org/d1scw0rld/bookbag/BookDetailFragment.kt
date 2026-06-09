@@ -15,7 +15,7 @@ import org.d1scw0rld.bookbag.data.relation.toDto
 import org.d1scw0rld.bookbag.databinding.FragmentBookDetailBinding
 import org.d1scw0rld.bookbag.dto.Book
 
-class BookDetailFragment : Fragment() {
+class BookDetailFragment : BaseFragment() {
 
     private var _binding: FragmentBookDetailBinding? = null
     private val binding get() = _binding!!
@@ -40,23 +40,24 @@ class BookDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        showProgressBar()
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             val bookIdArg = arguments?.getLong(BOOK_ID) ?: 0L
-            if (bookIdArg != 0L) {
-                val loadedBookWithFields = dbDao.getBookWithFields(bookIdArg)
-                val loadedBook = loadedBookWithFields?.toDto()
-                withContext(Dispatchers.Main) {
-                    if (!isAdded) return@withContext
-                    val ctx = context ?: return@withContext
+            val loadedBook = if (bookIdArg != 0L) {
+                dbDao.getBookWithFields(bookIdArg)?.toDto()
+            } else null
+            withContext(Dispatchers.Main) {
+                hideProgressBar()
+                if (!isAdded) return@withContext
+                val ctx = context ?: return@withContext
 
-                    book = loadedBook
-                    val appBarLayout = activity?.findViewById<CollapsingToolbarLayout>(R.id.toolbar_layout)
-                    loadedBook?.let { b ->
-                        appBarLayout?.title = b.title.value
-                    }
-                    bookDetailFieldsFactory = BookDetailFieldsFactory(ctx, dbDao, loadedBook)
-                    bookDetailFieldsFactory?.addFields(binding.llCategories)
+                book = loadedBook
+                val appBarLayout = activity?.findViewById<CollapsingToolbarLayout>(R.id.toolbar_layout)
+                loadedBook?.let { b ->
+                    appBarLayout?.title = b.title.value
                 }
+                bookDetailFieldsFactory = BookDetailFieldsFactory(ctx, dbDao, loadedBook)
+                bookDetailFieldsFactory?.addFields(binding.llCategories)
             }
         }
     }

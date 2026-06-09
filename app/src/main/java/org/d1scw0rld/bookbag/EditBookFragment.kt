@@ -35,7 +35,7 @@ import androidx.core.view.isGone
 import androidx.core.view.size
 import androidx.core.view.get
 
-class EditBookFragment : Fragment(), IBackPressListener {
+class EditBookFragment : BaseFragment(), IBackPressListener {
 
     private var _binding: FragmentEditBookBinding? = null
     private val binding get() = _binding!!
@@ -93,6 +93,13 @@ class EditBookFragment : Fragment(), IBackPressListener {
             }
         }
 
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        showProgressBar()
         val fieldsRoot = binding.llFields
 
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
@@ -110,6 +117,7 @@ class EditBookFragment : Fragment(), IBackPressListener {
             }
 
             withContext(Dispatchers.Main) {
+                hideProgressBar()
                 if (!isAdded) return@withContext
                 val ctx = context ?: return@withContext
 
@@ -119,8 +127,6 @@ class EditBookFragment : Fragment(), IBackPressListener {
                 createAddFieldsPopupMenu(fieldsRoot)
             }
         }
-
-        return binding.root
     }
 
     override fun onDestroyView() {
