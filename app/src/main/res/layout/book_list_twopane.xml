@@ -48,7 +48,7 @@
         android:divider="?android:attr/dividerHorizontal"
         android:orientation="horizontal"
         android:showDividers="middle"
-        tools:context="org.d1scw0rld.bookbag.MainActivity">
+        tools:context="org.d1scw0rld.bookbag.ui.MainActivity">
 
         <!--
       This layout is a two-pane layout for the Books
@@ -69,7 +69,7 @@
             android:layout_weight="1"
             android:layout_height="match_parent"
             app:layoutManager="LinearLayoutManager"
-            tools:context="org.d1scw0rld.bookbag.BookListFragment"
+            tools:context="org.d1scw0rld.bookbag.ui.BookListFragment"
             tools:listitem="@layout/book_list_content" />
 
         <FrameLayout

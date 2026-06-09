@@ -3,7 +3,7 @@
    android:layout_width="match_parent"
    android:layout_height="wrap_content" >
 
-   <org.d1scw0rld.bookbag.fields.AutoCompleteTextViewX
+   <org.d1scw0rld.bookbag.ui.fields.AutoCompleteTextViewX
       android:id="@+id/et_value"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"

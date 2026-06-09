@@ -11,7 +11,7 @@
       android:layout_width="match_parent"
       android:layout_height="wrap_content" >
 
-      <org.d1scw0rld.bookbag.fields.Title
+      <org.d1scw0rld.bookbag.ui.fields.Title
          android:id="@+id/title"
          android:layout_width="match_parent"
          android:layout_height="wrap_content"

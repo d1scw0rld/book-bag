@@ -7,14 +7,14 @@
    android:layout_marginBottom="@dimen/fld_mrg_btm"
    android:orientation="vertical" >
 
-   <org.d1scw0rld.bookbag.fields.Title
+   <org.d1scw0rld.bookbag.ui.fields.Title
       android:id="@+id/title"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       custom:text="@string/et_title"
       custom:color="@color/primary" />
 
-   <org.d1scw0rld.bookbag.fields.AutoCompleteTextViewX
+   <org.d1scw0rld.bookbag.ui.fields.AutoCompleteTextViewX
       android:id="@+id/autoCompleteTextView"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"

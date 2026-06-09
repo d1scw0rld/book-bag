@@ -11,7 +11,7 @@
         app:popUpToInclusive="false"/>
     <fragment
         android:id="@+id/fragment_book_list"
-        android:name="org.d1scw0rld.bookbag.BookListFragment"
+        android:name="org.d1scw0rld.bookbag.ui.BookListFragment"
         android:label="@string/app_name">
         <action
             android:id="@+id/action_bookListFragment_to_bookFragment"
@@ -25,7 +25,7 @@
     </fragment>
     <fragment
         android:id="@+id/fragment_book"
-        android:name="org.d1scw0rld.bookbag.BookFragment">
+        android:name="org.d1scw0rld.bookbag.ui.BookFragment">
         <action
             android:id="@+id/action_bookFragment_to_editBookFragment"
             app:destination="@id/fragment_edit_book" />
@@ -35,7 +35,7 @@
     </fragment>
     <fragment
         android:id="@+id/fragment_edit_book"
-        android:name="org.d1scw0rld.bookbag.EditBookFragment"
+        android:name="org.d1scw0rld.bookbag.ui.EditBookFragment"
         tools:layout="@layout/fragment_edit_book">
         <argument
             android:name="bookID"
@@ -48,6 +48,6 @@
     </fragment>
     <fragment
         android:id="@+id/fragment_settings"
-        android:name="org.d1scw0rld.bookbag.SettingsFragment"
+        android:name="org.d1scw0rld.bookbag.ui.SettingsFragment"
         android:label="@string/title_settings"/>
 </navigation>
