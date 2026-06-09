@@ -1,9 +1,12 @@
 import java.util.regex.Pattern
 
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'androidx.navigation.safeargs'
-apply plugin: 'kotlin-kapt'
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'androidx.navigation.safeargs'
+    id 'com.google.devtools.ksp'
+    id 'com.google.dagger.hilt.android'
+}
 
 android {
     namespace "org.d1scw0rld.bookbag"
@@ -70,5 +73,13 @@ dependencies {
     def room_version = "2.7.0-alpha12"
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
-    kapt "androidx.room:room-compiler:$room_version"
+    ksp "androidx.room:room-compiler:$room_version"
+
+    // Hilt DI
+    implementation "com.google.dagger:hilt-android:2.59.2"
+    ksp "com.google.dagger:hilt-compiler:2.59.2"
+
+    // ViewModel & Lifecycle KTX
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.2"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.2"
 }
