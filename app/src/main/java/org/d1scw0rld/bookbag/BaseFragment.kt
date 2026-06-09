@@ -5,7 +5,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ProgressBar
+import android.widget.ScrollView
 import android.widget.Toast
+import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 
 open class BaseFragment : Fragment() {
@@ -25,7 +27,7 @@ open class BaseFragment : Fragment() {
         if (progressView != null) return // Already showing
 
         // If the root view is a ScrollView or NestedScrollView, target its single child ViewGroup instead
-        val targetContainer = if (fragmentView is android.widget.ScrollView || fragmentView is androidx.core.widget.NestedScrollView) {
+        val targetContainer = if (fragmentView is ScrollView || fragmentView is NestedScrollView) {
             fragmentView.getChildAt(0) as? ViewGroup ?: return
         } else {
             fragmentView
@@ -40,7 +42,7 @@ open class BaseFragment : Fragment() {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
-            setBackgroundColor(android.graphics.Color.parseColor("#80000000")) // Semi-transparent black background
+            setBackgroundColor(context.getColor(R.color.overlay_background))
             isClickable = true
             isFocusable = true
         }
