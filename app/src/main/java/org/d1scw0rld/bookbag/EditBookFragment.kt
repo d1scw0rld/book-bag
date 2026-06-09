@@ -20,10 +20,20 @@ import androidx.navigation.fragment.NavHostFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.d1scw0rld.bookbag.data.AppDatabase
+import org.d1scw0rld.bookbag.data.DbConstants
+import org.d1scw0rld.bookbag.data.entity.BookEntity
+import org.d1scw0rld.bookbag.data.entity.BookFieldCrossRef
+import org.d1scw0rld.bookbag.data.entity.FieldEntity
+import org.d1scw0rld.bookbag.data.relation.toDto
 import org.d1scw0rld.bookbag.databinding.FragmentEditBookBinding
 import org.d1scw0rld.bookbag.dto.Book
 import org.d1scw0rld.bookbag.dto.Field
 import org.d1scw0rld.bookbag.fields.FieldEditTextUpdatableClearable
+import androidx.core.view.isEmpty
+import androidx.core.view.isGone
+import androidx.core.view.size
+import androidx.core.view.get
 
 class EditBookFragment : Fragment(), IBackPressListener {
 
@@ -31,7 +41,7 @@ class EditBookFragment : Fragment(), IBackPressListener {
     private val binding get() = _binding!!
 
     private lateinit var book: Book
-    private lateinit var dbAdapter: DBAdapter
+    private val dbDao get() = AppDatabase.getDatabase(requireContext(), viewLifecycleOwner.lifecycleScope).bookDao()
     private var hiddenFieldsPopupMenu: PopupMenu? = null
     private var bookTitleField: FieldEditTextUpdatableClearable? = null
     private val hiddenFieldsHashMap = HashMap<MenuItem, View>()
@@ -63,9 +73,6 @@ class EditBookFragment : Fragment(), IBackPressListener {
             }
         }
 
-        dbAdapter = DBAdapter(requireContext())
-        dbAdapter.open()
-
         val addFieldButton = binding.btnAddField
         addFieldButton.setOnClickListener {
             hiddenFieldsPopupMenu?.show()
@@ -79,7 +86,7 @@ class EditBookFragment : Fragment(), IBackPressListener {
                     fieldView.requestFocus()
                 }
                 menu.removeItem(menuItem.itemId)
-                if (menu.size() == 0) {
+                if (menu.isEmpty()) {
                     addFieldButton.isEnabled = false
                 }
                 false
@@ -93,7 +100,7 @@ class EditBookFragment : Fragment(), IBackPressListener {
             val isCopy = getIsCopy()
 
             val loadedBook = if (bookId != 0L) {
-                dbAdapter.getBook(bookId) ?: Book()
+                dbDao.getBookWithFields(bookId)?.toDto() ?: Book()
             } else {
                 Book()
             }
@@ -107,7 +114,7 @@ class EditBookFragment : Fragment(), IBackPressListener {
                 val ctx = context ?: return@withContext
 
                 book = loadedBook
-                fieldsFactory = FieldsFactory(ctx, loadedBook, dbAdapter)
+                fieldsFactory = FieldsFactory(ctx, loadedBook, dbDao)
                 addFields(fieldsRoot)
                 createAddFieldsPopupMenu(fieldsRoot)
             }
@@ -119,21 +126,6 @@ class EditBookFragment : Fragment(), IBackPressListener {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    override fun onPause() {
-        dbAdapter.close()
-        super.onPause()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        dbAdapter.open()
-    }
-
-    override fun onDestroy() {
-        showHomeTitle(true)
-        super.onDestroy()
     }
 
     @Suppress("DEPRECATION")
@@ -167,20 +159,21 @@ class EditBookFragment : Fragment(), IBackPressListener {
     private fun createAddFieldsPopupMenu(fieldsRoot: LinearLayout) {
         for (i in 0 until fieldsRoot.childCount) {
             val child = fieldsRoot.getChildAt(i)
-            if (child.visibility == View.GONE) {
+            if (child.isGone) {
                 val menu = hiddenFieldsPopupMenu?.menu ?: continue
-                menu.add(Menu.NONE, menu.size(), 0, (child as org.d1scw0rld.bookbag.fields.Field).getTitle())
-                hiddenFieldsHashMap[menu.getItem(menu.size() - 1)] = child
+                menu.add(Menu.NONE,
+                    menu.size, 0, (child as org.d1scw0rld.bookbag.fields.Field).getTitle())
+                hiddenFieldsHashMap[menu[menu.size() - 1]] = child
             }
         }
     }
 
     private fun addFields(rootView: ViewGroup) {
-        for (field in DBAdapter.FIELDS) {
+        for (field in DbConstants.FIELDS) {
             when (field.type) {
                 Field.TYPE_TEXT -> {
                     fieldsFactory.addFieldText(rootView, field)
-                    if (field.id == DBAdapter.FLD_TITLE) {
+                    if (field.id == DbConstants.FLD_TITLE) {
                         bookTitleField = rootView.getChildAt(rootView.childCount - 1) as FieldEditTextUpdatableClearable
                     }
                 }
@@ -220,12 +213,38 @@ class EditBookFragment : Fragment(), IBackPressListener {
         }
     }
 
-    private fun saveBook() {
+    private suspend fun saveBook() {
         clearEmptyFields()
-        if (book.id != 0L) {
-            dbAdapter.updateBook(book)
+        val bookEntity = BookEntity(
+            id = book.id,
+            title = book.title.value,
+            description = book.description.value,
+            volume = book.volume.value,
+            publicationDate = book.publicationDate.value,
+            pages = book.pages.value,
+            price = book.price.value,
+            value = book.value.value,
+            dueDate = book.dueDate.value,
+            readDate = book.readDate.value,
+            edition = book.edition.value,
+            isbn = book.isbn.value,
+            web = book.web.value
+        )
+
+        val idToUse = if (book.id != 0L) {
+            dbDao.updateBook(bookEntity)
+            book.id
         } else {
-            dbAdapter.insertBook(book)
+            dbDao.insertBook(bookEntity)
+        }
+
+        dbDao.deleteBookFields(idToUse)
+        for (property in book.properties) {
+            if (property.id == 0L) {
+                val fieldEntity = FieldEntity(typeId = property.fieldTypeId, name = property.value)
+                property.id = dbDao.insertField(fieldEntity)
+            }
+            dbDao.insertBookFieldCrossRef(BookFieldCrossRef(bookId = idToUse, fieldId = property.id))
         }
     }
 

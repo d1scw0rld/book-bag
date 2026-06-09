@@ -34,6 +34,9 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.d1scw0rld.bookbag.data.AppDatabase
+import org.d1scw0rld.bookbag.data.DbConstants
+import org.d1scw0rld.bookbag.data.relation.BookRelationsMapper
 import org.d1scw0rld.bookbag.databinding.FragmentBookListBinding
 import org.d1scw0rld.bookbag.dto.BooksAdapter
 import org.d1scw0rld.bookbag.fileselector.FileOperation
@@ -64,12 +67,12 @@ class BookListFragment : BaseFragment() {
     private var pendingAction = PendingAction.NONE
     private var isExpandAll = false
     private var isTwoPane = false
-    private var orderId = DBAdapter.SRT_TTL
+    private var orderId = DbConstants.SRT_TTL
     private var clickedItemIndex = -1
     private var bookId: Long = 0
     private var exportFolderAbsPath: String = ""
 
-    private lateinit var dbAdapter: DBAdapter
+    private val dbDao get() = AppDatabase.getDatabase(requireContext(), viewLifecycleOwner.lifecycleScope).bookDao()
     private lateinit var booksAdapter: BooksAdapter
     private lateinit var preferences: SharedPreferences
     private var selectedBookView: View? = null
@@ -171,8 +174,10 @@ class BookListFragment : BaseFragment() {
 
     private fun deleteBook() {
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            dbAdapter.deleteBook(bookId)
+            dbDao.deleteBookFields(bookId)
+            dbDao.deleteBook(bookId)
             withContext(Dispatchers.Main) {
+                if (!isAdded) return@withContext
                 booksAdapter.removeAt(clickedItemIndex)
                 binding.include.tvBooksCount.text = resources.getQuantityString(
                     R.plurals.books,
@@ -186,10 +191,9 @@ class BookListFragment : BaseFragment() {
 
     private val onLoadFileListener = OnHandleFileListener { filePath ->
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            dbAdapter.close()
-            val result = dbAdapter.importDatabase(filePath)
-            dbAdapter.open()
+            val result = AppDatabase.importDatabase(requireContext(), filePath)
             withContext(Dispatchers.Main) {
+                if (!isAdded) return@withContext
                 if (result) {
                     showToast(R.string.prf_imp_db_scs)
                 }
@@ -200,10 +204,9 @@ class BookListFragment : BaseFragment() {
 
     private val onSaveFileListener = OnHandleFileListener { filePath ->
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            dbAdapter.close()
-            val result = dbAdapter.exportDatabase(filePath)
-            dbAdapter.open()
+            val result = AppDatabase.exportDatabase(requireContext(), filePath)
             withContext(Dispatchers.Main) {
+                if (!isAdded) return@withContext
                 if (result) {
                     showToast(R.string.prf_xpr_db_scs)
                 }
@@ -242,7 +245,7 @@ class BookListFragment : BaseFragment() {
         loadPreferences()
         checkCreateExportFolder(exportFolderAbsPath)
 
-        dbAdapter = DBAdapter(requireContext())
+        DbConstants.initFields(resources)
 
         getOrderItems()
 
@@ -260,7 +263,6 @@ class BookListFragment : BaseFragment() {
             layoutManager = LinearLayoutManager(context)
         }
 
-        // We can check book_detail_container through normal findView as it's outside the main included view in w900 layouts
         if (view.findViewById<View>(R.id.book_detail_container) != null) {
             isTwoPane = true
         }
@@ -273,15 +275,9 @@ class BookListFragment : BaseFragment() {
 
     override fun onResume() {
         super.onResume()
-        dbAdapter.open()
         if (::recyclerView.isInitialized) {
             setupRecyclerView(recyclerView, orderId)
         }
-    }
-
-    override fun onPause() {
-        dbAdapter.close()
-        super.onPause()
     }
 
     @Suppress("DEPRECATION")
@@ -374,18 +370,18 @@ class BookListFragment : BaseFragment() {
     }
 
     private fun getOrderItems() {
-        orderItems.add(OrderItem(DBAdapter.SRT_TTL, getString(R.string.srt_title)))
-        orderItems.add(OrderItem(DBAdapter.SRT_AUT, getString(R.string.srt_author)))
-        orderItems.add(OrderItem(DBAdapter.SRT_WNT_PBL_TTL, getString(R.string.srt_wanted_pbl_ttl)))
-        orderItems.add(OrderItem(DBAdapter.SRT_WNT_PBL_AUT, getString(R.string.srt_wanted_pbl_aut)))
-        orderItems.add(OrderItem(DBAdapter.SRT_RD_AUT, getString(R.string.srt_read_aut)))
-        orderItems.add(OrderItem(DBAdapter.SRT_RD_TTL, getString(R.string.srt_read_ttl)))
-        orderItems.add(OrderItem(DBAdapter.SRT_NOT_RD_AUT, getString(R.string.srt_not_read_aut)))
-        orderItems.add(OrderItem(DBAdapter.SRT_NOT_RD_TTL, getString(R.string.srt_not_read_ttl)))
-        orderItems.add(OrderItem(DBAdapter.SRT_PBL_AUT, getString(R.string.srt_pbl_aut)))
-        orderItems.add(OrderItem(DBAdapter.SRT_PBL_TTL, getString(R.string.srt_pbl_ttl)))
-        orderItems.add(OrderItem(DBAdapter.SRT_LND_TTL, getString(R.string.srt_lnd_ttl)))
-        orderItems.add(OrderItem(DBAdapter.SRT_LND_BRW, getString(R.string.srt_lnd_brw)))
+        orderItems.add(OrderItem(DbConstants.SRT_TTL, getString(R.string.srt_title)))
+        orderItems.add(OrderItem(DbConstants.SRT_AUT, getString(R.string.srt_author)))
+        orderItems.add(OrderItem(DbConstants.SRT_WNT_PBL_TTL, getString(R.string.srt_wanted_pbl_ttl)))
+        orderItems.add(OrderItem(DbConstants.SRT_WNT_PBL_AUT, getString(R.string.srt_wanted_pbl_aut)))
+        orderItems.add(OrderItem(DbConstants.SRT_RD_AUT, getString(R.string.srt_read_aut)))
+        orderItems.add(OrderItem(DbConstants.SRT_RD_TTL, getString(R.string.srt_read_ttl)))
+        orderItems.add(OrderItem(DbConstants.SRT_NOT_RD_AUT, getString(R.string.srt_not_read_aut)))
+        orderItems.add(OrderItem(DbConstants.SRT_NOT_RD_TTL, getString(R.string.srt_not_read_ttl)))
+        orderItems.add(OrderItem(DbConstants.SRT_PBL_AUT, getString(R.string.srt_pbl_aut)))
+        orderItems.add(OrderItem(DbConstants.SRT_PBL_TTL, getString(R.string.srt_pbl_ttl)))
+        orderItems.add(OrderItem(DbConstants.SRT_LND_TTL, getString(R.string.srt_lnd_ttl)))
+        orderItems.add(OrderItem(DbConstants.SRT_LND_BRW, getString(R.string.srt_lnd_brw)))
     }
 
     private fun optionsItemSelect(item: MenuItem): Boolean {
@@ -510,16 +506,16 @@ class BookListFragment : BaseFragment() {
 
     private fun getFileName(): String {
         val calendar = Calendar.getInstance(Locale.getDefault())
-        val extIndex = DBAdapter.DATABASE_NAME.lastIndexOf(".")
+        val extIndex = DbConstants.DATABASE_NAME.lastIndexOf(".")
         return String.format(
             getString(R.string.fmt_fl_nm),
-            DBAdapter.DATABASE_NAME.substring(0, extIndex),
+            DbConstants.DATABASE_NAME.substring(0, extIndex),
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH) + 1,
             calendar.get(Calendar.DAY_OF_MONTH),
             calendar.get(Calendar.HOUR_OF_DAY),
             calendar.get(Calendar.MINUTE),
-            DBAdapter.DATABASE_NAME.substring(extIndex + 1)
+            DbConstants.DATABASE_NAME.substring(extIndex + 1)
         )
     }
 
@@ -543,12 +539,13 @@ class BookListFragment : BaseFragment() {
 
     private fun setupRecyclerView(recyclerView: RecyclerView, orderId: Int) {
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            val books = dbAdapter.getBooks(orderId) ?: ArrayList()
+            val books = dbDao.getAllBooksWithFields()
             withContext(Dispatchers.Main) {
                 if (!isAdded) return@withContext
                 val ctx = context ?: return@withContext
 
-                booksAdapter = BooksAdapter(ctx, books)
+                val mappedParents = BookRelationsMapper.mapBooksToParents(books, orderId)
+                booksAdapter = BooksAdapter(ctx, mappedParents)
                 booksAdapter.setBookClickListener(onBookClickListener)
                 booksAdapter.setBookLongClickListener(onBookLongClickListener)
                 booksAdapter.setHeaderClickListener(onCategoryClickListener)
@@ -571,7 +568,7 @@ class BookListFragment : BaseFragment() {
     }
 
     private fun loadPreferences() {
-        orderId = preferences.getInt(PREF_ORDER_ID, DBAdapter.SRT_TTL)
+        orderId = preferences.getInt(PREF_ORDER_ID, DbConstants.SRT_TTL)
         isExpandAll = preferences.getBoolean(PREF_EXPAND_ALL, false)
         exportFolderAbsPath = getExportFolderAbsPath(
             preferences.getString(PREF_EXPORT_FOLDER, getString(R.string.app_name)) ?: getString(R.string.app_name)

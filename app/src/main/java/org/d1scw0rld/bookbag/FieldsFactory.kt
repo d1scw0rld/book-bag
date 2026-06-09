@@ -7,6 +7,10 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import org.d1scw0rld.bookbag.data.DbConstants
+import org.d1scw0rld.bookbag.data.dao.BookDao
 import org.d1scw0rld.bookbag.dto.Book
 import org.d1scw0rld.bookbag.dto.Changeable
 import org.d1scw0rld.bookbag.dto.Date
@@ -26,20 +30,20 @@ import org.d1scw0rld.bookbag.fields.FieldSpinner
 class FieldsFactory(
     private val context: Context,
     private val book: Book,
-    private val dbAdapter: DBAdapter
+    private val dbDao: BookDao
 ) : BaseObservable<FieldsFactory.Listener>() {
 
     private var previousView: View? = null
 
     fun addFieldText(rootView: ViewGroup, field: Field) {
         when (field.id) {
-            DBAdapter.FLD_TITLE -> addFieldText(rootView, field, book.title)
-            DBAdapter.FLD_DESCRIPTION -> addFieldText(rootView, field, book.description)
-            DBAdapter.FLD_VOLUME -> addFieldText(rootView, field, book.volume)
-            DBAdapter.FLD_PAGES -> addFieldText(rootView, field, book.pages)
-            DBAdapter.FLD_EDITION -> addFieldText(rootView, field, book.edition)
-            DBAdapter.FLD_ISBN -> addFieldText(rootView, field, book.isbn)
-            DBAdapter.FLD_WEB -> addFieldText(rootView, field, book.web)
+            DbConstants.FLD_TITLE -> addFieldText(rootView, field, book.title)
+            DbConstants.FLD_DESCRIPTION -> addFieldText(rootView, field, book.description)
+            DbConstants.FLD_VOLUME -> addFieldText(rootView, field, book.volume)
+            DbConstants.FLD_PAGES -> addFieldText(rootView, field, book.pages)
+            DbConstants.FLD_EDITION -> addFieldText(rootView, field, book.edition)
+            DbConstants.FLD_ISBN -> addFieldText(rootView, field, book.isbn)
+            DbConstants.FLD_WEB -> addFieldText(rootView, field, book.web)
         }
     }
 
@@ -53,7 +57,7 @@ class FieldsFactory(
         fieldEditTextUpdatableClearable.setHint(field.name)
         fieldEditTextUpdatableClearable.setInputType(field.inputType)
 
-        if (field.id == DBAdapter.FLD_TITLE) {
+        if (field.id == DbConstants.FLD_TITLE) {
             previousView = fieldEditTextUpdatableClearable.findViewById(R.id.editTextX)
         }
 
@@ -319,8 +323,8 @@ class FieldsFactory(
         fieldMoney.setHint(field.name)
 
         when (field.id) {
-            DBAdapter.FLD_PRICE -> fieldMoney.tag = book.price
-            DBAdapter.FLD_VALUE -> fieldMoney.tag = book.value
+            DbConstants.FLD_PRICE -> fieldMoney.tag = book.price
+            DbConstants.FLD_VALUE -> fieldMoney.tag = book.value
             else -> return
         }
 
@@ -329,7 +333,7 @@ class FieldsFactory(
             fieldMoney.setValue(price.value)
         }
 
-        val currencies = getPropertyValues(DBAdapter.FLD_CURRENCY)
+        val currencies = getPropertyValues(DbConstants.FLD_CURRENCY)
         var selectedPosition = 0
         val arrayAdapter = ArrayAdapter<String>(context, R.layout.spinner_item)
         for (i in currencies.indices) {
@@ -356,7 +360,7 @@ class FieldsFactory(
             val intValue = if (valueStr.isEmpty() || valueStr.matches(Regex("-|,|-,"))) {
                 0
             } else {
-                val valueParts = valueStr.split(DBAdapter.separator)
+                val valueParts = valueStr.split(DbConstants.separator)
                 val firstPart = valueParts[0].toIntOrNull() ?: 0
                 (firstPart * 100) + if (valueParts.size == 2) {
                     val secondPart = valueParts[1].toIntOrNull() ?: 0
@@ -381,12 +385,12 @@ class FieldsFactory(
         val fieldDate: FieldDate
 
         when (field.id) {
-            DBAdapter.FLD_READ_DATE -> {
+            DbConstants.FLD_READ_DATE -> {
                 date = Date(book.readDate.value)
                 fieldDate = FieldDate(context)
                 fieldDate.tag = book.readDate
             }
-            DBAdapter.FLD_DUE_DATE -> {
+            DbConstants.FLD_DUE_DATE -> {
                 date = Date(book.dueDate.value)
                 fieldDate = FieldDate(context)
                 fieldDate.tag = book.dueDate
@@ -402,8 +406,8 @@ class FieldsFactory(
         fieldDate.setUpdateListener(object : FieldDate.OnUpdateListener {
             override fun onUpdate(date: Date) {}
 
-            override fun onUpdate(fieldDateObj: FieldDate) {
-                (fieldDateObj.tag as Changeable<Int>).value = fieldDateObj.getDate().toInt()
+            override fun onUpdate(fieldDate: FieldDate) {
+                (fieldDate.tag as Changeable<Int>).value = fieldDate.getDate().toInt()
             }
         })
         rootView.addView(fieldDate)
@@ -506,11 +510,16 @@ class FieldsFactory(
     }
 
     fun getPropertyValues(fieldId: Int): ArrayList<Property> {
-        return dbAdapter.getPropertyValues(fieldId)
+        return getPropertyValues(fieldId, false)
     }
 
     private fun getPropertyValues(fieldId: Int, isOrdered: Boolean): ArrayList<Property> {
-        return dbAdapter.getPropertyValues(fieldId, isOrdered)
+        return runBlocking(Dispatchers.IO) {
+            val fields = dbDao.getFieldsByTypeId(fieldId)
+            val mapped = fields.map { Property(fieldTypeId = it.typeId, value = it.name, id = it.id) }
+            val sorted = if (isOrdered) mapped.sortedBy { it.value } else mapped
+            ArrayList(sorted)
+        }
     }
 
     private fun hideField(view: View, name: String) {
@@ -530,10 +539,6 @@ class FieldsFactory(
         }
         return !hasPropertiesOfType
     }
-
-    fun onPause() {}
-
-    fun onResume() {}
 
     interface Listener {
         fun onFieldHide(view: View, name: String)
