@@ -7,10 +7,7 @@ import android.widget.CheckBox
 import android.widget.LinearLayout
 import android.widget.RatingBar
 import android.widget.TextView
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import org.d1scw0rld.bookbag.data.DbConstants
-import org.d1scw0rld.bookbag.data.dao.BookDao
 import org.d1scw0rld.bookbag.dto.Book
 import org.d1scw0rld.bookbag.dto.Date
 import org.d1scw0rld.bookbag.dto.Field
@@ -19,8 +16,8 @@ import org.d1scw0rld.bookbag.dto.Property
 
 class BookDetailFieldsFactory(
     private val context: Context,
-    private val dbDao: BookDao,
-    private val book: Book?
+    private val currencies: List<Property>,
+    private val book: Book?,
 ) {
     private val inflater: LayoutInflater = LayoutInflater.from(context)
 
@@ -28,16 +25,10 @@ class BookDetailFieldsFactory(
         private const val SEP = ", "
     }
 
-    @Suppress("UNREACHABLE_CODE")
     fun addFields(rootView: ViewGroup) {
         if (book == null) return
 
         val categoriesLayout = rootView.findViewById<LinearLayout>(R.id.ll_categories) ?: return
-        val currencies = runBlocking(Dispatchers.IO) {
-            dbDao.getFieldsByTypeId(DbConstants.FLD_CURRENCY).map { 
-                Property(fieldTypeId = it.typeId, value = it.name, id = it.id) 
-            }
-        }
 
         for (field in DbConstants.FIELDS) {
             var name = field.name
@@ -46,7 +37,7 @@ class BookDetailFieldsFactory(
             if (field.id > 99) {
                 when (field.type) {
                     Field.TYPE_TEXT -> {
-                        val textValue = @Suppress("UNREACHABLE_CODE") when (field.id) {
+                        val textValue = when (field.id) {
                             DbConstants.FLD_TITLE -> book.title.value
                             DbConstants.FLD_DESCRIPTION -> book.description.value
                             DbConstants.FLD_VOLUME -> if (book.volume.value != 0) book.volume.value.toString() else ""
@@ -65,7 +56,7 @@ class BookDetailFieldsFactory(
                             else -> null
                         }
 
-                        if (price != null && price.value != 0) {
+                        if ((price != null) && (price.value != 0)) {
                             val fieldCurrency = currencies.firstOrNull { it.id == price.currencyId }
                             val formattedValue = if (fieldCurrency == null) {
                                 String.format(
@@ -131,21 +122,21 @@ class BookDetailFieldsFactory(
     }
 
     private fun addField(rootView: LinearLayout, name: String, value: String) {
-        val rowView = inflater.inflate(R.layout.row_category_new, null)
+        val rowView = inflater.inflate(R.layout.row_category_new, rootView, false)
         rowView.findViewById<TextView>(R.id.tv_title).text = name
         rowView.findViewById<TextView>(R.id.tv_value).text = value
         rootView.addView(rowView)
     }
 
     private fun addRatingField(rootView: LinearLayout, name: String, value: String) {
-        val rowView = inflater.inflate(R.layout.row_category_rating, null)
+        val rowView = inflater.inflate(R.layout.row_category_rating, rootView, false)
         rowView.findViewById<TextView>(R.id.tv_title).text = name
         rowView.findViewById<RatingBar>(R.id.rating_bar).rating = value.toFloatOrNull() ?: 0f
         rootView.addView(rowView)
     }
 
     private fun addCheckBoxField(rootView: LinearLayout, name: String, value: String) {
-        val rowView = inflater.inflate(R.layout.row_category_check_box, null)
+        val rowView = inflater.inflate(R.layout.row_category_check_box, rootView, false)
         rowView.findViewById<TextView>(R.id.tv_title).text = name
         rowView.findViewById<CheckBox>(R.id.check_box).isChecked = value.toBoolean()
         rootView.addView(rowView)

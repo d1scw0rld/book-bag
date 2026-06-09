@@ -8,24 +8,28 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.MenuProvider
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import kotlinx.coroutines.Dispatchers
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
-import org.d1scw0rld.bookbag.data.AppDatabase
+import org.d1scw0rld.bookbag.data.repository.BookRepository
 import org.d1scw0rld.bookbag.databinding.FragmentBookBinding
-import androidx.navigation.findNavController
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class BookFragment : BaseFragment(), IBackPressListener {
+
+    @Inject
+    lateinit var bookRepository: BookRepository
 
     private var _binding: FragmentBookBinding? = null
     private val binding get() = _binding!!
 
-    private var bookId: Long = 0
     private val args: BookFragmentArgs by navArgs()
+    private var bookId: Long = 0
 
     companion object {
         private const val SAVED_BOOK_ID = "saved_book_id"
@@ -37,8 +41,6 @@ class BookFragment : BaseFragment(), IBackPressListener {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentBookBinding.inflate(inflater, container, false)
-        @Suppress("DEPRECATION")
-        setHasOptionsMenu(true)
 
         val toolbar = binding.detailToolbar
         val activity = requireActivity() as AppCompatActivity
@@ -46,20 +48,22 @@ class BookFragment : BaseFragment(), IBackPressListener {
         activity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
         activity.supportActionBar?.setHomeButtonEnabled(true)
 
-        bookId = savedInstanceState?.getLong(SAVED_BOOK_ID) ?: getBookID()
+        bookId = savedInstanceState?.getLong(SAVED_BOOK_ID) ?: args.bookID
 
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.fabEditBook.setOnClickListener { v ->
-            navigateToEditBook(v, bookId)
+        binding.fabEditBook.setOnClickListener {
+            navigateToEditBook(bookId)
         }
 
         if (savedInstanceState == null) {
             loadFragment(bookId)
         }
+
+        setupMenu()
     }
 
     override fun onDestroyView() {
@@ -72,38 +76,37 @@ class BookFragment : BaseFragment(), IBackPressListener {
         outState.putLong(SAVED_BOOK_ID, bookId)
     }
 
-    @Suppress("DEPRECATION")
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.menu_details, menu)
-    }
+    private fun setupMenu() {
+        requireActivity().addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.menu_details, menu)
+            }
 
-    @Suppress("DEPRECATION")
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val itemId = item.itemId
-        return when (itemId) {
-            android.R.id.home -> {
-                navigateToBookList(requireView())
-                true
-            }
-            R.id.action_duplicate -> {
-                navigateToEditBook(requireView(), bookId, true)
-                true
-            }
-            R.id.action_delete -> {
-                viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-                    deleteBook()
-                    withContext(Dispatchers.Main) {
-                        navigateToBookList(requireView())
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    android.R.id.home -> {
+                        navigateToBookList()
+                        true
                     }
+                    R.id.action_duplicate -> {
+                        navigateToEditBook(bookId, isCopy = true)
+                        true
+                    }
+                    R.id.action_delete -> {
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            bookRepository.deleteBookAndRelations(bookId)
+                            navigateToBookList()
+                        }
+                        true
+                    }
+                    else -> false
                 }
-                true
             }
-            else -> super.onOptionsItemSelected(item)
-        }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
     override fun onBackPressed(): Boolean {
-        navigateToBookList(requireView())
+        navigateToBookList()
         return true
     }
 
@@ -119,32 +122,15 @@ class BookFragment : BaseFragment(), IBackPressListener {
             .commitAllowingStateLoss()
     }
 
-    private fun navigateToEditBook(view: View, bookId: Long) {
-        val action = BookFragmentDirections.actionBookFragmentToEditBookFragment()
-        action.bookID = bookId
-        view.findNavController().navigate(action)
-    }
-
-    private fun navigateToEditBook(view: View, bookId: Long, isCopy: Boolean) {
-        val action = BookFragmentDirections.actionBookFragmentToEditBookFragment()
-        action.bookID = bookId
-        action.isCopy = isCopy
-        view.findNavController().navigate(action)
-    }
-
-    private fun navigateToBookList(view: View) {
-        view.findNavController().navigateUp()
-    }
-
-    private fun getBookID(): Long {
-        return arguments?.let { BookFragmentArgs.fromBundle(it).bookID } ?: 0
-    }
-
-    private fun deleteBook() {
-        val dbDao = AppDatabase.getDatabase(requireContext(), viewLifecycleOwner.lifecycleScope).bookDao()
-        runBlocking(Dispatchers.IO) {
-            dbDao.deleteBookFields(bookId)
-            dbDao.deleteBook(bookId)
+    private fun navigateToEditBook(bookId: Long, isCopy: Boolean = false) {
+        val action = BookFragmentDirections.actionBookFragmentToEditBookFragment().apply {
+            this.bookID = bookId
+            this.isCopy = isCopy
         }
+        findNavController().navigate(action)
+    }
+
+    private fun navigateToBookList() {
+        findNavController().navigateUp()
     }
 }

@@ -2,6 +2,7 @@ package org.d1scw0rld.bookbag
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -9,39 +10,40 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
 import androidx.appcompat.widget.Toolbar
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.NavHostFragment
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.d1scw0rld.bookbag.data.AppDatabase
-import org.d1scw0rld.bookbag.data.DbConstants
-import org.d1scw0rld.bookbag.data.entity.BookEntity
-import org.d1scw0rld.bookbag.data.entity.BookFieldCrossRef
-import org.d1scw0rld.bookbag.data.entity.FieldEntity
-import org.d1scw0rld.bookbag.data.relation.toDto
-import org.d1scw0rld.bookbag.databinding.FragmentEditBookBinding
-import org.d1scw0rld.bookbag.dto.Book
-import org.d1scw0rld.bookbag.dto.Field
-import org.d1scw0rld.bookbag.fields.FieldEditTextUpdatableClearable
+import androidx.core.view.MenuProvider
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isEmpty
 import androidx.core.view.isGone
 import androidx.core.view.size
 import androidx.core.view.get
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.NavHostFragment
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import org.d1scw0rld.bookbag.data.DbConstants
+import org.d1scw0rld.bookbag.databinding.FragmentEditBookBinding
+import org.d1scw0rld.bookbag.dto.Field
+import org.d1scw0rld.bookbag.fields.FieldEditTextUpdatableClearable
+import org.d1scw0rld.bookbag.ui.state.UiState
+import org.d1scw0rld.bookbag.ui.viewmodel.EditBookViewModel
 
+@AndroidEntryPoint
 class EditBookFragment : BaseFragment(), IBackPressListener {
 
     private var _binding: FragmentEditBookBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var book: Book
-    private val dbDao get() = AppDatabase.getDatabase(requireContext(), viewLifecycleOwner.lifecycleScope).bookDao()
+    private val viewModel: EditBookViewModel by viewModels()
+    private val book get() = viewModel.book
+
     private var hiddenFieldsPopupMenu: PopupMenu? = null
     private var bookTitleField: FieldEditTextUpdatableClearable? = null
     private val hiddenFieldsHashMap = HashMap<MenuItem, View>()
@@ -53,8 +55,6 @@ class EditBookFragment : BaseFragment(), IBackPressListener {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentEditBookBinding.inflate(inflater, container, false)
-        @Suppress("DEPRECATION")
-        setHasOptionsMenu(true)
 
         requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
 
@@ -63,7 +63,7 @@ class EditBookFragment : BaseFragment(), IBackPressListener {
 
         val actionBar = (requireActivity() as AppCompatActivity).supportActionBar
         if (actionBar != null) {
-            showHomeTitle(false)
+            showHomeTitle()
             actionBar.displayOptions = androidx.appcompat.app.ActionBar.DISPLAY_SHOW_CUSTOM
             actionBar.setCustomView(R.layout.actionbar_custom_view_done)
 
@@ -99,54 +99,82 @@ class EditBookFragment : BaseFragment(), IBackPressListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        showProgressBar()
+        // Setup Modern MenuProvider
+        requireActivity().addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.cancel, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.cancel -> {
+                        hideKeyboard()
+                        navigateBack()
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+
+        val bookId = getBookID()
+        val isCopy = getIsCopy()
+        viewModel.loadBook(bookId, isCopy)
+
+        observeUiState()
+        observeSaveSuccess()
+    }
+
+    private fun observeUiState() {
         val fieldsRoot = binding.llFields
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    when (state) {
+                        is UiState.Loading -> {
+                            showProgressBar()
+                        }
+                        is UiState.Success -> {
+                            hideProgressBar()
+                            val ctx = context ?: return@collect
+                            val loadedBook = state.data.book
 
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            val bookId = getBookID()
-            val isCopy = getIsCopy()
+                            // 1. Only initialize fields once to prevent losing user edits
+                            if (fieldsRoot.childCount == 0) {
+                                // 2. Properties map is pre-fetched asynchronously in the ViewModel
+                                fieldsFactory = FieldsFactory(ctx, loadedBook, state.data.propertiesMap)
 
-            val loadedBook = if (bookId != 0L) {
-                dbDao.getBookWithFields(bookId)?.toDto() ?: Book()
-            } else {
-                Book()
-            }
-
-            if (isCopy) {
-                loadedBook.id = 0
-            }
-
-            withContext(Dispatchers.Main) {
-                hideProgressBar()
-                if (!isAdded) return@withContext
-                val ctx = context ?: return@withContext
-
-                book = loadedBook
-                fieldsFactory = FieldsFactory(ctx, loadedBook, dbDao)
-                addFields(fieldsRoot)
-                createAddFieldsPopupMenu(fieldsRoot)
+                                addFields(fieldsRoot)
+                                createAddFieldsPopupMenu(fieldsRoot)
+                            }
+                        }
+                        is UiState.Error -> {
+                            hideProgressBar()
+                            Log.e("EditBookFragment", "Error loading book edit state", state.exception)
+                        }
+                    }
+                }
             }
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
-
-    @Suppress("DEPRECATION")
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.cancel, menu)
-    }
-
-    @Suppress("DEPRECATION")
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.cancel) {
-            hideKeyboard()
-            navigateBack()
-            return true
+    private fun observeSaveSuccess() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.saveSuccess.collect { success ->
+                    hideProgressBar()
+                    if (success) {
+                        if (book.id == 0L) {
+                            navigateToBookList()
+                        } else {
+                            navigateBack()
+                        }
+                    } else {
+                        showToast(R.string.err_db)
+                    }
+                }
+            }
         }
-        return super.onOptionsItemSelected(item)
     }
 
     override fun onBackPressed(): Boolean {
@@ -154,22 +182,19 @@ class EditBookFragment : BaseFragment(), IBackPressListener {
         return true
     }
 
-    private fun getIsCopy(): Boolean {
-        return EditBookFragmentArgs.fromBundle(requireArguments()).isCopy
-    }
+    private fun getIsCopy(): Boolean = EditBookFragmentArgs.fromBundle(requireArguments()).isCopy
 
-    private fun getBookID(): Long {
-        return EditBookFragmentArgs.fromBundle(requireArguments()).bookID
-    }
+    private fun getBookID(): Long = EditBookFragmentArgs.fromBundle(requireArguments()).bookID
 
     private fun createAddFieldsPopupMenu(fieldsRoot: LinearLayout) {
         for (i in 0 until fieldsRoot.childCount) {
             val child = fieldsRoot.getChildAt(i)
             if (child.isGone) {
+                // Safe cast to prevent potential ClassCastException crash
+                val fieldChild = child as? org.d1scw0rld.bookbag.fields.Field ?: continue
                 val menu = hiddenFieldsPopupMenu?.menu ?: continue
-                menu.add(Menu.NONE,
-                    menu.size, 0, (child as org.d1scw0rld.bookbag.fields.Field).getTitle())
-                hiddenFieldsHashMap[menu[menu.size() - 1]] = child
+                menu.add(Menu.NONE, menu.size, 0, fieldChild.getTitle())
+                hiddenFieldsHashMap[menu[menu.size - 1]] = child
             }
         }
     }
@@ -180,7 +205,7 @@ class EditBookFragment : BaseFragment(), IBackPressListener {
                 Field.TYPE_TEXT -> {
                     fieldsFactory.addFieldText(rootView, field)
                     if (field.id == DbConstants.FLD_TITLE) {
-                        bookTitleField = rootView.getChildAt(rootView.childCount - 1) as FieldEditTextUpdatableClearable
+                        bookTitleField = rootView.getChildAt(rootView.childCount - 1) as? FieldEditTextUpdatableClearable
                     }
                 }
                 Field.TYPE_MULTIFIELD -> fieldsFactory.addFieldMultiText(rootView, field)
@@ -203,62 +228,11 @@ class EditBookFragment : BaseFragment(), IBackPressListener {
         hideKeyboard()
 
         if (book.title.value.trim().isEmpty()) {
-            bookTitleField?.setError(resources.getString(R.string.err_emp_ttl))
+            bookTitleField?.setError(getString(R.string.err_emp_ttl))
         } else {
             bookTitleField?.setError(null)
-            viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-                saveBook()
-                withContext(Dispatchers.Main) {
-                    if (book.id == 0L) {
-                        navigateToBookList()
-                    } else {
-                        navigateBack()
-                    }
-                }
-            }
-        }
-    }
-
-    private suspend fun saveBook() {
-        clearEmptyFields()
-        val bookEntity = BookEntity(
-            id = book.id,
-            title = book.title.value,
-            description = book.description.value,
-            volume = book.volume.value,
-            publicationDate = book.publicationDate.value,
-            pages = book.pages.value,
-            price = book.price.value,
-            value = book.value.value,
-            dueDate = book.dueDate.value,
-            readDate = book.readDate.value,
-            edition = book.edition.value,
-            isbn = book.isbn.value,
-            web = book.web.value
-        )
-
-        val idToUse = if (book.id != 0L) {
-            dbDao.updateBook(bookEntity)
-            book.id
-        } else {
-            dbDao.insertBook(bookEntity)
-        }
-
-        dbDao.deleteBookFields(idToUse)
-        for (property in book.properties) {
-            if (property.id == 0L) {
-                val fieldEntity = FieldEntity(typeId = property.fieldTypeId, name = property.value)
-                property.id = dbDao.insertField(fieldEntity)
-            }
-            dbDao.insertBookFieldCrossRef(BookFieldCrossRef(bookId = idToUse, fieldId = property.id))
-        }
-    }
-
-    private fun clearEmptyFields() {
-        for (i in book.properties.indices.reversed()) {
-            if (book.properties[i].value.trim().isEmpty()) {
-                book.properties.removeAt(i)
-            }
+            showProgressBar()
+            viewModel.saveBook()
         }
     }
 
@@ -271,18 +245,23 @@ class EditBookFragment : BaseFragment(), IBackPressListener {
     }
 
     private fun hideKeyboard() {
-        val view = requireActivity().currentFocus
-        if (view != null) {
-            val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(view.windowToken, 0)
+        val window = requireActivity().window
+        WindowCompat.getInsetsController(window, binding.root).hide(WindowInsetsCompat.Type.ime())
+    }
+
+    private fun showHomeTitle() {
+        val actionBar = (requireActivity() as AppCompatActivity).supportActionBar
+        if (actionBar != null) {
+            actionBar.setDisplayShowTitleEnabled(false)
+            actionBar.setDisplayShowHomeEnabled(false)
         }
     }
 
-    private fun showHomeTitle(show: Boolean) {
-        val actionBar = (requireActivity() as AppCompatActivity).supportActionBar
-        if (actionBar != null) {
-            actionBar.setDisplayShowTitleEnabled(show)
-            actionBar.setDisplayShowHomeEnabled(show)
-        }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // Prevent view memory leaks
+        _binding = null
+        hiddenFieldsPopupMenu = null
+        bookTitleField = null
     }
 }

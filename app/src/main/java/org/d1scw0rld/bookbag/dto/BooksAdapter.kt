@@ -8,16 +8,14 @@ import android.view.View
 import android.view.View.OnClickListener
 import android.view.View.OnLongClickListener
 import android.view.ViewGroup
-import android.view.animation.RotateAnimation
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import org.d1scw0rld.bookbag.R
-import java.util.Locale
 
 class BooksAdapter(
     context: Context,
-    parentsResults: ArrayList<ParentResult>
+    parentsResults: List<ParentResult> = emptyList(),
 ) : ExpandableRecyclerAdapter<BooksAdapter.BookListItem>(context) {
 
     private var allChildrenCount = 0
@@ -38,11 +36,11 @@ class BooksAdapter(
         listItemsNotFiltered = ArrayList(allItems)
     }
 
-    override fun getItemId(position: Int): Long {
-        return visibleItems[position].id
+    override fun getItemId(i: Int): Long {
+        return visibleItems[i].id
     }
 
-    private fun generateItems(parentsResults: ArrayList<ParentResult>): List<BookListItem> {
+    private fun generateItems(parentsResults: List<ParentResult>): List<BookListItem> {
         allChildrenCount = 0
         val items = ArrayList<BookListItem>()
         for (parentResult in parentsResults) {
@@ -60,9 +58,9 @@ class BooksAdapter(
     }
 
     class BookListItem(
-        var id: Long = -1,
+        val id: Long = -1,
         itemType: Int,
-        text: String
+        text: String,
     ) : ListItem(itemType, text) {
         constructor(group: String) : this(-1, TYPE_HEADER, group)
         constructor(id: Long, item: String) : this(id, TYPE_ITEM, item)
@@ -71,6 +69,14 @@ class BooksAdapter(
     inner class HeaderViewHolder(val view: View) : ExpandableRecyclerAdapter<BookListItem>.HeaderViewHolder(view) {
         val name: TextView = view.findViewById(R.id.tv_header)
         private val arrow: ImageView = view.findViewById(R.id.iv_arrow)
+
+        init {
+            // Bind listener once during creation to avoid object allocations in onBindViewHolder
+            view.setOnClickListener { v ->
+                onHeaderClickListener?.onClick(v)
+                handleClick()
+            }
+        }
 
         override fun bind(position: Int) {
             super.bind(position)
@@ -83,53 +89,42 @@ class BooksAdapter(
         }
 
         override fun onExpansionToggled(expanded: Boolean) {
-            val rotateAnimation = if (expanded) {
-                RotateAnimation(
-                    ROTATED_POSITION,
-                    INITIAL_POSITION,
-                    RotateAnimation.RELATIVE_TO_SELF,
-                    0.5f,
-                    RotateAnimation.RELATIVE_TO_SELF,
-                    0.5f
-                )
-            } else {
-                RotateAnimation(
-                    -1 * ROTATED_POSITION,
-                    INITIAL_POSITION,
-                    RotateAnimation.RELATIVE_TO_SELF,
-                    0.5f,
-                    RotateAnimation.RELATIVE_TO_SELF,
-                    0.5f
-                )
-            }
-
-            rotateAnimation.duration = 200
-            rotateAnimation.fillAfter = true
-            arrow.startAnimation(rotateAnimation)
+            // Use modern ViewPropertyAnimator (more performant, handles actual view property and runs on RenderThread)
+            val targetRotation = if (expanded) INITIAL_POSITION else ROTATED_POSITION
+            arrow.animate()
+                .rotation(targetRotation)
+                .setDuration(200)
+                .start()
         }
     }
 
-    inner class ItemViewHolder(val view: View) : ExpandableRecyclerAdapter.ViewHolder(view) {
+    inner class ItemViewHolder(val view: View) : ViewHolder(view) {
         val name: TextView = view.findViewById(R.id.tv_item)
+
+        init {
+            // Bind listeners once during creation to avoid object allocations in onBindViewHolder
+            view.setOnClickListener { v ->
+                onBookClickListener?.onClick(v)
+            }
+            view.setOnLongClickListener { v ->
+                onBookLongClickListener?.onLongClick(v) ?: false
+            }
+        }
 
         fun bind(position: Int) {
             val textValue = visibleItems[position].text
-            val spContent = SpannableString(textValue)
-            var filteredStart = textValue.lowercase(Locale.getDefault())
-                .indexOf(filterText.lowercase(Locale.getDefault()))
-            val filterEnd = if (filteredStart < 0) {
-                filteredStart = 0
-                0
-            } else {
-                filteredStart + filterText.length
+            name.text = SpannableString(textValue).apply {
+                // Use case-insensitive indexOf to avoid string allocations from lowercase()
+                val filteredStart = textValue.indexOf(filterText, ignoreCase = true)
+                if (filteredStart >= 0 && filterText.isNotEmpty()) {
+                    setSpan(
+                        ForegroundColorSpan(ContextCompat.getColor(context, R.color.accent)),
+                        filteredStart,
+                        filteredStart + filterText.length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                }
             }
-            spContent.setSpan(
-                ForegroundColorSpan(ContextCompat.getColor(context, R.color.accent)),
-                filteredStart,
-                filterEnd,
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-            )
-            name.text = spContent
         }
     }
 
@@ -144,33 +139,25 @@ class BooksAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         when (getItemViewType(position)) {
             TYPE_HEADER -> {
-                val headerHolder = holder as HeaderViewHolder
-                headerHolder.bind(position)
-                headerHolder.view.setOnClickListener { v ->
-                    onHeaderClickListener?.onClick(v)
-                    headerHolder.handleClick()
-                }
+                (holder as HeaderViewHolder).bind(position)
             }
             TYPE_ITEM -> {
-                val itemHolder = holder as ItemViewHolder
-                itemHolder.bind(position)
-                itemHolder.view.setOnClickListener(onBookClickListener)
-                itemHolder.view.setOnLongClickListener(onBookLongClickListener)
+                (holder as ItemViewHolder).bind(position)
             }
         }
     }
 
     fun filter(charText: String) {
-        val query = charText.lowercase(Locale.getDefault())
-        filterText = query
+        filterText = charText
         visibleItems.clear()
 
-        if (query.isEmpty()) {
+        if (charText.isEmpty()) {
             setItems(listItemsNotFiltered)
             allChildrenCount = listItemsNotFiltered.count { it.itemType == TYPE_ITEM }
         } else {
+            // Filter using ignoreCase to avoid extra string allocations
             val tempBookListItems = ArrayList(listItemsNotFiltered.filter {
-                it.itemType == TYPE_HEADER || it.text.lowercase(Locale.getDefault()).contains(query)
+                it.itemType == TYPE_HEADER || it.text.contains(charText, ignoreCase = true)
             })
 
             for (i in tempBookListItems.indices.reversed()) {
@@ -200,18 +187,34 @@ class BooksAdapter(
         this.onBookLongClickListener = onLongClickListener
     }
 
+    fun updateData(parentsResults: List<ParentResult>) {
+        val items = generateItems(parentsResults)
+        setItems(items)
+        listItemsNotFiltered.clear()
+        listItemsNotFiltered.addAll(allItems)
+    }
+
     fun removeAt(clickedItemIndex: Int) {
         removeItemAt(clickedItemIndex)
         allChildrenCount--
     }
 
     override fun removeItemAt(visiblePosition: Int) {
+        if (visiblePosition < 0 || visiblePosition >= visibleItems.size) return
+
         listItemsNotFiltered.remove(visibleItems[visiblePosition])
         super.removeItemAt(visiblePosition)
-        if (visibleItems[visiblePosition - 1].itemType == TYPE_HEADER &&
-            (visiblePosition == visibleItems.size || visibleItems[visiblePosition].itemType == TYPE_HEADER)
-        ) {
-            super.removeItemAt(visiblePosition - 1)
+
+        // Ensure visiblePosition - 1 is within bounds before checking itemType
+        if (visiblePosition - 1 >= 0 && visiblePosition - 1 < visibleItems.size) {
+            val prevItem = visibleItems[visiblePosition - 1]
+            if (prevItem.itemType == TYPE_HEADER) {
+                // If there are no items after the header, or the next item is also a header, remove the header
+                val isEmptyHeader = visiblePosition >= visibleItems.size || visibleItems[visiblePosition].itemType == TYPE_HEADER
+                if (isEmptyHeader) {
+                    super.removeItemAt(visiblePosition - 1)
+                }
+            }
         }
     }
 }

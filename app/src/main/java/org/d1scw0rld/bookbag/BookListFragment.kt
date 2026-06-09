@@ -23,18 +23,18 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.Navigation
 import androidx.navigation.ui.NavigationUI
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.Dispatchers
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.d1scw0rld.bookbag.data.AppDatabase
 import org.d1scw0rld.bookbag.data.DbConstants
 import org.d1scw0rld.bookbag.data.relation.BookRelationsMapper
 import org.d1scw0rld.bookbag.databinding.FragmentBookListBinding
@@ -42,10 +42,17 @@ import org.d1scw0rld.bookbag.dto.BooksAdapter
 import org.d1scw0rld.bookbag.fileselector.FileOperation
 import org.d1scw0rld.bookbag.fileselector.FileSelectorDialog
 import org.d1scw0rld.bookbag.fileselector.OnHandleFileListener
+import org.d1scw0rld.bookbag.ui.state.UiState
+import org.d1scw0rld.bookbag.ui.viewmodel.BookListViewModel
+import org.d1scw0rld.bookbag.ui.viewmodel.FileOperationType
 import java.io.File
 import java.util.Calendar
 import java.util.Locale
+import androidx.navigation.findNavController
+import androidx.core.content.edit
+import androidx.core.view.MenuProvider
 
+@AndroidEntryPoint
 class BookListFragment : BaseFragment() {
 
     companion object {
@@ -72,7 +79,7 @@ class BookListFragment : BaseFragment() {
     private var bookId: Long = 0
     private var exportFolderAbsPath: String = ""
 
-    private val dbDao get() = AppDatabase.getDatabase(requireContext(), viewLifecycleOwner.lifecycleScope).bookDao()
+    private val viewModel: BookListViewModel by viewModels()
     private lateinit var booksAdapter: BooksAdapter
     private lateinit var preferences: SharedPreferences
     private var selectedBookView: View? = null
@@ -153,18 +160,24 @@ class BookListFragment : BaseFragment() {
         }
 
         override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
-            val itemId = item.itemId
-            if (itemId == R.id.action_edit) {
-                navigateToEditBook(requireView(), bookId, false)
-            } else if (itemId == R.id.action_duplicate) {
-                navigateToEditBook(requireView(), bookId, true)
-            } else if (itemId == R.id.action_delete) {
-                deleteBook()
-            } else {
-                return false
+            return when (item.itemId) {
+                R.id.action_edit -> {
+                    navigateToEditBook(requireView(), bookId, false)
+                    mode.finish()
+                    true
+                }
+                R.id.action_duplicate -> {
+                    navigateToEditBook(requireView(), bookId, true)
+                    mode.finish()
+                    true
+                }
+                R.id.action_delete -> {
+                    deleteBook()
+                    mode.finish()
+                    true
+                }
+                else -> false
             }
-            mode.finish()
-            return true
         }
 
         override fun onDestroyActionMode(mode: ActionMode) {
@@ -173,45 +186,16 @@ class BookListFragment : BaseFragment() {
     }
 
     private fun deleteBook() {
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            dbDao.deleteBookFields(bookId)
-            dbDao.deleteBook(bookId)
-            withContext(Dispatchers.Main) {
-                if (!isAdded) return@withContext
-                booksAdapter.removeAt(clickedItemIndex)
-                binding.include.tvBooksCount.text = resources.getQuantityString(
-                    R.plurals.books,
-                    booksAdapter.getAllChildrenCount(),
-                    booksAdapter.getAllChildrenCount()
-                )
-                deselectBookAndHideDetails()
-            }
-        }
+        viewModel.deleteBook(bookId)
+        deselectBookAndHideDetails()
     }
 
     private val onLoadFileListener = OnHandleFileListener { filePath ->
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            val result = AppDatabase.importDatabase(requireContext(), filePath)
-            withContext(Dispatchers.Main) {
-                if (!isAdded) return@withContext
-                if (result) {
-                    showToast(R.string.prf_imp_db_scs)
-                }
-                setupRecyclerView(recyclerView, orderId)
-            }
-        }
+        viewModel.importDatabase(filePath)
     }
 
     private val onSaveFileListener = OnHandleFileListener { filePath ->
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            val result = AppDatabase.exportDatabase(requireContext(), filePath)
-            withContext(Dispatchers.Main) {
-                if (!isAdded) return@withContext
-                if (result) {
-                    showToast(R.string.prf_xpr_db_scs)
-                }
-            }
-        }
+        viewModel.exportDatabase(filePath)
     }
 
     private val onSharedPreferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, key ->
@@ -230,8 +214,6 @@ class BookListFragment : BaseFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentBookListBinding.inflate(inflater, container, false)
-        @Suppress("DEPRECATION")
-        setHasOptionsMenu(true)
 
         val actionBar = requireActivity().actionBar
         actionBar?.hide()
@@ -263,52 +245,137 @@ class BookListFragment : BaseFragment() {
             layoutManager = LinearLayoutManager(context)
         }
 
+        booksAdapter = BooksAdapter(requireContext()).apply {
+            setBookClickListener(onBookClickListener)
+            setBookLongClickListener(onBookLongClickListener)
+            setHeaderClickListener(onCategoryClickListener)
+        }
+        recyclerView.adapter = booksAdapter
+
         if (view.findViewById<View>(R.id.book_detail_container) != null) {
             isTwoPane = true
+        }
+
+        requireActivity().addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.menu_book_list, menu)
+
+                val searchItem = menu.findItem(R.id.action_search)
+                val searchView = searchItem.actionView as SearchView
+
+                searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                    override fun onQueryTextSubmit(query: String?): Boolean {
+                        return false
+                    }
+
+                    override fun onQueryTextChange(newText: String?): Boolean {
+                        booksAdapter.expandAll()
+                        booksAdapter.filter(newText ?: "")
+                        binding.include.tvBooksCount.text = resources.getQuantityString(
+                            R.plurals.books,
+                            booksAdapter.getAllChildrenCount(),
+                            booksAdapter.getAllChildrenCount()
+                        )
+                        return true
+                    }
+                })
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                val navController = requireActivity().findNavController(R.id.fragment)
+                return NavigationUI.onNavDestinationSelected(menuItem, navController) || optionsItemSelect(menuItem)
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+
+        observeUiState()
+        observeFileOperationState()
+    }
+
+    private fun observeUiState() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    when (state) {
+                        is UiState.Loading -> {
+                            showProgressBar()
+                        }
+                        is UiState.Success -> {
+                            hideProgressBar()
+                            val books = state.data
+                            val mappedParents = BookRelationsMapper.mapBooksToParents(books, orderId)
+                            booksAdapter.updateData(mappedParents)
+                            if (isExpandAll) {
+                                booksAdapter.expandAll()
+                            }
+                            for (orderItem in orderItems) {
+                                if (orderItem.id == orderId) {
+                                    binding.include.tvBooksOrder.text = orderItem.title
+                                    binding.include.tvBooksCount.text = resources.getQuantityString(
+                                        R.plurals.books,
+                                        booksAdapter.getAllChildrenCount(),
+                                        booksAdapter.getAllChildrenCount()
+                                    )
+                                }
+                            }
+                        }
+                        is UiState.Error -> {
+                            hideProgressBar()
+                            Log.e("BookListFragment", "Error loading books", state.exception)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun observeFileOperationState() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.fileOpState.collect { state ->
+                    when (state) {
+                        is UiState.Loading -> {
+                            showProgressBar()
+                        }
+                        is UiState.Success -> {
+                            hideProgressBar()
+                            when (state.data) {
+                                FileOperationType.IMPORT -> {
+                                    showToast(R.string.prf_imp_db_scs)
+                                }
+                                FileOperationType.EXPORT -> {
+                                    showToast(R.string.prf_xpr_db_scs)
+                                }
+                            }
+                            viewModel.consumeFileOperation()
+                        }
+                        is UiState.Error -> {
+                            hideProgressBar()
+                            Log.e("BookListFragment", "File operation error", state.exception)
+                            viewModel.consumeFileOperation()
+                        }
+                        null -> {
+                            // Idle/No-op
+                        }
+                    }
+                }
+            }
         }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        if (::preferences.isInitialized) {
+            preferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
+        }
+        selectedBookView = null
         _binding = null
     }
 
     override fun onResume() {
         super.onResume()
         if (::recyclerView.isInitialized) {
-            setupRecyclerView(recyclerView, orderId)
+            setupRecyclerView()
         }
-    }
-
-    @Suppress("DEPRECATION")
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.menu_book_list, menu)
-
-        val searchItem = menu.findItem(R.id.action_search)
-        val searchView = searchItem.actionView as SearchView
-
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                return false
-            }
-
-            override fun onQueryTextChange(newText: String?): Boolean {
-                booksAdapter.expandAll()
-                booksAdapter.filter(newText ?: "")
-                binding.include.tvBooksCount.text = resources.getQuantityString(
-                    R.plurals.books,
-                    booksAdapter.getAllChildrenCount(),
-                    booksAdapter.getAllChildrenCount()
-                )
-                return true
-            }
-        })
-    }
-
-    @Suppress("DEPRECATION")
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val navController = Navigation.findNavController(requireActivity(), R.id.fragment)
-        return NavigationUI.onNavDestinationSelected(item, navController) || optionsItemSelect(item)
     }
 
     private fun getExportFolderAbsPath(exportFolder: String): String {
@@ -328,7 +395,7 @@ class BookListFragment : BaseFragment() {
                             Uri.fromParts("package", requireContext().packageName, null)
                         )
                     } catch (e: Exception) {
-                        // fallback
+                        Log.e("BookListFragment", e.toString())
                     }
                     if (intent == null) {
                         intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
@@ -387,8 +454,7 @@ class BookListFragment : BaseFragment() {
     private fun optionsItemSelect(item: MenuItem): Boolean {
         deselectBookAndHideDetails()
 
-        val itemId = item.itemId
-        return when (itemId) {
+        return when (item.itemId) {
             R.id.action_imp_db -> {
                 if (checkAndRequestPermissions(PendingAction.IMPORT)) {
                     showImportDbDialog()
@@ -414,7 +480,7 @@ class BookListFragment : BaseFragment() {
                 showOrderPopupMenu(menuItemView)
                 true
             }
-            else -> super.onOptionsItemSelected(item)
+            else -> false
         }
     }
 
@@ -426,19 +492,19 @@ class BookListFragment : BaseFragment() {
 
     private fun navigateToBookDetails(v: View) {
         val action = BookListFragmentDirections.actionBookListFragmentToBookFragment(bookId)
-        Navigation.findNavController(v).navigate(action)
+        v.findNavController().navigate(action)
     }
 
     private fun navigateToEditBook(v: View) {
         val action = BookListFragmentDirections.actionBookListFragmentToEditBookFragment()
-        Navigation.findNavController(v).navigate(action)
+        v.findNavController().navigate(action)
     }
 
     private fun navigateToEditBook(v: View, bookId: Long, isCopy: Boolean) {
         val action = BookListFragmentDirections.actionBookListFragmentToEditBookFragment()
         action.bookID = bookId
         action.isCopy = isCopy
-        Navigation.findNavController(v).navigate(action)
+        v.findNavController().navigate(action)
     }
 
     private fun selectBookView(view: View) {
@@ -524,49 +590,23 @@ class BookListFragment : BaseFragment() {
         for (orderItem in orderItems) {
             popupMenu.menu
                 .add(1, orderItem.id, 0, orderItem.title)
-                .setCheckable(true)
-                .setChecked(orderItem.id == orderId)
+                .apply {
+                    isCheckable = true
+                    isChecked = (orderItem.id == orderId)
+                }
         }
         popupMenu.menu.setGroupCheckable(1, true, true)
         popupMenu.setOnMenuItemClickListener { menuItem ->
             orderId = menuItem.itemId
             saveOrderID(orderId)
-            setupRecyclerView(recyclerView, orderId)
+            setupRecyclerView()
             true
         }
         popupMenu.show()
     }
 
-    private fun setupRecyclerView(recyclerView: RecyclerView, orderId: Int) {
-        showProgressBar()
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            val books = dbDao.getAllBooksWithFields()
-            withContext(Dispatchers.Main) {
-                hideProgressBar()
-                if (!isAdded) return@withContext
-                val ctx = context ?: return@withContext
-
-                val mappedParents = BookRelationsMapper.mapBooksToParents(books, orderId)
-                booksAdapter = BooksAdapter(ctx, mappedParents)
-                booksAdapter.setBookClickListener(onBookClickListener)
-                booksAdapter.setBookLongClickListener(onBookLongClickListener)
-                booksAdapter.setHeaderClickListener(onCategoryClickListener)
-                if (isExpandAll) {
-                    booksAdapter.expandAll()
-                }
-                recyclerView.adapter = booksAdapter
-                for (orderItem in orderItems) {
-                    if (orderItem.id == orderId) {
-                        binding.include.tvBooksOrder.text = orderItem.title
-                        binding.include.tvBooksCount.text = resources.getQuantityString(
-                            R.plurals.books,
-                            booksAdapter.getAllChildrenCount(),
-                            booksAdapter.getAllChildrenCount()
-                        )
-                    }
-                }
-            }
-        }
+    private fun setupRecyclerView() {
+        viewModel.loadBooks()
     }
 
     private fun loadPreferences() {
@@ -578,9 +618,9 @@ class BookListFragment : BaseFragment() {
     }
 
     private fun saveOrderID(orderId: Int) {
-        val editor = preferences.edit()
-        editor.putInt(PREF_ORDER_ID, orderId)
-        editor.apply()
+        preferences.edit {
+            putInt(PREF_ORDER_ID, orderId)
+        }
     }
 
     private class OrderItem(var id: Int, var title: String)
