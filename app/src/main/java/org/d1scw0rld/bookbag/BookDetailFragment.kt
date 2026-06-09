@@ -26,6 +26,7 @@ class BookDetailFragment : BaseFragment() {
     private val viewModel: BookDetailViewModel by viewModels()
 
     companion object {
+        private const val TAG = "BookDetailFragment"
         const val BOOK_ID = "book_id"
     }
 
@@ -72,7 +73,7 @@ class BookDetailFragment : BaseFragment() {
                         }
                         is UiState.Error -> {
                             hideProgressBar()
-                            Log.e("BookDetailFragment", "Error loading book detail", state.exception)
+                            Log.e(TAG, getString(R.string.log_err_loading_detail), state.exception)
                         }
                     }
                 }

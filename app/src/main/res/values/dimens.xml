@@ -14,5 +14,19 @@
     <dimen name="standard_padding_small">4dp</dimen>
     <dimen name="standard_padding">8dp</dimen>
     <dimen name="alert_def_padding">18dp</dimen>
+    <dimen name="dialog_padding">10dp</dimen>
+    <dimen name="divider_padding">12dp</dimen>
+    <dimen name="padding_tiny">2dp</dimen>
+    <dimen name="margin_minus_tiny">-2dp</dimen>
+    <dimen name="padding_large">14dp</dimen>
+    <dimen name="padding_twenty">20dp</dimen>
+    <dimen name="dialog_margin_vertical">48dp</dimen>
+    <dimen name="book_list_padding_bottom">80dp</dimen>
+    <dimen name="popup_min_width">196dp</dimen>
+    <dimen name="padding_one">1dp</dimen>
+    <dimen name="padding_fifteen">15dp</dimen>
+    <dimen name="min_height_spinner">36dp</dimen>
+    <dimen name="text_size_small">14sp</dimen>
+    <dimen name="elevation_standard">4dp</dimen>
 
 </resources>

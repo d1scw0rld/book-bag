@@ -1,6 +1,7 @@
 package org.d1scw0rld.bookbag
 
 import android.content.Context
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
@@ -29,6 +30,10 @@ class FieldsFactory(
     private val book: Book,
     private val propertiesMap: Map<Int, List<Property>>
 ) : BaseObservable<FieldsFactory.Listener>() {
+
+    companion object {
+        private const val TAG = "FieldsFactory"
+    }
 
     private var previousView: View? = null
 
@@ -78,7 +83,7 @@ class FieldsFactory(
                 }
                 changeableValue.value = parsedValue as T
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e(TAG, context.getString(R.string.log_err_updating_field), e)
             }
         }
 

@@ -2,10 +2,10 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingBottom="10dp"
-                android:paddingLeft="20dp"
-                android:paddingRight="20dp"
-                android:paddingTop="10dp">
+                android:paddingBottom="@dimen/dialog_padding"
+                android:paddingLeft="@dimen/padding_twenty"
+                android:paddingRight="@dimen/padding_twenty"
+                android:paddingTop="@dimen/dialog_padding">
 
     <TextView
         android:id="@+id/tv_name"

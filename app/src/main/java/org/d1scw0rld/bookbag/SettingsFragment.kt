@@ -15,8 +15,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
         @Suppress("DEPRECATION")
         setHasOptionsMenu(true)
 
-        val toolbar = view.findViewById<Toolbar>(R.id.toolbar)
-        toolbar?.title = "Settings"
+                val toolbar = view.findViewById<Toolbar>(R.id.toolbar)
+        toolbar?.title = getString(R.string.title_settings)
 
         val appCompatActivity = requireActivity() as? AppCompatActivity
         if (appCompatActivity != null && toolbar != null) {

@@ -84,7 +84,7 @@ class FieldDate(
                 setAccentColor(context.getColor(R.color.primary))
                 setCancelColor(context.getColor(R.color.accent))
                 setOkColor(context.getColor(R.color.accent))
-                setTitle("Select Date From DatePickerDialog")
+                setTitle(context.getString(R.string.select_date))
                 @Suppress("DEPRECATION")
                 show(activity.fragmentManager, "DatePickerDialog")
             }

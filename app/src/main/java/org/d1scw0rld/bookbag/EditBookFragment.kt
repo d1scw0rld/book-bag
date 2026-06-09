@@ -38,6 +38,10 @@ import org.d1scw0rld.bookbag.ui.viewmodel.EditBookViewModel
 @AndroidEntryPoint
 class EditBookFragment : BaseFragment(), IBackPressListener {
 
+    companion object {
+        private const val TAG = "EditBookFragment"
+    }
+
     private var _binding: FragmentEditBookBinding? = null
     private val binding get() = _binding!!
 
@@ -150,7 +154,7 @@ class EditBookFragment : BaseFragment(), IBackPressListener {
                         }
                         is UiState.Error -> {
                             hideProgressBar()
-                            Log.e("EditBookFragment", "Error loading book edit state", state.exception)
+                            Log.e(TAG, getString(R.string.log_err_loading_edit_state), state.exception)
                         }
                     }
                 }

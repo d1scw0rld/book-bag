@@ -4,10 +4,10 @@
    android:layout_width="match_parent"
    android:layout_height="wrap_content"
    android:gravity="center_vertical"
-   android:minHeight="36dp"
-   android:paddingLeft="14dip"
-   android:paddingRight="15dip"
-   android:paddingEnd="15dip"
+   android:minHeight="@dimen/min_height_spinner"
+   android:paddingLeft="@dimen/padding_large"
+   android:paddingRight="@dimen/padding_fifteen"
+   android:paddingEnd="@dimen/padding_fifteen"
    android:textAppearance="?android:attr/textAppearanceMedium"
    android:textColor="?android:attr/textColorPrimary" />
 

@@ -56,6 +56,7 @@ import androidx.core.view.MenuProvider
 class BookListFragment : BaseFragment() {
 
     companion object {
+        private const val TAG = "BookListFragment"
         private const val PREF_ORDER_ID = "order_id"
         private const val PREF_EXPAND_ALL = "pref_expand_all"
         private const val PREF_EXPORT_FOLDER = "pref_export_folder"
@@ -320,7 +321,7 @@ class BookListFragment : BaseFragment() {
                         }
                         is UiState.Error -> {
                             hideProgressBar()
-                            Log.e("BookListFragment", "Error loading books", state.exception)
+                            Log.e(TAG, getString(R.string.log_err_loading_books), state.exception)
                         }
                     }
                 }
@@ -350,7 +351,7 @@ class BookListFragment : BaseFragment() {
                         }
                         is UiState.Error -> {
                             hideProgressBar()
-                            Log.e("BookListFragment", "File operation error", state.exception)
+                            Log.e(TAG, getString(R.string.log_err_file_op), state.exception)
                             viewModel.consumeFileOperation()
                         }
                         null -> {
@@ -395,7 +396,7 @@ class BookListFragment : BaseFragment() {
                             Uri.fromParts("package", requireContext().packageName, null)
                         )
                     } catch (e: Exception) {
-                        Log.e("BookListFragment", e.toString())
+                        Log.e(TAG, e.toString())
                     }
                     if (intent == null) {
                         intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
@@ -431,7 +432,7 @@ class BookListFragment : BaseFragment() {
         val file = File(exportFolderAbsPath)
         if (!file.isDirectory) {
             if (!file.mkdirs()) {
-                Log.w("BookListFragment", "Can't create export folder: $exportFolderAbsPath")
+                Log.w(TAG, getString(R.string.log_err_create_export_folder, exportFolderAbsPath))
             }
         }
     }
