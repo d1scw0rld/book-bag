@@ -15,12 +15,11 @@
    <string name="title_book_detail">Book details</string>
    <string name="title_settings">Settings</string>
    <string name="et_title">Title</string>
-   <!-- <string name="lbl_authors">Authors</string> -->
    <string name="lbl_author">Author</string>
    <string name="fld_title">Title</string>
    <string name="fld_author">Author|Authors</string>
-   <string name="fld_descrition">Description</string>
-   <string name="fld_serie">Serie</string>
+   <string name="fld_description">Description</string>
+   <string name="fld_series">Series</string>
    <string name="fld_volume">Volume</string>
    <string name="fld_genre">Genre|Genres</string>
    <string name="fld_language">Language</string>
@@ -74,10 +73,9 @@
    <string name="btn_crt_nw_fld">Create new folder</string>
    <string name="btn_new_fld">New folder</string>
    <string name="btn_fl_tp">File type</string>
-   <!-- <string name="msg_new_fld">Create new folder</string> -->
    <string name="create">Create</string>
    <string name="msg_fld_crt_ok">Folder created successfully</string>
-   <string name="msg_fld_crt_err">Unavle to create new folder</string>
+   <string name="msg_fld_crt_err">Unable to create new folder</string>
    <string name="msg_cnt_sv_fl">Unable to save the file</string>
    <string name="msg_msn_fl">No such file</string>
    <string name="msg_acc_dnd">Access denied</string>
@@ -113,7 +111,7 @@
    <string name="gnr_art">Art</string>
    <string name="gnr_bio">Biography</string>
    <string name="gnr_bsn">Business</string>
-   <string name="gnr_chk_lt">Chick Lit</string>
+   <string name="gnr_chk_lt">Chick lit</string>
    <string name="gnr_chl">Children\'s</string>
    <string name="gnr_cls">Classics</string>
    <string name="gnr_cmc">Comics</string>
@@ -145,18 +143,25 @@
    <string name="gnr_rlg">Religion</string>
    <string name="gnr_rmn">Romance</string>
    <string name="gnr_scn">Science</string>
-   <string name="gnr_scn_fct">Science Fiction</string>
+   <string name="gnr_scn_fct">Science fiction</string>
    <string name="gnr_slf_hlp">Self Help</string>
    <string name="gnr_spr">Spirituality</string>
    <string name="gnr_spt">Sports</string>
    <string name="gnr_ssp">Suspense/Thriller</string>
    <string name="gnr_trv">Travel</string>
    <string name="gnr_wst">Western</string>
-   <string name="gnr_yng_adt">Young Adult</string>
+   <string name="gnr_yng_adt">Young adult</string>
    <string name="err_emp_ttl">The title is required</string>
    <string name="smp_fl_nm">file name</string>
-   <string name="permission_required_title">Permission Required</string>
+   <string name="permission_required_title">Permission required</string>
    <string name="permission_required_message">This app needs access to your device\'s storage in order to import or export databases. Please grant the requested permission.</string>
    <string name="permission_required_button">Grant</string>
+   <string name="select_date">Select date</string>
+   <string name="log_err_loading_detail">Error loading book detail</string>
+   <string name="log_err_loading_books">Error loading books</string>
+   <string name="log_err_loading_edit_state">Error loading book edit state</string>
+   <string name="log_err_updating_field">Error updating field value</string>
+   <string name="log_err_create_export_folder">Can\'t create export folder: %s</string>
+   <string name="log_err_file_op">File operation error</string>
 
 </resources>

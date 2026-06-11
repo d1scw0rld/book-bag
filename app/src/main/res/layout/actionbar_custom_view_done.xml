@@ -20,7 +20,7 @@
     android:orientation="horizontal"
     android:divider="?android:attr/dividerVertical"
     android:showDividers="end"
-    android:dividerPadding="12dp">
+    android:dividerPadding="@dimen/divider_padding">
 
     <include layout="@layout/include_done_button" />
 </LinearLayout>

@@ -21,7 +21,7 @@
       android:layout_height="wrap_content"
       android:layout_above="@+id/fileLinearLayout2"
       android:layout_below="@id/dlg_toolbar"
-      android:padding="10dp" />
+      android:padding="@dimen/dialog_padding" />
 
    <LinearLayout
       android:id="@+id/fileLinearLayout2"
@@ -29,7 +29,7 @@
       android:layout_height="wrap_content"
       android:layout_alignParentBottom="true"
       android:orientation="vertical"
-      android:padding="10dp" >
+      android:padding="@dimen/dialog_padding" >
 
       <TextView
          android:id="@+id/fileTextView1"
@@ -65,7 +65,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:padding="10dp"
+            android:padding="@dimen/dialog_padding"
             android:text="@android:string/cancel" />
 
          <Button
@@ -82,7 +82,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:padding="10dp"
+            android:padding="@dimen/dialog_padding"
             android:text="@string/save" />
       </LinearLayout>
    </LinearLayout>

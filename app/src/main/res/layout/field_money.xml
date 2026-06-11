@@ -7,7 +7,7 @@
    android:layout_marginBottom="@dimen/fld_mrg_btm"
    android:orientation="vertical" >
 
-   <org.d1scw0rld.bookbag.fields.Title
+   <org.d1scw0rld.bookbag.ui.fields.Title
       android:id="@+id/title"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
@@ -19,7 +19,7 @@
       android:layout_height="wrap_content"
       android:orientation="horizontal" >
 
-      <org.d1scw0rld.bookbag.fields.EditTextX
+      <org.d1scw0rld.bookbag.ui.fields.EditTextX
          android:id="@+id/editTextX"
          android:layout_width="match_parent"
          android:layout_height="wrap_content"

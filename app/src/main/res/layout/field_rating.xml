@@ -7,7 +7,7 @@
    android:layout_marginBottom="@dimen/fld_mrg_btm"
    android:orientation="vertical" >
 
-   <org.d1scw0rld.bookbag.fields.Title
+   <org.d1scw0rld.bookbag.ui.fields.Title
       android:id="@+id/title"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
@@ -18,7 +18,7 @@
       android:id="@+id/rating_bar"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:paddingTop="14dp"
+      android:paddingTop="@dimen/padding_large"
       android:scaleX=".75"
       android:scaleY=".75"
       android:theme="@style/CustomRatingBar"
