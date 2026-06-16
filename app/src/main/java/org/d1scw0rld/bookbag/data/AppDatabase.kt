@@ -80,6 +80,7 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        @JvmStatic
         fun importDatabase(context: Context, dbPath: String): Boolean {
             closeAndReset()
             val newDb = File(dbPath)
@@ -102,6 +103,7 @@ abstract class AppDatabase : RoomDatabase() {
             return false
         }
 
+        @JvmStatic
         fun exportDatabase(context: Context, dbPath: String): Boolean {
             closeAndReset()
             val newDb = File(dbPath)

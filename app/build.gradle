@@ -50,6 +50,11 @@ android {
     buildFeatures {
         viewBinding true
     }
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
     namespace 'org.d1scw0rld.bookbag'
 }
 
