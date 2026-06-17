@@ -51,6 +51,7 @@ import androidx.navigation.findNavController
 import androidx.core.content.edit
 import androidx.core.view.MenuProvider
 import org.d1scw0rld.bookbag.R
+import org.d1scw0rld.bookbag.ui.adapters.BooksAdapter
 
 @AndroidEntryPoint
 class BookListFragment : BaseFragment() {

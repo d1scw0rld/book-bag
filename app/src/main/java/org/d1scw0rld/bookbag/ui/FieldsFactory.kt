@@ -16,6 +16,7 @@ import org.d1scw0rld.bookbag.dto.Date
 import org.d1scw0rld.bookbag.dto.Field
 import org.d1scw0rld.bookbag.dto.Price
 import org.d1scw0rld.bookbag.dto.Property
+import org.d1scw0rld.bookbag.ui.adapters.FilteredArrayAdapter
 import org.d1scw0rld.bookbag.ui.fields.FieldAutoCompleteTextView
 import org.d1scw0rld.bookbag.ui.fields.FieldCheckBox
 import org.d1scw0rld.bookbag.ui.fields.FieldDate
