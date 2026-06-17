@@ -1,6 +1,7 @@
 package org.d1scw0rld.bookbag.dto
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -32,6 +33,15 @@ class DateTest {
     }
 
     @Test
+    fun `copy constructor duplicates date fields exactly`() {
+        val original = Date(12, 6, 2018)
+        val copy = Date(original)
+        assertEquals(original.day, copy.day)
+        assertEquals(original.month, copy.month)
+        assertEquals(original.year, copy.year)
+    }
+
+    @Test
     fun `toInt converts date to yyyymmdd integer correctly`() {
         val date = Date(25, 12, 2024)
         assertEquals(20241225, date.toInt())
@@ -52,5 +62,16 @@ class DateTest {
         assertTrue(earlyDate < laterDate)
         assertTrue(laterDate > earlyDate)
         assertEquals(0, earlyDate.compareTo(sameDate))
+    }
+
+    @Test
+    fun `data class equality copy and hashCode work correctly`() {
+        val d1 = Date(1, 1, 2020)
+        val d2 = d1.copy()
+        val d3 = d1.copy(day = 2)
+
+        assertEquals(d1, d2)
+        assertNotEquals(d1, d3)
+        assertEquals(d1.hashCode(), d2.hashCode())
     }
 }
