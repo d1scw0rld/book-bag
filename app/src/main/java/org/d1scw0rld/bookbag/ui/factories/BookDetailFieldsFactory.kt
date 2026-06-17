@@ -1,4 +1,4 @@
-package org.d1scw0rld.bookbag.ui
+package org.d1scw0rld.bookbag.ui.factories
 
 import android.content.Context
 import android.view.LayoutInflater

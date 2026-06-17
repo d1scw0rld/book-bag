@@ -1,4 +1,4 @@
-package org.d1scw0rld.bookbag.ui
+package org.d1scw0rld.bookbag.ui.factories
 
 import android.content.Context
 import android.util.Log
@@ -16,6 +16,7 @@ import org.d1scw0rld.bookbag.dto.Date
 import org.d1scw0rld.bookbag.dto.Field
 import org.d1scw0rld.bookbag.dto.Price
 import org.d1scw0rld.bookbag.dto.Property
+import org.d1scw0rld.bookbag.ui.BaseObservable
 import org.d1scw0rld.bookbag.ui.adapters.FilteredArrayAdapter
 import org.d1scw0rld.bookbag.ui.fields.FieldAutoCompleteTextView
 import org.d1scw0rld.bookbag.ui.fields.FieldCheckBox

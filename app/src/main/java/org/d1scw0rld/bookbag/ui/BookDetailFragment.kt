@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import org.d1scw0rld.bookbag.R
 import org.d1scw0rld.bookbag.data.relation.toDto
 import org.d1scw0rld.bookbag.databinding.FragmentBookDetailBinding
+import org.d1scw0rld.bookbag.ui.factories.BookDetailFieldsFactory
 import org.d1scw0rld.bookbag.ui.state.UiState
 import org.d1scw0rld.bookbag.viewmodel.BookDetailViewModel
 
@@ -70,7 +71,8 @@ class BookDetailFragment : BaseFragment() {
                             binding.llCategories.removeAllViews()
                             
                             // Construct fields factory locally (safe from memory leaks) using preloaded currencies
-                            val fieldsFactory = BookDetailFieldsFactory(ctx, detailData.currencies, loadedBook)
+                            val fieldsFactory =
+                                BookDetailFieldsFactory(ctx, detailData.currencies, loadedBook)
                             fieldsFactory.addFields(binding.llCategories)
                         }
                         is UiState.Error -> {
