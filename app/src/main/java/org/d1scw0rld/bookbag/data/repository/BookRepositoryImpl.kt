@@ -1,18 +1,24 @@
 package org.d1scw0rld.bookbag.data.repository
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
 import org.d1scw0rld.bookbag.data.dao.BookDao
 import org.d1scw0rld.bookbag.data.entity.BookEntity
 import org.d1scw0rld.bookbag.data.entity.BookFieldCrossRef
 import org.d1scw0rld.bookbag.data.entity.FieldEntity
 import org.d1scw0rld.bookbag.data.relation.BookWithFields
 import org.d1scw0rld.bookbag.dto.Book
+import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
+import org.d1scw0rld.bookbag.data.AppDatabase
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class BookRepositoryImpl @Inject constructor(
     private val bookDao: BookDao,
+    @ApplicationContext private val context: Context,
 ) : BookRepository {
 
     override fun getBookWithFieldsFlow(bookId: Long): Flow<BookWithFields?> {
@@ -71,5 +77,13 @@ class BookRepositoryImpl @Inject constructor(
 
     override suspend fun getFieldsByType(typeId: Int): List<FieldEntity> {
         return bookDao.getFieldsByTypeId(typeId)
+    }
+
+    override suspend fun importDatabase(filePath: String): Boolean = withContext(Dispatchers.IO) {
+        AppDatabase.importDatabase(context, filePath)
+    }
+
+    override suspend fun exportDatabase(filePath: String): Boolean = withContext(Dispatchers.IO) {
+        AppDatabase.exportDatabase(context, filePath)
     }
 }
