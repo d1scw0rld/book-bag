@@ -124,4 +124,190 @@ class BookRelationsMapperTest {
         assertEquals("ePub", result[1].name)
         assertEquals("Effective Kotlin", result[1].childList[0].content)
     }
+
+    @Test
+    fun `mapBooksToParents with SRT_WNT_PBL_AUT filters wanted books and groups by status sorted by author then title`() {
+        // Arrange
+        val statusWishlist = FieldEntity(id = 401L, typeId = DbConstants.FLD_STATUS, name = "Wishlist")
+        val statusPreorder = FieldEntity(id = 402L, typeId = DbConstants.FLD_STATUS, name = "Preorder")
+        val statusInBag = FieldEntity(id = 403L, typeId = DbConstants.FLD_STATUS, name = "In Bag") // excluded
+        
+        val authorJoshua = FieldEntity(id = 404L, typeId = DbConstants.FLD_AUTHOR, name = "Joshua Bloch")
+        val authorKotlin = FieldEntity(id = 405L, typeId = DbConstants.FLD_AUTHOR, name = "Kotlin Team")
+
+        val b1 = BookWithFields(createBook(1L, "Effective Java"), listOf(statusWishlist, authorJoshua))
+        val b2 = BookWithFields(createBook(2L, "Kotlin In Action"), listOf(statusWishlist, authorKotlin))
+        val b3 = BookWithFields(createBook(3L, "Preorder Book"), listOf(statusPreorder))
+        val b4 = BookWithFields(createBook(4L, "Owned Book"), listOf(statusInBag)) // should be filtered out
+
+        val input = listOf(b1, b2, b3, b4)
+
+        // Act
+        val result = BookRelationsMapper.mapBooksToParents(input, DbConstants.SRT_WNT_PBL_AUT)
+
+        // Assert: Sorted by status alphabetically: Preorder -> Wishlist
+        assertEquals(2, result.size)
+
+        assertEquals("Preorder", result[0].name)
+        assertEquals("Preorder Book", result[0].childList[0].content)
+
+        assertEquals("Wishlist", result[1].name)
+        // Children sorted by author: Joshua Bloch (Effective Java) -> Kotlin Team (Kotlin In Action)
+        assertEquals("Joshua Bloch - Effective Java", result[1].childList[0].content)
+        assertEquals("Kotlin Team - Kotlin In Action", result[1].childList[1].content)
+    }
+
+    @Test
+    fun `mapBooksToParents with SRT_WNT_PBL_TTL filters wanted books and groups by status sorted by title`() {
+        // Arrange
+        val statusWishlist = FieldEntity(id = 501L, typeId = DbConstants.FLD_STATUS, name = "Wishlist")
+        val authorKotlin = FieldEntity(id = 502L, typeId = DbConstants.FLD_AUTHOR, name = "Kotlin Team")
+        val authorBloch = FieldEntity(id = 503L, typeId = DbConstants.FLD_AUTHOR, name = "Joshua Bloch")
+
+        val b1 = BookWithFields(createBook(1L, "Kotlin In Action"), listOf(statusWishlist, authorKotlin))
+        val b2 = BookWithFields(createBook(2L, "Effective Java"), listOf(statusWishlist, authorBloch))
+        val input = listOf(b1, b2)
+
+        // Act
+        val result = BookRelationsMapper.mapBooksToParents(input, DbConstants.SRT_WNT_PBL_TTL)
+
+        // Assert
+        assertEquals(1, result.size)
+        assertEquals("Wishlist", result[0].name)
+        // Sorted by Title: Effective Java -> Kotlin In Action
+        assertEquals("Effective Java - Joshua Bloch", result[0].childList[0].content)
+        assertEquals("Kotlin In Action - Kotlin Team", result[0].childList[1].content)
+    }
+
+    @Test
+    fun `mapBooksToParents with SRT_RD_TTL filters read books and groups by year sorted by title`() {
+        // Arrange
+        val readField = FieldEntity(id = 601L, typeId = DbConstants.FLD_READ, name = "true")
+        val authorKotlin = FieldEntity(id = 602L, typeId = DbConstants.FLD_AUTHOR, name = "Kotlin Team")
+        val authorBloch = FieldEntity(id = 603L, typeId = DbConstants.FLD_AUTHOR, name = "Joshua Bloch")
+
+        val b1 = BookWithFields(createBook(1L, "Kotlin In Action", readDate = 20231115), listOf(readField, authorKotlin))
+        val b2 = BookWithFields(createBook(2L, "Effective Java", readDate = 20230512), listOf(readField, authorBloch))
+        val input = listOf(b1, b2)
+
+        // Act
+        val result = BookRelationsMapper.mapBooksToParents(input, DbConstants.SRT_RD_TTL)
+
+        // Assert
+        assertEquals(1, result.size)
+        assertEquals("2023", result[0].name)
+        // Sorted by Title: Effective Java -> Kotlin In Action
+        assertEquals("Effective Java - Joshua Bloch", result[0].childList[0].content)
+        assertEquals("Kotlin In Action - Kotlin Team", result[0].childList[1].content)
+    }
+
+    @Test
+    fun `mapBooksToParents with SRT_NOT_RD_AUT filters unread books and groups by format sorted by author`() {
+        // Arrange
+        val formatEpub = FieldEntity(id = 701L, typeId = DbConstants.FLD_FORMAT, name = "ePub")
+        val authorKotlin = FieldEntity(id = 702L, typeId = DbConstants.FLD_AUTHOR, name = "Kotlin Team")
+        val authorBloch = FieldEntity(id = 703L, typeId = DbConstants.FLD_AUTHOR, name = "Joshua Bloch")
+
+        val b1 = BookWithFields(createBook(1L, "Kotlin In Action"), listOf(formatEpub, authorKotlin))
+        val b2 = BookWithFields(createBook(2L, "Effective Java"), listOf(formatEpub, authorBloch))
+        val input = listOf(b1, b2)
+
+        // Act
+        val result = BookRelationsMapper.mapBooksToParents(input, DbConstants.SRT_NOT_RD_AUT)
+
+        // Assert
+        assertEquals(1, result.size)
+        assertEquals("ePub", result[0].name)
+        // Sorted by Author: Joshua Bloch (Effective Java) -> Kotlin Team (Kotlin In Action)
+        assertEquals("Joshua Bloch - Effective Java", result[0].childList[0].content)
+        assertEquals("Kotlin Team - Kotlin In Action", result[0].childList[1].content)
+    }
+
+    @Test
+    fun `mapBooksToParents with SRT_PBL_AUT groups by publisher sorted by author`() {
+        // Arrange
+        val pubOReilly = FieldEntity(id = 801L, typeId = DbConstants.FLD_PUBLISHER, name = "O'Reilly")
+        val authorKotlin = FieldEntity(id = 802L, typeId = DbConstants.FLD_AUTHOR, name = "Kotlin Team")
+        val authorBloch = FieldEntity(id = 803L, typeId = DbConstants.FLD_AUTHOR, name = "Joshua Bloch")
+
+        val b1 = BookWithFields(createBook(1L, "Kotlin In Action"), listOf(pubOReilly, authorKotlin))
+        val b2 = BookWithFields(createBook(2L, "Effective Java"), listOf(pubOReilly, authorBloch))
+        val input = listOf(b1, b2)
+
+        // Act
+        val result = BookRelationsMapper.mapBooksToParents(input, DbConstants.SRT_PBL_AUT)
+
+        // Assert
+        assertEquals(1, result.size)
+        assertEquals("O'Reilly", result[0].name)
+        // Sorted by Author: Joshua Bloch (Effective Java) -> Kotlin Team (Kotlin In Action)
+        assertEquals("Joshua Bloch - Effective Java", result[0].childList[0].content)
+        assertEquals("Kotlin Team - Kotlin In Action", result[0].childList[1].content)
+    }
+
+    @Test
+    fun `mapBooksToParents with SRT_PBL_TTL groups by publisher sorted by title`() {
+        // Arrange
+        val pubOReilly = FieldEntity(id = 901L, typeId = DbConstants.FLD_PUBLISHER, name = "O'Reilly")
+        val authorKotlin = FieldEntity(id = 902L, typeId = DbConstants.FLD_AUTHOR, name = "Kotlin Team")
+        val authorBloch = FieldEntity(id = 903L, typeId = DbConstants.FLD_AUTHOR, name = "Joshua Bloch")
+
+        val b1 = BookWithFields(createBook(1L, "Kotlin In Action"), listOf(pubOReilly, authorKotlin))
+        val b2 = BookWithFields(createBook(2L, "Effective Java"), listOf(pubOReilly, authorBloch))
+        val input = listOf(b1, b2)
+
+        // Act
+        val result = BookRelationsMapper.mapBooksToParents(input, DbConstants.SRT_PBL_TTL)
+
+        // Assert
+        assertEquals(1, result.size)
+        assertEquals("O'Reilly", result[0].name)
+        // Sorted by Title: Effective Java -> Kotlin In Action
+        assertEquals("Effective Java - Joshua Bloch", result[0].childList[0].content)
+        assertEquals("Kotlin In Action - Kotlin Team", result[0].childList[1].content)
+    }
+
+    @Test
+    fun `mapBooksToParents with SRT_LND_TTL groups by loaned to sorted by title`() {
+        // Arrange
+        val loanedJohn = FieldEntity(id = 1001L, typeId = DbConstants.FLD_LOANED_TO, name = "John Doe")
+        val authorKotlin = FieldEntity(id = 1002L, typeId = DbConstants.FLD_AUTHOR, name = "Kotlin Team")
+        val authorBloch = FieldEntity(id = 1003L, typeId = DbConstants.FLD_AUTHOR, name = "Joshua Bloch")
+
+        val b1 = BookWithFields(createBook(1L, "Kotlin In Action"), listOf(loanedJohn, authorKotlin))
+        val b2 = BookWithFields(createBook(2L, "Effective Java"), listOf(loanedJohn, authorBloch))
+        val input = listOf(b1, b2)
+
+        // Act
+        val result = BookRelationsMapper.mapBooksToParents(input, DbConstants.SRT_LND_TTL)
+
+        // Assert
+        assertEquals(1, result.size)
+        assertEquals("John Doe", result[0].name)
+        // Sorted by Title: Effective Java -> Kotlin In Action
+        assertEquals("Effective Java - Joshua Bloch", result[0].childList[0].content)
+        assertEquals("Kotlin In Action - Kotlin Team", result[0].childList[1].content)
+    }
+
+    @Test
+    fun `mapBooksToParents with SRT_LND_BRW groups by loaned to sorted by author`() {
+        // Arrange
+        val loanedJohn = FieldEntity(id = 1101L, typeId = DbConstants.FLD_LOANED_TO, name = "John Doe")
+        val authorKotlin = FieldEntity(id = 1102L, typeId = DbConstants.FLD_AUTHOR, name = "Kotlin Team")
+        val authorBloch = FieldEntity(id = 1103L, typeId = DbConstants.FLD_AUTHOR, name = "Joshua Bloch")
+
+        val b1 = BookWithFields(createBook(1L, "Kotlin In Action"), listOf(loanedJohn, authorKotlin))
+        val b2 = BookWithFields(createBook(2L, "Effective Java"), listOf(loanedJohn, authorBloch))
+        val input = listOf(b1, b2)
+
+        // Act
+        val result = BookRelationsMapper.mapBooksToParents(input, DbConstants.SRT_LND_BRW)
+
+        // Assert
+        assertEquals(1, result.size)
+        assertEquals("John Doe", result[0].name)
+        // Sorted by Author: Joshua Bloch (Effective Java) -> Kotlin Team (Kotlin In Action)
+        assertEquals("Joshua Bloch - Effective Java", result[0].childList[0].content)
+        assertEquals("Kotlin Team - Kotlin In Action", result[0].childList[1].content)
+    }
 }
