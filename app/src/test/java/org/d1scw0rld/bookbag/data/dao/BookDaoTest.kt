@@ -25,7 +25,7 @@ import java.io.IOException
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [34])
+@Config(sdk = [28])
 class BookDaoTest {
 
     private lateinit var db: AppDatabase
@@ -78,6 +78,21 @@ class BookDaoTest {
         assertEquals(1L, insertedId)
         assertNotNull(loadedBook)
         assertEquals("Kotlin in Action", loadedBook?.book?.title)
+    }
+
+    @Test
+    fun testInsertBookConflictReplace() = runTest {
+        // Arrange
+        val book = createBookEntity(1L, "Original")
+        bookDao.insertBook(book)
+
+        // Act: Insert same ID with different title should replace
+        val replacedBook = createBookEntity(1L, "Replaced")
+        bookDao.insertBook(replacedBook)
+
+        // Assert
+        val loaded = bookDao.getBookWithFields(1L)
+        assertEquals("Replaced", loaded?.book?.title)
     }
 
     @Test
@@ -145,6 +160,22 @@ class BookDaoTest {
     }
 
     @Test
+    fun testInsertFieldConflictReplace() = runTest {
+        // Arrange
+        val field = FieldEntity(id = 101L, typeId = 1, name = "Initial")
+        bookDao.insertField(field)
+
+        // Act: Insert with same ID should replace
+        val replacedField = FieldEntity(id = 101L, typeId = 1, name = "Replaced")
+        bookDao.insertField(replacedField)
+
+        // Assert
+        val fields = bookDao.getFieldsByTypeId(1)
+        assertEquals(1, fields.size)
+        assertEquals("Replaced", fields[0].name)
+    }
+
+    @Test
     fun testManytoManyRelationsMapping() = runTest {
         // Arrange: Insert a book and a field definition
         val book = createBookEntity(5L, "Refactoring")
@@ -166,6 +197,41 @@ class BookDaoTest {
         assertEquals(1, result?.fields?.size)
         assertEquals("Martin Fowler", result?.fields?.get(0)?.name)
         assertEquals(DbConstants.FLD_AUTHOR, result?.fields?.get(0)?.typeId)
+    }
+
+    @Test
+    fun testInsertBookFieldCrossRefIgnoreConflict() = runTest {
+        // Arrange
+        val book = createBookEntity(1L, "Book")
+        val field = FieldEntity(id = 101L, typeId = 1, name = "Field")
+        bookDao.insertBook(book)
+        bookDao.insertField(field)
+        val crossRef = BookFieldCrossRef(1L, 101L)
+        bookDao.insertBookFieldCrossRef(crossRef)
+
+        // Act: Insert same crossRef should be ignored
+        bookDao.insertBookFieldCrossRef(crossRef)
+
+        // Assert: Still exactly one relation
+        val result = bookDao.getBookWithFields(1L)
+        assertEquals(1, result?.fields?.size)
+    }
+
+    @Test
+    fun testDeleteBookFieldsRemovesRelationsStandalone() = runTest {
+        // Arrange
+        val book = createBookEntity(1L, "Book")
+        val field = FieldEntity(id = 101L, typeId = 1, name = "Field")
+        bookDao.insertBook(book)
+        bookDao.insertField(field)
+        bookDao.insertBookFieldCrossRef(BookFieldCrossRef(1L, 101L))
+
+        // Act
+        bookDao.deleteBookFields(1L)
+
+        // Assert
+        val result = bookDao.getBookWithFields(1L)
+        assertTrue(result?.fields?.isEmpty() ?: false)
     }
 
     @Test
@@ -215,5 +281,17 @@ class BookDaoTest {
         assertEquals(2, allBooks.size)
         assertTrue(allBooks.any { it.book.title == "Book One" })
         assertTrue(allBooks.any { it.book.title == "Book Two" })
+    }
+
+    @Test
+    fun testGetAllBooksWithFieldsFlowEmitsAllUpdates() = runTest {
+        // Arrange
+        val book1 = createBookEntity(1L, "Book One")
+        bookDao.insertBook(book1)
+
+        // Act & Assert
+        val emission = bookDao.getAllBooksWithFieldsFlow().first()
+        assertEquals(1, emission.size)
+        assertEquals("Book One", emission[0].book.title)
     }
 }

@@ -85,8 +85,8 @@ abstract class AppDatabase : RoomDatabase() {
             closeAndReset()
             val newDb = File(dbPath)
             val oldDb = context.getDatabasePath("book_bag.db")
-            val walFile = File(oldDb.path + "-wal")
-            val shmFile = File(oldDb.path + "-shm")
+            val walFile = File(oldDb.absolutePath + "-wal")
+            val shmFile = File(oldDb.absolutePath + "-shm")
 
             if (newDb.exists()) {
                 try {
@@ -210,7 +210,7 @@ abstract class AppDatabase : RoomDatabase() {
                     if (isCrossRefNullable) {
                         Log.i(TAG, "Detected nullable columns or missing primary keys in 'book_fields' table. Re-constructing table.")
                         db.transaction {
-                            execSQL("CREATE TABLE book_fields_new (book_id INTEGER NOT NULL, field_id INTEGER NOT NULL, PRIMARY KEY(book_id, field_id))")
+                            execSQL("CREATE TABLE book_fields_new (book_id INTEGER NOT NULL, field_id INTEGER NOT NULL, PRIMARY KEY(book_id, field_id), FOREIGN KEY(book_id) REFERENCES books(_id) ON UPDATE NO ACTION ON DELETE CASCADE, FOREIGN KEY(field_id) REFERENCES fields(_id) ON UPDATE NO ACTION ON DELETE CASCADE)")
                             execSQL("INSERT OR IGNORE INTO book_fields_new SELECT IFNULL(book_id, 0), IFNULL(field_id, 0) FROM book_fields")
                             execSQL("DROP TABLE book_fields")
                             execSQL("ALTER TABLE book_fields_new RENAME TO book_fields")
