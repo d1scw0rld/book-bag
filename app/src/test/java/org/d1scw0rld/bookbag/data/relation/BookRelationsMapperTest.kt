@@ -5,7 +5,11 @@ import org.d1scw0rld.bookbag.data.entity.BookEntity
 import org.d1scw0rld.bookbag.data.entity.FieldEntity
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import org.junit.jupiter.api.DisplayName
+import org.junit.runner.RunWith
+import org.d1scw0rld.bookbag.DisplayNameRunner
 
+@RunWith(DisplayNameRunner::class)
 class BookRelationsMapperTest {
 
     private fun createBook(id: Long, title: String, readDate: Int = 0): BookEntity {
@@ -26,8 +30,9 @@ class BookRelationsMapperTest {
         )
     }
 
+    @DisplayName("Map Books To Parents - SRT_TTL Sorting - Groups and Sorts Alphabetically By First Upper Case Letter")
     @Test
-    fun `mapBooksToParents with SRT_TTL groups and sorts books alphabetically by first upper case letter`() {
+    fun mapBooksToParents_srtTtlSorting_groupsAndSortsAlphabeticallyByFirstUpperCaseLetter() {
         // Arrange
         val b1 = BookWithFields(createBook(1L, "Hobbit"), emptyList())
         val b2 = BookWithFields(createBook(2L, "Harry Potter"), emptyList())
@@ -48,8 +53,9 @@ class BookRelationsMapperTest {
         assertEquals("Hobbit", result[1].childList[1].content)
     }
 
+    @DisplayName("Map Books To Parents - SRT_AUT Sorting - Groups by Author and Handles Missing Authors")
     @Test
-    fun `mapBooksToParents with SRT_AUT groups books by author and handles missing authors gracefully`() {
+    fun mapBooksToParents_srtAutSorting_groupsByAuthorAndHandlesMissingAuthors() {
         // Arrange
         val authorField1 = FieldEntity(id = 101L, typeId = DbConstants.FLD_AUTHOR, name = "J.R.R. Tolkien")
         val authorField2 = FieldEntity(id = 102L, typeId = DbConstants.FLD_AUTHOR, name = "George Orwell")
@@ -76,8 +82,9 @@ class BookRelationsMapperTest {
         assertEquals("The Lord of the Rings", result[2].childList[0].content)
     }
 
+    @DisplayName("Map Books To Parents - SRT_RD_AUT Sorting - Filters Read Books and Groups by Read Year")
     @Test
-    fun `mapBooksToParents with SRT_RD_AUT filters read books and groups them by read year`() {
+    fun mapBooksToParents_srtRdAutSorting_filtersReadBooksAndGroupsByReadYear() {
         // Arrange
         val readField = FieldEntity(id = 201L, typeId = DbConstants.FLD_READ, name = "true")
         val authorField = FieldEntity(id = 202L, typeId = DbConstants.FLD_AUTHOR, name = "Martin Fowler")
@@ -100,8 +107,9 @@ class BookRelationsMapperTest {
         assertEquals("Martin Fowler - Patterns of Enterprise Application Architecture", result[1].childList[0].content)
     }
 
+    @DisplayName("Map Books To Parents - SRT_NOT_RD_TTL Sorting - Filters Unread Books and Groups by Format")
     @Test
-    fun `mapBooksToParents with SRT_NOT_RD_TTL filters unread books and groups them by format`() {
+    fun mapBooksToParents_srtNotRdTtlSorting_filtersUnreadBooksAndGroupsByFormat() {
         // Arrange
         val formatEpub = FieldEntity(id = 301L, typeId = DbConstants.FLD_FORMAT, name = "ePub")
         val formatHardcopy = FieldEntity(id = 302L, typeId = DbConstants.FLD_FORMAT, name = "Hardcopy")
@@ -125,8 +133,9 @@ class BookRelationsMapperTest {
         assertEquals("Effective Kotlin", result[1].childList[0].content)
     }
 
+    @DisplayName("Map Books To Parents - SRT_WNT_PBL_AUT Sorting - Filters Wanted Books and Groups by Status Sorted by Author Then Title")
     @Test
-    fun `mapBooksToParents with SRT_WNT_PBL_AUT filters wanted books and groups by status sorted by author then title`() {
+    fun mapBooksToParents_srtWntPblAutSorting_filtersWantedBooksAndGroupsByStatusSortedByAuthorThenTitle() {
         // Arrange
         val statusWishlist = FieldEntity(id = 401L, typeId = DbConstants.FLD_STATUS, name = "Wishlist")
         val statusPreorder = FieldEntity(id = 402L, typeId = DbConstants.FLD_STATUS, name = "Preorder")
@@ -157,8 +166,9 @@ class BookRelationsMapperTest {
         assertEquals("Kotlin Team - Kotlin In Action", result[1].childList[1].content)
     }
 
+    @DisplayName("Map Books To Parents - SRT_WNT_PBL_TTL Sorting - Filters Wanted Books and Groups by Status Sorted by Title")
     @Test
-    fun `mapBooksToParents with SRT_WNT_PBL_TTL filters wanted books and groups by status sorted by title`() {
+    fun mapBooksToParents_srtWntPblTtlSorting_filtersWantedBooksAndGroupsByStatusSortedByTitle() {
         // Arrange
         val statusWishlist = FieldEntity(id = 501L, typeId = DbConstants.FLD_STATUS, name = "Wishlist")
         val authorKotlin = FieldEntity(id = 502L, typeId = DbConstants.FLD_AUTHOR, name = "Kotlin Team")
@@ -179,8 +189,9 @@ class BookRelationsMapperTest {
         assertEquals("Kotlin In Action - Kotlin Team", result[0].childList[1].content)
     }
 
+    @DisplayName("Map Books To Parents - SRT_RD_TTL Sorting - Filters Read Books and Groups by Year Sorted by Title")
     @Test
-    fun `mapBooksToParents with SRT_RD_TTL filters read books and groups by year sorted by title`() {
+    fun mapBooksToParents_srtRdTtl_filtersReadBooksAndGroupsByYearSortedByTitle() {
         // Arrange
         val readField = FieldEntity(id = 601L, typeId = DbConstants.FLD_READ, name = "true")
         val authorKotlin = FieldEntity(id = 602L, typeId = DbConstants.FLD_AUTHOR, name = "Kotlin Team")
@@ -201,8 +212,9 @@ class BookRelationsMapperTest {
         assertEquals("Kotlin In Action - Kotlin Team", result[0].childList[1].content)
     }
 
+    @DisplayName("Map Books To Parents - SRT_NOT_RD_AUT Sorting - Filters Unread Books and Groups by Format Sorted by Author")
     @Test
-    fun `mapBooksToParents with SRT_NOT_RD_AUT filters unread books and groups by format sorted by author`() {
+    fun mapBooksToParents_srtNotRdAut_filtersUnreadBooksAndGroupsByFormatSortedByAuthor() {
         // Arrange
         val formatEpub = FieldEntity(id = 701L, typeId = DbConstants.FLD_FORMAT, name = "ePub")
         val authorKotlin = FieldEntity(id = 702L, typeId = DbConstants.FLD_AUTHOR, name = "Kotlin Team")
@@ -223,8 +235,9 @@ class BookRelationsMapperTest {
         assertEquals("Kotlin Team - Kotlin In Action", result[0].childList[1].content)
     }
 
+    @DisplayName("Map Books To Parents - SRT_PBL_AUT Sorting - Groups by Publisher Sorted by Author")
     @Test
-    fun `mapBooksToParents with SRT_PBL_AUT groups by publisher sorted by author`() {
+    fun mapBooksToParents_srtPblAut_groupsByPublisherSortedByAuthor() {
         // Arrange
         val pubOReilly = FieldEntity(id = 801L, typeId = DbConstants.FLD_PUBLISHER, name = "O'Reilly")
         val authorKotlin = FieldEntity(id = 802L, typeId = DbConstants.FLD_AUTHOR, name = "Kotlin Team")
@@ -245,8 +258,9 @@ class BookRelationsMapperTest {
         assertEquals("Kotlin Team - Kotlin In Action", result[0].childList[1].content)
     }
 
+    @DisplayName("Map Books To Parents - SRT_PBL_TTL Sorting - Groups by Publisher Sorted by Title")
     @Test
-    fun `mapBooksToParents with SRT_PBL_TTL groups by publisher sorted by title`() {
+    fun mapBooksToParents_srtPblTtl_groupsByPublisherSortedByTitle() {
         // Arrange
         val pubOReilly = FieldEntity(id = 901L, typeId = DbConstants.FLD_PUBLISHER, name = "O'Reilly")
         val authorKotlin = FieldEntity(id = 902L, typeId = DbConstants.FLD_AUTHOR, name = "Kotlin Team")
@@ -267,8 +281,9 @@ class BookRelationsMapperTest {
         assertEquals("Kotlin In Action - Kotlin Team", result[0].childList[1].content)
     }
 
+    @DisplayName("Map Books To Parents - SRT_LND_TTL Sorting - Groups by Loaned To Sorted by Title")
     @Test
-    fun `mapBooksToParents with SRT_LND_TTL groups by loaned to sorted by title`() {
+    fun mapBooksToParents_srtLndTtl_groupsByLoanedToSortedByTitle() {
         // Arrange
         val loanedJohn = FieldEntity(id = 1001L, typeId = DbConstants.FLD_LOANED_TO, name = "John Doe")
         val authorKotlin = FieldEntity(id = 1002L, typeId = DbConstants.FLD_AUTHOR, name = "Kotlin Team")
@@ -289,8 +304,9 @@ class BookRelationsMapperTest {
         assertEquals("Kotlin In Action - Kotlin Team", result[0].childList[1].content)
     }
 
+    @DisplayName("Map Books To Parents - SRT_LND_BRW Sorting - Groups by Loaned To Sorted by Author")
     @Test
-    fun `mapBooksToParents with SRT_LND_BRW groups by loaned to sorted by author`() {
+    fun mapBooksToParents_srtLndBrw_groupsByLoanedToSortedByAuthor() {
         // Arrange
         val loanedJohn = FieldEntity(id = 1101L, typeId = DbConstants.FLD_LOANED_TO, name = "John Doe")
         val authorKotlin = FieldEntity(id = 1102L, typeId = DbConstants.FLD_AUTHOR, name = "Kotlin Team")

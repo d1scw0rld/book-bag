@@ -3,19 +3,25 @@ package org.d1scw0rld.bookbag.dto
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.junit.jupiter.api.DisplayName
+import org.junit.runner.RunWith
+import org.d1scw0rld.bookbag.DisplayNameRunner
 
+@RunWith(DisplayNameRunner::class)
 class BookTest {
 
+    @DisplayName("Constructor - Default Instantiation - Sets Correct Defaults")
     @Test
-    fun `default constructor sets correct defaults`() {
+    fun constructor_defaultInstantiation_setsCorrectDefaults() {
         val book = Book()
         assertEquals(0L, book.id)
         assertTrue(book.title.value.isEmpty())
         assertTrue(book.properties.isEmpty())
     }
 
+    @DisplayName("Constructor - Secondary Instantiation - Maps Primitives to Changeable Wrappers Correctly")
     @Test
-    fun `secondary constructor maps primitives to Changeable wrappers correctly`() {
+    fun constructor_secondaryInstantiation_mapsPrimitivesToChangeableWrappers() {
         val book = Book(
             id = 15,
             title = "Title",

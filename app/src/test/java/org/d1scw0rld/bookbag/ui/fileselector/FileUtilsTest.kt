@@ -3,12 +3,17 @@ package org.d1scw0rld.bookbag.ui.fileselector
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.junit.jupiter.api.DisplayName
+import org.junit.runner.RunWith
+import org.d1scw0rld.bookbag.DisplayNameRunner
 import java.io.File
 
+@RunWith(DisplayNameRunner::class)
 class FileUtilsTest {
 
+    @DisplayName("Accept - Filter Allow All And Any File - Returns True")
     @Test
-    fun `accept with FILTER_ALLOW_ALL returns true for any file`() {
+    fun accept_filterAllowAllAndAnyFile_returnsTrue() {
         val file1 = File("test.db")
         val file2 = File("document.pdf")
         val file3 = File("no_extension")
@@ -18,8 +23,9 @@ class FileUtilsTest {
         assertTrue(FileUtils.accept(file3, FileUtils.FILTER_ALLOW_ALL))
     }
 
+    @DisplayName("Accept - Directory File Passed - Returns True")
     @Test
-    fun `accept returns true if the file is a directory`() {
+    fun accept_directoryFilePassed_returnsTrue() {
         val mockDirectory = File("my_folder")
         // We mock isDirectory or simulate a directory. Note: File("my_folder") isDirectory will be false
         // unless it exists on disk. But we can test with a temporary directory or let isDirectory resolve normally.
@@ -34,8 +40,9 @@ class FileUtilsTest {
         }
     }
 
+    @DisplayName("Accept - Matching File Extension With Different Cases - Returns True")
     @Test
-    fun `accept matches file extension correctly regardless of case`() {
+    fun accept_matchingFileExtensionWithDifferentCases_returnsTrue() {
         val file1 = File("database.db")
         val file2 = File("DATABASE.DB")
         val file3 = File("database.db.txt")
@@ -45,8 +52,9 @@ class FileUtilsTest {
         assertFalse(FileUtils.accept(file3, ".db"))
     }
 
+    @DisplayName("Accept - File With No Extension And Specific Extension Filter - Returns False")
     @Test
-    fun `accept returns false if file has no extension`() {
+    fun accept_fileWithNoExtensionAndSpecificExtensionFilter_returnsFalse() {
         val file = File("no_extension")
         assertFalse(FileUtils.accept(file, ".db"))
     }

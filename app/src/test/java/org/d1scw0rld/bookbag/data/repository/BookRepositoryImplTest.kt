@@ -19,14 +19,15 @@ import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
+import org.junit.jupiter.api.DisplayName
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
+import org.d1scw0rld.bookbag.DisplayNameRobolectricRunner
 import org.robolectric.annotation.Config
 import java.io.File
 import java.io.IOException
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@RunWith(RobolectricTestRunner::class)
+@RunWith(DisplayNameRobolectricRunner::class)
 @Config(sdk = [28])
 class BookRepositoryImplTest {
 
@@ -88,8 +89,9 @@ class BookRepositoryImplTest {
         )
     }
 
+    @DisplayName("Get Book With Fields - Valid Book ID - Returns Correct Relation")
     @Test
-    fun getBookWithFields_returnsCorrectRelation() = runTest {
+    fun getBookWithFields_validBookId_returnsCorrectRelation() = runTest {
         // Arrange
         val bookId = 1L
         val book = createBookEntity(bookId, "Refactoring")
@@ -110,8 +112,9 @@ class BookRepositoryImplTest {
         assertEquals("Martin Fowler", result?.fields?.get(0)?.name)
     }
 
+    @DisplayName("Get Book With Fields Flow - Valid Book ID - Emits Correct Relation")
     @Test
-    fun getBookWithFieldsFlow_emitsCorrectRelation() = runTest {
+    fun getBookWithFieldsFlow_validBookId_emitsCorrectRelation() = runTest {
         // Arrange
         val bookId = 2L
         val book = createBookEntity(bookId, "Clean Code")
@@ -130,8 +133,9 @@ class BookRepositoryImplTest {
         assertEquals("Robert C. Martin", emission?.fields?.get(0)?.name)
     }
 
+    @DisplayName("Get All Books With Fields - Multiple Books Exist - Returns All Items")
     @Test
-    fun getAllBooksWithFields_returnsAllItems() = runTest {
+    fun getAllBooksWithFields_multipleBooksExist_returnsAllItems() = runTest {
         // Arrange
         val b1 = createBookEntity(1L, "Book One")
         val b2 = createBookEntity(2L, "Book Two")
@@ -147,8 +151,9 @@ class BookRepositoryImplTest {
         assertTrue(list.any { it.book.title == "Book Two" })
     }
 
+    @DisplayName("Get All Books With Fields Flow - Multiple Books Exist - Emits All Items")
     @Test
-    fun getAllBooksWithFieldsFlow_emitsAllItems() = runTest {
+    fun getAllBooksWithFieldsFlow_multipleBooksExist_emitsAllItems() = runTest {
         // Arrange
         val b1 = createBookEntity(1L, "Book One")
         bookDao.insertBook(b1)
@@ -159,8 +164,9 @@ class BookRepositoryImplTest {
         assertEquals("Book One", list[0].book.title)
     }
 
+    @DisplayName("Save Book With Fields - New Book With Properties - Inserts Book and Fields and Updates IDs")
     @Test
-    fun saveBookWithFields_insertsNewBookAndNewFieldsCorrectly() = runTest {
+    fun saveBookWithFields_newBookWithProperties_insertsBookAndFieldsAndUpdatesIds() = runTest {
         // Arrange
         val bookDto = createBookDto(0L, "New Book")
         val prop = Property(fieldTypeId = DbConstants.FLD_AUTHOR, value = "New Author", id = 0L)
@@ -181,8 +187,9 @@ class BookRepositoryImplTest {
         assertNotEquals(0L, prop.id)
     }
 
+    @DisplayName("Save Book With Fields - Existing Book and Modified Properties - Updates Book and Cleans Old Relations")
     @Test
-    fun saveBookWithFields_updatesExistingBookAndCleansOldFields() = runTest {
+    fun saveBookWithFields_existingBookAndModifiedProperties_updatesBookAndCleansOldRelations() = runTest {
         // Arrange
         // First save a book
         val bookDto = createBookDto(0L, "Original Title")
@@ -217,8 +224,9 @@ class BookRepositoryImplTest {
         assertNotEquals(0L, prop2.id)
     }
 
+    @DisplayName("Delete Book And Relations - Valid Book ID - Removes Book and Cross References But Retains Global Fields")
     @Test
-    fun deleteBookAndRelations_removesBookAndCrossReferences() = runTest {
+    fun deleteBookAndRelations_validBookId_removesBookAndCrossReferencesButRetainsGlobalFields() = runTest {
         // Arrange
         val bookDto = createBookDto(0L, "Book to Delete")
         val prop = Property(fieldTypeId = DbConstants.FLD_AUTHOR, value = "Some Author", id = 0L)
@@ -242,8 +250,9 @@ class BookRepositoryImplTest {
         assertEquals("Some Author", fields[0].name)
     }
 
+    @DisplayName("Get Fields By Type - Valid Type ID - Returns Only Requested Types")
     @Test
-    fun getFieldsByType_returnsOnlyRequestedTypes() = runTest {
+    fun getFieldsByType_validTypeId_returnsOnlyRequestedTypes() = runTest {
         // Arrange
         val f1 = FieldEntity(id = 100L, typeId = DbConstants.FLD_AUTHOR, name = "Author")
         val f2 = FieldEntity(id = 101L, typeId = DbConstants.FLD_GENRE, name = "Genre")
@@ -258,8 +267,9 @@ class BookRepositoryImplTest {
         assertEquals("Author", authorFields[0].name)
     }
 
+    @DisplayName("Export And Import Database - Valid Database and Target Files - Delegates Correctly and Restores Schema")
     @Test
-    fun exportAndImportDatabase_delegatesCorrectly() = runTest {
+    fun exportAndImportDatabase_validDatabaseAndTargetFiles_delegatesCorrectlyAndRestoresSchema() = runTest {
         // To test import/export, we'll perform a basic check using temporary files
         // We initialize a valid SQLite database file so AppDatabase functions have something valid to sanitize and copy from/to
         val dbFile = context.getDatabasePath("book_bag.db")

@@ -8,11 +8,12 @@ import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
+import org.junit.jupiter.api.DisplayName
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
+import org.d1scw0rld.bookbag.DisplayNameRobolectricRunner
 import org.robolectric.annotation.Config
 
-@RunWith(RobolectricTestRunner::class)
+@RunWith(DisplayNameRobolectricRunner::class)
 @Config(sdk = [28])
 class TextViewWithImageTest {
 
@@ -25,21 +26,24 @@ class TextViewWithImageTest {
         textViewWithImage = TextViewWithImage(context)
     }
 
+    @DisplayName("Initial Structure - View Created - Inflates Correct Subviews")
     @Test
-    fun testInitialStructure() {
+    fun initialStructure_viewCreated_inflatesCorrectSubViews() {
         assertEquals(2, textViewWithImage.childCount)
         assertTrue(textViewWithImage.getChildAt(0) is ImageView)
         assertTrue(textViewWithImage.getChildAt(1) is TextView)
     }
 
+    @DisplayName("Text - Set and Get - Retains and Returns Formatted Text Value")
     @Test
-    fun testSetAndGetText() {
+    fun text_setAndGet_retainsAndReturnsFormattedTextValue() {
         textViewWithImage.setText("Hello File Selector")
         assertEquals("Hello File Selector", textViewWithImage.getText().toString())
     }
 
+    @DisplayName("Set Image Resource - Minus One Provided - Hides Image View")
     @Test
-    fun testSetImageResource_minusOne_hidesImage() {
+    fun setImageResource_minusOneProvided_hidesImageView() {
         val imageView = textViewWithImage.getChildAt(0) as ImageView
         
         // When setting image to -1, the visibility should become GONE
@@ -47,8 +51,9 @@ class TextViewWithImageTest {
         assertEquals(View.GONE, imageView.visibility)
     }
 
+    @DisplayName("Set Image Resource - Valid Drawable ID Provided - Displays Image View")
     @Test
-    fun testSetImageResource_validId_showsImage() {
+    fun setImageResource_validDrawableIdProvided_displaysImageView() {
         val imageView = textViewWithImage.getChildAt(0) as ImageView
         
         // When setting a valid image, the visibility should be VISIBLE

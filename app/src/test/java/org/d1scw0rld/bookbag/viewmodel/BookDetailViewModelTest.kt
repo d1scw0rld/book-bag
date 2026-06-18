@@ -18,11 +18,15 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.junit.jupiter.api.DisplayName
+import org.junit.runner.RunWith
+import org.d1scw0rld.bookbag.DisplayNameRunner
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 
 @OptIn(ExperimentalCoroutinesApi::class)
+@RunWith(DisplayNameRunner::class)
 class BookDetailViewModelTest {
 
     private val testDispatcher = UnconfinedTestDispatcher()
@@ -41,8 +45,9 @@ class BookDetailViewModelTest {
         Dispatchers.resetMain()
     }
 
+    @DisplayName("Load Book - Valid Book ID - Fetches Currencies and Book Details Successfully")
     @Test
-    fun `loadBook successfully fetches currencies and book details`() = runTest {
+    fun loadBook_validBookId_fetchesCurrenciesAndBookDetailsSuccessfully() = runTest {
         // Arrange
         val bookId = 12L
         val mockBook = BookWithFields(
@@ -65,8 +70,9 @@ class BookDetailViewModelTest {
         assertEquals(12, data.currencies[0].fieldTypeId)
     }
 
+    @DisplayName("Load Book - Repository Currencies Fetch Fails - Emits Error UI State")
     @Test
-    fun `loadBook handles repository currencies fetch exception and maps to Error`() = runTest {
+    fun loadBook_repositoryCurrenciesFetchFails_emitsErrorUiState() = runTest {
         // Arrange
         whenever(repository.getFieldsByType(any())).thenThrow(RuntimeException("Currencies fetch failed"))
 
@@ -79,8 +85,9 @@ class BookDetailViewModelTest {
         assertEquals("Currencies fetch failed", exception.message)
     }
 
+    @DisplayName("Load Book - Repository Flow Throws Exception - Emits Error UI State")
     @Test
-    fun `loadBook handles repository flow exception and maps to Error`() = runTest {
+    fun loadBook_repositoryFlowThrowsException_emitsErrorUiState() = runTest {
         // Arrange
         val bookId = 12L
         val mockCurrency = FieldEntity(id = 50L, typeId = 12, name = "USD")

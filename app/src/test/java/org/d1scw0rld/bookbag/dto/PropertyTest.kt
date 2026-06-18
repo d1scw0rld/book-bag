@@ -4,19 +4,25 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.junit.jupiter.api.DisplayName
+import org.junit.runner.RunWith
+import org.d1scw0rld.bookbag.DisplayNameRunner
 
+@RunWith(DisplayNameRunner::class)
 class PropertyTest {
 
+    @DisplayName("Constructor - Default Instantiation - Sets Default Values")
     @Test
-    fun `default constructor sets default values`() {
+    fun constructor_defaultInstantiation_setsDefaultValues() {
         val prop = Property()
         assertEquals(0, prop.fieldTypeId)
         assertEquals("", prop.value)
         assertEquals(0L, prop.id)
     }
 
+    @DisplayName("Update From - Other Property Instance Provided - Copies All Attributes Exactly")
     @Test
-    fun `updateFrom copies all properties from another instance`() {
+    fun updateFrom_otherPropertyInstanceProvided_copiesAllAttributesExactly() {
         val original = Property(fieldTypeId = 1, value = "Primary", id = 100L)
         val copy = Property()
         
@@ -27,14 +33,16 @@ class PropertyTest {
         assertEquals(original.value, copy.value)
     }
 
+    @DisplayName("ToString - Value Attribute Set - Returns Wrapped Value String")
     @Test
-    fun `toString returns wrapped value string`() {
+    fun toString_valueAttributeSet_returnsWrappedValueString() {
         val prop = Property(value = "Author Name")
         assertEquals("Author Name", prop.toString())
     }
 
+    @DisplayName("Equals - Matching and Different Attributes - Compares Correctly and Case Insensitively")
     @Test
-    fun `equals compares id, fieldTypeId and case-insensitive value`() {
+    fun equals_matchingAndDifferentAttributes_comparesCorrectlyAndCaseInsensitively() {
         val p1 = Property(fieldTypeId = 5, value = "HARDCOPY", id = 12L)
         val p2 = Property(fieldTypeId = 5, value = "hardcopy", id = 12L)
         val p3 = Property(fieldTypeId = 5, value = "EPUB", id = 12L)
@@ -43,8 +51,9 @@ class PropertyTest {
         assertFalse(p1 == p3)
     }
 
+    @DisplayName("HashCode - Matching Attributes and Different Cases - Computes Identical Hash Codes")
     @Test
-    fun `hashCode matches the case-insensitive value equals contract`() {
+    fun hashCode_matchingAttributesAndDifferentCases_computesIdenticalHashCodes() {
         val p1 = Property(fieldTypeId = 5, value = "HARDCOPY", id = 12L)
         val p2 = Property(fieldTypeId = 5, value = "hardcopy", id = 12L)
 

@@ -3,7 +3,6 @@ package org.d1scw0rld.bookbag.ui.adapters
 import android.content.Context
 import android.view.LayoutInflater
 import android.widget.FrameLayout
-import android.widget.TextView
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ApplicationProvider
@@ -13,11 +12,12 @@ import org.d1scw0rld.bookbag.dto.ParentResult
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
+import org.junit.jupiter.api.DisplayName
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
+import org.d1scw0rld.bookbag.DisplayNameRobolectricRunner
 import org.robolectric.annotation.Config
 
-@RunWith(RobolectricTestRunner::class)
+@RunWith(DisplayNameRobolectricRunner::class)
 @Config(sdk = [28])
 class BooksAdapterTest {
 
@@ -44,8 +44,9 @@ class BooksAdapterTest {
         )
     }
 
+    @DisplayName("Initial State - Only Headers Provided - Only Headers Visible")
     @Test
-    fun testInitialState_onlyHeadersVisible() {
+    fun initialState_onlyHeadersProvided_onlyHeadersVisible() {
         val adapter = BooksAdapter(context, parentsResults)
 
         // Initially, only headers are added to the visible items
@@ -59,8 +60,9 @@ class BooksAdapterTest {
         assertEquals(-1L, adapter.getItemId(1))
     }
 
+    @DisplayName("Expand and Collapse All - Headers Expanded and Collapsed - Updates Visible Item Counts")
     @Test
-    fun testExpandAndCollapseAll() {
+    fun expandAndCollapseAll_headersExpandedAndCollapsed_updatesVisibleItemCounts() {
         val adapter = BooksAdapter(context, parentsResults)
 
         // Expand all should make children visible
@@ -86,8 +88,9 @@ class BooksAdapterTest {
         assertEquals(ExpandableRecyclerAdapter.TYPE_HEADER, adapter.getItemViewType(1))
     }
 
+    @DisplayName("Filter - Matches Substring - Hides Empty Header and Shows Matching Items")
     @Test
-    fun testFiltering_matchesSubString_hidesEmptyHeader() {
+    fun filter_matchesSubString_hidesEmptyHeaderAndShowsMatchingItems() {
         val adapter = BooksAdapter(context, parentsResults)
 
         // Filter by "Code" (matches "Clean Code" under "Robert C. Martin")
@@ -103,8 +106,9 @@ class BooksAdapterTest {
         assertEquals(101L, adapter.getItemId(1))
     }
 
+    @DisplayName("Filter - Empty Query Text - Shows All Original Items")
     @Test
-    fun testFiltering_emptyText_showsAll() {
+    fun filter_emptyQueryText_showsAllOriginalItems() {
         val adapter = BooksAdapter(context, parentsResults)
 
         adapter.filter("Code")
@@ -116,8 +120,9 @@ class BooksAdapterTest {
         assertEquals(3, adapter.getAllChildrenCount())
     }
 
+    @DisplayName("Remove At - Last Child Removed - Decrements Counts and Cleans Empty Header")
     @Test
-    fun testRemoveAt_decrementsCountsAndCleansEmptyHeaders() {
+    fun removeAt_lastChildRemoved_decrementsCountsAndCleansEmptyHeader() {
         val adapter = BooksAdapter(context, parentsResults)
         adapter.expandAll()
         assertEquals(5, adapter.itemCount)
@@ -137,8 +142,9 @@ class BooksAdapterTest {
         assertEquals(ExpandableRecyclerAdapter.TYPE_ITEM, adapter.getItemViewType(2))
     }
 
+    @DisplayName("Update Data - New Data Set Provided - Replaces All Items and Resets State")
     @Test
-    fun testUpdateData_replacesAllItems() {
+    fun updateData_newDataSetProvided_replacesAllItemsAndResetsState() {
         val adapter = BooksAdapter(context, parentsResults)
         assertEquals(2, adapter.itemCount)
 
@@ -160,8 +166,9 @@ class BooksAdapterTest {
         assertEquals(301L, adapter.getItemId(1))
     }
 
+    @DisplayName("ViewHolder - Instantiated and Bound - Binds Text and Properties Correctly")
     @Test
-    fun testViewHolderInstantiationAndBinding() {
+    fun viewHolder_instantiatedAndBound_bindsTextAndPropertiesCorrectly() {
         val adapter = BooksAdapter(context, parentsResults)
         adapter.expandAll()
 
@@ -181,8 +188,9 @@ class BooksAdapterTest {
         assertEquals("Clean Code", itemHolder.name.text.toString())
     }
 
+    @DisplayName("OnCreate and Bind ViewHolder - Delegated by Adapter - Delegates ViewHolder Inflation and Binding")
     @Test
-    fun testAdapterOnCreateAndBindViewHolderDelegation() {
+    fun onCreateAndBindViewHolder_delegatedByAdapter_delegatesViewHolderInflationAndBinding() {
         val adapter = BooksAdapter(context, parentsResults)
         adapter.expandAll()
 
@@ -201,8 +209,9 @@ class BooksAdapterTest {
         assertEquals("Clean Code", (itemHolder as BooksAdapter.ItemViewHolder).name.text.toString())
     }
 
+    @DisplayName("Perform Click - Click Listeners Invoked - Notifies Registered Callbacks")
     @Test
-    fun testClickListenersInvocation() {
+    fun performClick_clickListenersInvoked_notifiesRegisteredCallbacks() {
         val adapter = BooksAdapter(context, parentsResults)
         adapter.expandAll()
 
@@ -238,8 +247,9 @@ class BooksAdapterTest {
         assertTrue(bookLongClicked)
     }
 
+    @DisplayName("OnCreateViewHolder - Invalid View Type Provided - Falls Back to ItemViewHolder")
     @Test
-    fun testCreateViewHolder_elseBranch() {
+    fun onCreateViewHolder_invalidViewTypeProvided_fallsBackToItemViewHolder() {
         val adapter = BooksAdapter(context, parentsResults)
         val parentView = FrameLayout(context)
         
@@ -248,14 +258,15 @@ class BooksAdapterTest {
         assertTrue(holder is BooksAdapter.ItemViewHolder)
     }
 
+    @DisplayName("Bind - Spannable Query Filter Matched - Highlights Matching Substring with ForegroundColorSpan")
     @Test
-    fun testItemViewHolder_bindingWithSpannableFiltering() {
+    fun bind_spannableQueryFilterMatched_highlightsMatchingSubStringWithForegroundColorSpan() {
         val adapter = BooksAdapter(context, parentsResults)
         adapter.filter("Code")
 
         val parentView = FrameLayout(context)
         val itemView = LayoutInflater.from(context).inflate(R.layout.item_book, parentView, false) as android.view.ViewGroup
-        val tvItem = itemView.findViewById<TextView>(R.id.tv_item)
+        val tvItem = itemView.findViewById<android.widget.TextView>(R.id.tv_item)
         val index = itemView.indexOfChild(tvItem)
         itemView.removeView(tvItem)
 

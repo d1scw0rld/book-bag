@@ -18,11 +18,15 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.junit.jupiter.api.DisplayName
+import org.junit.runner.RunWith
+import org.d1scw0rld.bookbag.DisplayNameRunner
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.whenever
 
 @OptIn(ExperimentalCoroutinesApi::class)
+@RunWith(DisplayNameRunner::class)
 class BookListViewModelTest {
 
     private val testDispatcher = UnconfinedTestDispatcher()
@@ -40,8 +44,9 @@ class BookListViewModelTest {
         Dispatchers.resetMain()
     }
 
+    @DisplayName("Load Books - Repository Succeeds - Emits Success UI State With Book List")
     @Test
-    fun `loadBooks emits Success with book list when repository succeeds`() = runTest {
+    fun loadBooks_repositorySucceeds_emitsSuccessUiStateWithBookList() = runTest {
         // Arrange
         val bookRelation = BookWithFields(
             book = BookEntity(id = 1L, title = "Clean Code", description = null, volume = null, publicationDate = null, pages = null, price = null, value = null, dueDate = null, readDate = null, edition = null, isbn = null, web = null),
@@ -60,8 +65,9 @@ class BookListViewModelTest {
         assertEquals("Clean Code", successData[0].book.title)
     }
 
+    @DisplayName("Load Books - Repository Throws Exception - Emits Error UI State")
     @Test
-    fun `loadBooks emits Error when repository throws exception`() = runTest {
+    fun loadBooks_repositoryThrowsException_emitsErrorUiState() = runTest {
         // Arrange
         val expectedException = RuntimeException("Database error")
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flow { throw expectedException })
@@ -75,8 +81,9 @@ class BookListViewModelTest {
         assertEquals("Database error", errorException.message)
     }
 
+    @DisplayName("Delete Book - Valid Book ID Provided - Invokes Repository Delete")
     @Test
-    fun `deleteBook invokes repository method`() = runTest {
+    fun deleteBook_validBookIdProvided_invokesRepositoryDelete() = runTest {
         // Arrange
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
         viewModel = BookListViewModel(repository)
@@ -88,8 +95,9 @@ class BookListViewModelTest {
         verify(repository).deleteBookAndRelations(100L)
     }
 
+    @DisplayName("Import Database - Import Succeeds - Updates File Op State With Success")
     @Test
-    fun `importDatabase updates fileOpState with Success when import succeeds`() = runTest {
+    fun importDatabase_importSucceeds_updatesFileOpStateWithSuccess() = runTest {
         // Arrange
         val filePath = "/path/to/import.db"
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
@@ -104,8 +112,9 @@ class BookListViewModelTest {
         assertEquals(FileOperationType.IMPORT, (viewModel.fileOpState.value as UiState.Success).data)
     }
 
+    @DisplayName("Import Database - Import Fails - Updates File Op State With Error")
     @Test
-    fun `importDatabase updates fileOpState with Error when import fails`() = runTest {
+    fun importDatabase_importFails_updatesFileOpStateWithError() = runTest {
         // Arrange
         val filePath = "/path/to/import.db"
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
@@ -120,8 +129,9 @@ class BookListViewModelTest {
         assertEquals("Import failed", (viewModel.fileOpState.value as UiState.Error).exception.message)
     }
 
+    @DisplayName("Export Database - Export Succeeds - Updates File Op State With Success")
     @Test
-    fun `exportDatabase updates fileOpState with Success when export succeeds`() = runTest {
+    fun exportDatabase_exportSucceeds_updatesFileOpStateWithSuccess() = runTest {
         // Arrange
         val filePath = "/path/to/export.db"
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
@@ -136,8 +146,9 @@ class BookListViewModelTest {
         assertEquals(FileOperationType.EXPORT, (viewModel.fileOpState.value as UiState.Success).data)
     }
 
+    @DisplayName("Export Database - Export Fails - Updates File Op State With Error")
     @Test
-    fun `exportDatabase updates fileOpState with Error when export fails`() = runTest {
+    fun exportDatabase_exportFails_updatesFileOpStateWithError() = runTest {
         // Arrange
         val filePath = "/path/to/export.db"
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
@@ -152,8 +163,9 @@ class BookListViewModelTest {
         assertEquals("Export failed", (viewModel.fileOpState.value as UiState.Error).exception.message)
     }
 
+    @DisplayName("Consume File Operation - Active File Op State - Resets File Op State to Null")
     @Test
-    fun `consumeFileOperation resets fileOpState to null`() = runTest {
+    fun consumeFileOperation_activeFileOpState_resetsFileOpStateToNull() = runTest {
         // Arrange
         val filePath = "/path/to/export.db"
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))

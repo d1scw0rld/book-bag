@@ -146,7 +146,7 @@ class EditBookFragment : BaseFragment(), IBackPressListener {
                             val loadedBook = state.data.book
 
                             // 1. Only initialize fields once to prevent losing user edits
-                            if (fieldsRoot.childCount == 0) {
+                            if (fieldsRoot.isEmpty()) {
                                 // 2. Properties map is pre-fetched asynchronously in the ViewModel
                                 fieldsFactory =
                                     FieldsFactory(ctx, loadedBook, state.data.propertiesMap)

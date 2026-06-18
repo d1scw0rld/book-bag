@@ -4,11 +4,16 @@ import org.d1scw0rld.bookbag.data.entity.BookEntity
 import org.d1scw0rld.bookbag.data.entity.FieldEntity
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import org.junit.jupiter.api.DisplayName
+import org.junit.runner.RunWith
+import org.d1scw0rld.bookbag.DisplayNameRunner
 
+@RunWith(DisplayNameRunner::class)
 class BookWithFieldsTest {
 
+    @DisplayName("To DTO - Valid Relation - Maps Book and Fields to Book DTO")
     @Test
-    fun `toDto maps BookEntity and FieldEntity list to Book DTO correctly`() {
+    fun toDto_validRelation_mapsBookAndFieldsToBookDto() {
         // Arrange
         val entity = BookEntity(
             id = 5L,

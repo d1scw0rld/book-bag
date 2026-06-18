@@ -53,6 +53,9 @@ android {
     testOptions {
         unitTests {
             includeAndroidResources = true
+            all {
+                useJUnitPlatform()
+            }
         }
     }
     namespace 'org.d1scw0rld.bookbag'
@@ -91,6 +94,12 @@ dependencies {
     // Unit Testing
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'androidx.test:core-ktx:1.7.0'
+    
+    // JUnit 5 (Jupiter) API & Engines
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:6.1.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:6.1.0'
+    testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:6.1.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:6.1.0'
     
     // Mockito for clean, decoupled dependency mocking
     testImplementation 'org.mockito:mockito-core:5.23.0'

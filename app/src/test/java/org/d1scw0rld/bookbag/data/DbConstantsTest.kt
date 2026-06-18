@@ -6,14 +6,19 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.junit.jupiter.api.DisplayName
+import org.junit.runner.RunWith
+import org.d1scw0rld.bookbag.DisplayNameRunner
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 
+@RunWith(DisplayNameRunner::class)
 class DbConstantsTest {
 
+    @DisplayName("Constants - Verify Values - Are Correct")
     @Test
-    fun `test constants are correct`() {
+    fun constants_verifyValues_areCorrect() {
         assertEquals("book_bag.db", DbConstants.DATABASE_NAME)
         assertEquals("DB", DbConstants.TAG)
         assertEquals(1, DbConstants.FLD_AUTHOR)
@@ -21,13 +26,15 @@ class DbConstantsTest {
         assertEquals(1, DbConstants.SRT_TTL)
     }
 
+    @DisplayName("Separator - Verify Initialization - Is Not Null")
     @Test
-    fun `test separator is initialized`() {
+    fun separator_verifyInitialization_isNotNull() {
         assertNotNull(DbConstants.separator)
     }
 
+    @DisplayName("Init Fields - Resources Mock Provided - Populates Fields Array Correctly")
     @Test
-    fun `test initFields populates FIELDS array`() {
+    fun initFields_resourcesMockProvided_populatesFieldsArrayCorrectly() {
         val resources = mock(Resources::class.java)
         `when`(resources.getString(anyInt())).thenReturn("Test String")
 

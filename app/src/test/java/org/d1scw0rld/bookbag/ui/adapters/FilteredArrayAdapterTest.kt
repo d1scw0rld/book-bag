@@ -5,12 +5,13 @@ import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
+import org.junit.jupiter.api.DisplayName
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
+import org.d1scw0rld.bookbag.DisplayNameRobolectricRunner
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowLooper
 
-@RunWith(RobolectricTestRunner::class)
+@RunWith(DisplayNameRobolectricRunner::class)
 @Config(sdk = [28])
 class FilteredArrayAdapterTest {
 
@@ -25,8 +26,9 @@ class FilteredArrayAdapterTest {
         adapter = FilteredArrayAdapter(context, android.R.layout.simple_list_item_1, itemsList)
     }
 
+    @DisplayName("Initial State - Adapter Created - Displays All Items")
     @Test
-    fun testInitialState() {
+    fun initialState_adapterCreated_displaysAllItems() {
         assertEquals(4, adapter.count)
         assertEquals("Apple", adapter.getItem(0))
         assertEquals("Banana", adapter.getItem(1))
@@ -34,8 +36,9 @@ class FilteredArrayAdapterTest {
         assertEquals("Apricot", adapter.getItem(3))
     }
 
+    @DisplayName("Filter - Prefix Matches Items - Returns Only Matching Suggestions")
     @Test
-    fun testFiltering_prefixMatch() {
+    fun filter_prefixMatchesItems_returnsOnlyMatchingSuggestions() {
         // Filter for strings starting with "Ap"
         adapter.filter.filter("Ap")
         ShadowLooper.idleMainLooper()
@@ -46,8 +49,9 @@ class FilteredArrayAdapterTest {
         assertEquals("Apricot", adapter.getItem(1))
     }
 
+    @DisplayName("Filter - Lowercase Prefix Matches Uppercase Items - Returns Only Matching Suggestions")
     @Test
-    fun testFiltering_caseInsensitivePrefixMatch() {
+    fun filter_lowercasePrefixMatchesUppercaseItems_returnsOnlyMatchingSuggestions() {
         // Filter for strings starting with lowercase "ap"
         adapter.filter.filter("ap")
         ShadowLooper.idleMainLooper()
@@ -58,8 +62,9 @@ class FilteredArrayAdapterTest {
         assertEquals("Apricot", adapter.getItem(1))
     }
 
+    @DisplayName("Filter - No Prefix Matches Items - Invalidates Dataset But Leaves Count Unchanged")
     @Test
-    fun testFiltering_noMatches() {
+    fun filter_noPrefixMatchesItems_invalidatesDatasetButLeavesCountUnchanged() {
         // Filter for string with no matches
         adapter.filter.filter("Z")
         ShadowLooper.idleMainLooper()
@@ -74,8 +79,9 @@ class FilteredArrayAdapterTest {
         assertEquals(4, adapter.count) // count remains 4 because publishResults did not mutate it, but dataset is invalidated
     }
 
+    @DisplayName("Filter - Empty Query Constraint - Restores All Suggestions")
     @Test
-    fun testFiltering_emptyText_restoresAllSuggestions() {
+    fun filter_emptyQueryConstraint_restoresAllSuggestions() {
         // First filter to restrict items
         adapter.filter.filter("Ap")
         ShadowLooper.idleMainLooper()
@@ -93,11 +99,11 @@ class FilteredArrayAdapterTest {
         assertEquals("Apricot", adapter.getItem(3))
     }
 
+    @DisplayName("Get View - Request Item View - Returns TextView with Formatted Item Text")
     @Test
-    fun testGetView_returnsTextViewWithItemText() {
+    fun getView_requestItemView_returnsTextViewWithFormattedItemText() {
         val parentView = android.widget.LinearLayout(context)
         val view = adapter.getView(1, null, parentView) as android.widget.TextView
-
         assertNotNull(view)
         assertEquals("Banana", view.text.toString())
     }

@@ -13,11 +13,12 @@ import org.d1scw0rld.bookbag.dto.Property
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
+import org.junit.jupiter.api.DisplayName
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
+import org.d1scw0rld.bookbag.DisplayNameRobolectricRunner
 import org.robolectric.annotation.Config
 
-@RunWith(RobolectricTestRunner::class)
+@RunWith(DisplayNameRobolectricRunner::class)
 @Config(sdk = [28])
 class BookDetailFieldsFactoryTest {
 
@@ -40,8 +41,9 @@ class BookDetailFieldsFactoryTest {
         )
     }
 
+    @DisplayName("Add Fields - Populated Book Fields Provided - Populates Expected Categories Layouts")
     @Test
-    fun testAddFields_populatesAllPopulatedFields() {
+    fun addFields_populatedBookFieldsProvided_populatesExpectedCategoriesLayouts() {
         val factory = BookDetailFieldsFactory(context, currencies, book)
 
         val rootView = LinearLayout(context)
@@ -84,8 +86,9 @@ class BookDetailFieldsFactoryTest {
         assertTrue(hasPrice)
     }
 
+    @DisplayName("Add Fields - Null Book Provided - Returns Early Without Adding Views")
     @Test
-    fun testAddFields_handlesNullBookGracefully() {
+    fun addFields_nullBookProvided_returnsEarlyWithoutAddingViews() {
         val factory = BookDetailFieldsFactory(context, currencies, null)
 
         val rootView = LinearLayout(context)
@@ -99,8 +102,9 @@ class BookDetailFieldsFactoryTest {
         assertEquals(0, categoriesLayout.childCount)
     }
 
+    @DisplayName("Add Fields - Rating and Checkbox Properties Provided - Creates Rating and CheckBox Category Rows")
     @Test
-    fun testAddFields_ratingFieldAndCheckboxField() {
+    fun addFields_ratingAndCheckboxPropertiesProvided_createsRatingAndCheckBoxCategoryRows() {
         // Add rating and checkbox properties
         val ratingProperty = Property(DbConstants.FLD_RATING, "4.0")
         val readProperty = Property(DbConstants.FLD_READ, "true")

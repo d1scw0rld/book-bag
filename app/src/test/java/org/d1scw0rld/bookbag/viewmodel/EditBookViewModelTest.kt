@@ -19,14 +19,16 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.junit.jupiter.api.DisplayName
+import org.junit.runner.RunWith
+import org.d1scw0rld.bookbag.DisplayNameRunner
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 
-
-
 @OptIn(ExperimentalCoroutinesApi::class)
+@RunWith(DisplayNameRunner::class)
 class EditBookViewModelTest {
 
     private val testDispatcher = UnconfinedTestDispatcher()
@@ -53,8 +55,9 @@ class EditBookViewModelTest {
         Dispatchers.resetMain()
     }
 
+    @DisplayName("Load Book - ID Zero Provided - Loads Empty Book and Emits Success State")
     @Test
-    fun `loadBook with id 0 loads empty book and success state`() = runTest {
+    fun loadBook_idZeroProvided_loadsEmptyBookAndEmitsSuccessState() = runTest {
         // Arrange
         whenever(repository.getFieldsByType(any())).thenReturn(emptyList())
 
@@ -68,8 +71,9 @@ class EditBookViewModelTest {
         assertTrue(viewModel.book.title.value.isEmpty())
     }
 
+    @DisplayName("Load Book - Existing Book ID Provided - Loads Book Details and Fetches Properties Map")
     @Test
-    fun `loadBook with existing id loads book details and fetches properties map`() = runTest {
+    fun loadBook_existingBookIdProvided_loadsBookDetailsAndFetchesPropertiesMap() = runTest {
         // Arrange
         val bookId = 15L
         val mockRelation = BookWithFields(
@@ -97,8 +101,9 @@ class EditBookViewModelTest {
         assertEquals("Author", fetchedList?.get(0)?.value)
     }
 
+    @DisplayName("Load Book - Is Copy True Provided - Loads Book Details But Resets ID to Zero")
     @Test
-    fun `loadBook with isCopy true loads existing book but resets its id to 0`() = runTest {
+    fun loadBook_isCopyTrueProvided_loadsBookDetailsButResetsIdToZero() = runTest {
         // Arrange
         val bookId = 42L
         val mockRelation = BookWithFields(
@@ -118,8 +123,9 @@ class EditBookViewModelTest {
         assertEquals("Refactoring", data.book.title.value)
     }
 
+    @DisplayName("Save Book - Valid Book With Some Empty Properties - Cleans Empty Properties and Saves Successfully")
     @Test
-    fun `saveBook cleans up empty property values and invokes repository save successfully`() = runTest {
+    fun saveBook_validBookWithSomeEmptyProperties_cleansEmptyPropertiesAndSavesSuccessfully() = runTest {
         // Arrange
         val book = viewModel.book
         book.title.value = "Design Patterns"
@@ -153,8 +159,9 @@ class EditBookViewModelTest {
         collectJob.cancel()
     }
 
+    @DisplayName("Save Book - Repository Throws Exception - Emits False on Save Success")
     @Test
-    fun `saveBook emits false on saveSuccess when repository throws exception`() = runTest {
+    fun saveBook_repositoryThrowsException_emitsFalseOnSaveSuccess() = runTest {
         // Arrange: Make repository save fail
         whenever(repository.saveBookWithFields(any())).thenThrow(RuntimeException("DB Constraint Failed"))
 

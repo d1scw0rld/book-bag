@@ -4,19 +4,25 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.junit.jupiter.api.DisplayName
+import org.junit.runner.RunWith
+import org.d1scw0rld.bookbag.DisplayNameRunner
 
+@RunWith(DisplayNameRunner::class)
 class DateTest {
 
+    @DisplayName("Constructor - Default Instantiation - Sets Date to Default 1900")
     @Test
-    fun `default constructor sets date to 01-01-1900`() {
+    fun constructor_defaultInstantiation_setsDateToDefault1900() {
         val date = Date()
         assertEquals(1, date.day)
         assertEquals(1, date.month)
         assertEquals(1900, date.year)
     }
 
+    @DisplayName("Constructor - Valid Date Value Int Provided - Parses Year Month Day Correctly")
     @Test
-    fun `dateValue constructor parses yyyymmdd correctly`() {
+    fun constructor_validDateValueIntProvided_parsesYearMonthDayCorrectly() {
         val dateValue = 20231124 // 24th November 2023
         val date = Date(dateValue)
         assertEquals(24, date.day)
@@ -24,16 +30,18 @@ class DateTest {
         assertEquals(2023, date.year)
     }
 
+    @DisplayName("Constructor - Zero Date Value Int Provided - Parses to Zeros")
     @Test
-    fun `dateValue constructor parses empty or zero date value to 0-0-0`() {
+    fun constructor_zeroDateValueIntProvided_parsesToZeros() {
         val date = Date(0)
         assertEquals(0, date.day)
         assertEquals(0, date.month)
         assertEquals(0, date.year)
     }
 
+    @DisplayName("Constructor - Copy Instantiation - Duplicates Date Fields Exactly")
     @Test
-    fun `copy constructor duplicates date fields exactly`() {
+    fun constructor_copyInstantiation_duplicatesDateFieldsExactly() {
         val original = Date(12, 6, 2018)
         val copy = Date(original)
         assertEquals(original.day, copy.day)
@@ -41,20 +49,23 @@ class DateTest {
         assertEquals(original.year, copy.year)
     }
 
+    @DisplayName("To Int - Date Instance Parsed - Converts to Yyyymmdd Integer")
     @Test
-    fun `toInt converts date to yyyymmdd integer correctly`() {
+    fun toInt_dateInstanceParsed_convertsToYyyymmddInteger() {
         val date = Date(25, 12, 2024)
         assertEquals(20241225, date.toInt())
     }
 
+    @DisplayName("ToString - Date Instance Formatted - Returns Dd/Mm/Yyyy String")
     @Test
-    fun `toString formats date to dd-mm-yyyy string`() {
+    fun toString_dateInstanceFormatted_returnsDdMmYyyyString() {
         val date = Date(5, 9, 2023)
         assertEquals("05/09/2023", date.toString())
     }
 
+    @DisplayName("Compare To - Different Dates Provided - Orders Dates Chronologically")
     @Test
-    fun `compareTo correctly orders dates chronologically`() {
+    fun compareTo_differentDatesProvided_ordersDatesChronologically() {
         val earlyDate = Date(15, 5, 2021)
         val laterDate = Date(10, 8, 2022)
         val sameDate = Date(15, 5, 2021)
@@ -64,8 +75,9 @@ class DateTest {
         assertEquals(0, earlyDate.compareTo(sameDate))
     }
 
+    @DisplayName("Equals and Hash Code - Identical and Copy Dates - Compares and Evaluates Correctly")
     @Test
-    fun `data class equality copy and hashCode work correctly`() {
+    fun equalsAndHashCode_identicalAndCopyDates_comparesAndEvaluatesCorrectly() {
         val d1 = Date(1, 1, 2020)
         val d2 = d1.copy()
         val d3 = d1.copy(day = 2)

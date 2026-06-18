@@ -9,11 +9,12 @@ import org.d1scw0rld.bookbag.R
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
+import org.junit.jupiter.api.DisplayName
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
+import org.d1scw0rld.bookbag.DisplayNameRobolectricRunner
 import org.robolectric.annotation.Config
 
-@RunWith(RobolectricTestRunner::class)
+@RunWith(DisplayNameRobolectricRunner::class)
 @Config(sdk = [28])
 class FileListAdapterTest {
 
@@ -32,15 +33,17 @@ class FileListAdapterTest {
         adapter = FileListAdapter(context, files)
     }
 
+    @DisplayName("Basic Methods - Query Counts and Items - Returns Correct Sizes and IDs")
     @Test
-    fun testAdapterBasicMethods() {
+    fun basicMethods_queryCountsAndItems_returnsCorrectSizesAndIds() {
         assertEquals(3, adapter.count)
         assertEquals("Documents", adapter.getItem(1).fileName)
         assertEquals(1L, adapter.getItemId(1))
     }
 
+    @DisplayName("Get View - Request Views at Indices - Binds Correct Data and Type Icons")
     @Test
-    fun testGetView_bindsCorrectDataAndIcons() {
+    fun getView_requestViewsAtIndices_bindsCorrectDataAndTypeIcons() {
         val parentView = LinearLayout(context)
 
         // View 0: UP_FOLDER -> R.drawable.ic_folder_open
@@ -61,8 +64,9 @@ class FileListAdapterTest {
         assertEquals("backup.db", nameTv2.text.toString())
     }
 
+    @DisplayName("Update Data - New Files List Provided - Updates Dataset Count and Data")
     @Test
-    fun testUpdateData_reloadsDataSet() {
+    fun updateData_newFilesListProvided_updatesDatasetCountAndData() {
         assertEquals(3, adapter.count)
 
         val newFiles = listOf(

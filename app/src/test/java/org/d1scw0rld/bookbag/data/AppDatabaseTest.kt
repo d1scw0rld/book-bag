@@ -15,16 +15,17 @@ import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
+import org.junit.jupiter.api.DisplayName
 import org.junit.runner.RunWith
+import org.d1scw0rld.bookbag.DisplayNameRobolectricRunner
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
-import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.io.File
 import kotlin.time.Duration.Companion.milliseconds
 
-@RunWith(RobolectricTestRunner::class)
+@RunWith(DisplayNameRobolectricRunner::class)
 @Config(sdk = [28])
 class AppDatabaseTest {
 
@@ -53,15 +54,17 @@ class AppDatabaseTest {
         }
     }
 
+    @DisplayName("Get Database - Subsequent Invocations - Returns Same Singleton Instance")
     @Test
-    fun `getDatabase returns singleton instance`() {
+    fun getDatabase_subsequentInvocations_returnsSameSingletonInstance() {
         val db1 = AppDatabase.getDatabase(context, scope)
         val db2 = AppDatabase.getDatabase(context, scope)
         assertSame(db1, db2)
     }
 
+    @DisplayName("Close and Reset - Active Database Instance - Closes Database and Clears Instance")
     @Test
-    fun `closeAndReset resets singleton instance`() {
+    fun closeAndReset_activeDatabaseInstance_closesDatabaseAndClearsInstance() {
         val db1 = AppDatabase.getDatabase(context, scope)
         triggerDbOpen(db1)
         assertTrue(db1.isOpen)
@@ -72,8 +75,9 @@ class AppDatabaseTest {
         assertNotSame(db1, db2)
     }
 
+    @DisplayName("Export Database - Valid Database and Destination Path - Exports Database File Successfully")
     @Test
-    fun `exportDatabase copies database file correctly`() {
+    fun exportDatabase_validDatabaseAndDestinationPath_exportsDatabaseFileSuccessfully() {
         val db = AppDatabase.getDatabase(context, scope)
         triggerDbOpen(db)
         
@@ -86,8 +90,9 @@ class AppDatabaseTest {
         assertTrue(targetFile.exists())
     }
 
+    @DisplayName("Import Database - Valid Backup File - Restores Database and Cleans Up Journal Files")
     @Test
-    fun `importDatabase restores database from file and cleans up WAL`() {
+    fun importDatabase_validBackupFile_restoresDatabaseAndCleansUpJournalFiles() {
         // 1. Create a source database file
         val backupFile = File(context.cacheDir, "backup.db")
         val sqliteDb = android.database.sqlite.SQLiteDatabase.openOrCreateDatabase(backupFile, null)
@@ -111,14 +116,16 @@ class AppDatabaseTest {
         assertTrue("Restored DB should exist", dbFile.exists())
     }
 
+    @DisplayName("Import Database - Non Existent File Path - Returns False")
     @Test
-    fun `importDatabase returns false for non-existent file`() {
+    fun importDatabase_nonExistentFilePath_returnsFalse() {
         val result = AppDatabase.importDatabase(context, "/invalid/path/db.db")
         assertFalse(result)
     }
 
+    @DisplayName("Sanitize Database Schema - Legacy Nullable Columns Provided - Reconstructs Schema To Not Null")
     @Test
-    fun `sanitizeDatabaseSchema fixes legacy nullable columns`() {
+    fun sanitizeDatabaseSchema_legacyNullableColumnsProvided_reconstructsSchemaToNotNull() {
         val dbFile = context.getDatabasePath("book_bag.db")
         dbFile.parentFile?.let { if (!it.exists()) it.mkdirs() }
         
@@ -171,8 +178,9 @@ class AppDatabaseTest {
         AppDatabase.closeAndReset()
     }
 
+    @DisplayName("Sanitize Database Schema - Missing Reconstruction Columns - Handles Failure Gracefully")
     @Test
-    fun `sanitizeDatabaseSchema handles table reconstruction failure gracefully`() {
+    fun sanitizeDatabaseSchema_missingReconstructionColumns_handlesFailureGracefully() {
         val dbFile = context.getDatabasePath("book_bag.db")
         dbFile.parentFile?.let { if (!it.exists()) it.mkdirs() }
         
@@ -193,8 +201,9 @@ class AppDatabaseTest {
 
     private fun notnullIdx(cursor: android.database.Cursor) = cursor.getColumnIndex("notnull")
 
+    @DisplayName("Sanitize Database Schema - Already Valid Schema Provided - Returns Early Without Changes")
     @Test
-    fun `sanitizeDatabaseSchema does nothing if schema is already valid`() {
+    fun sanitizeDatabaseSchema_alreadyValidSchemaProvided_returnsEarlyWithoutChanges() {
         val dbFile = context.getDatabasePath("book_bag.db")
         dbFile.parentFile?.let { if (!it.exists()) it.mkdirs() }
         
@@ -212,8 +221,9 @@ class AppDatabaseTest {
         AppDatabase.closeAndReset()
     }
 
+    @DisplayName("Prepopulate Database - On Database Creation - Prepopulates Metadata Tables")
     @Test
-    fun `database prepopulation works on creation`() = runBlocking {
+    fun prepopulateDatabase_onDatabaseCreation_prepopulatesMetadataTables() = runBlocking {
         val db = AppDatabase.getDatabase(context, scope)
         triggerDbOpen(db)
         
@@ -227,8 +237,9 @@ class AppDatabaseTest {
         assertFalse("Database should be prepopulated with fields", fields.isEmpty())
     }
 
+    @DisplayName("Export Database - Source Database File Missing - Returns False")
     @Test
-    fun `exportDatabase returns false when source does not exist`() {
+    fun exportDatabase_sourceDatabaseFileMissing_returnsFalse() {
         AppDatabase.closeAndReset()
         val dbFile = context.getDatabasePath("book_bag.db")
         if (dbFile.exists()) dbFile.delete()
@@ -239,8 +250,9 @@ class AppDatabaseTest {
         assertFalse(result)
     }
 
+    @DisplayName("Export Database - Copy Exception Thrown - Returns False")
     @Test
-    fun `exportDatabase returns false on copy exception`() {
+    fun exportDatabase_copyExceptionThrown_returnsFalse() {
         AppDatabase.getDatabase(context, scope)
         // Pass a directory as target file to trigger a copy exception
         val invalidPath = context.cacheDir.absolutePath
@@ -248,8 +260,9 @@ class AppDatabaseTest {
         assertFalse(result)
     }
 
+    @DisplayName("Import Database - Copy Exception Thrown - Returns False")
     @Test
-    fun `importDatabase returns false on exception`() {
+    fun importDatabase_copyExceptionThrown_returnsFalse() {
         val backupFile = File(context.cacheDir, "backup.db")
         backupFile.writeText("fake content")
         
@@ -267,8 +280,9 @@ class AppDatabaseTest {
         }
     }
 
+    @DisplayName("Sanitize Database Schema - Invalid Database File Provided - Handles Exception Gracefully")
     @Test
-    fun `sanitizeDatabaseSchema handles exception gracefully`() {
+    fun sanitizeDatabaseSchema_invalidDatabaseFileProvided_handlesExceptionGracefully() {
         val dbFile = context.getDatabasePath("book_bag.db")
         dbFile.parentFile?.mkdirs()
         dbFile.writeText("Not a database")
@@ -281,8 +295,9 @@ class AppDatabaseTest {
         assertTrue(true)
     }
 
+    @DisplayName("AppDatabaseCallback On Create - Resources Throw Exception - Handles Error Gracefully")
     @Test
-    fun `AppDatabaseCallback handles exception gracefully`() = runBlocking {
+    fun appDatabaseCallbackOnCreate_resourcesThrowException_handlesErrorGracefully() = runBlocking {
         val mockContext = mock(Context::class.java)
         val mockResources = mock(android.content.res.Resources::class.java)
         val mockAppContext = mock(Context::class.java)
@@ -295,11 +310,6 @@ class AppDatabaseTest {
         // Use a real SupportSQLiteDatabase mock to pass to onCreate
         val mockDb = mock(SupportSQLiteDatabase::class.java)
         
-        // We need to access the private AppDatabaseCallback or just let Room trigger it.
-        // Since we can't easily inject mockContext into getDatabase without it being the real one Robolectric uses,
-        // we can try to instantiate the callback directly if possible.
-        // But it's private.
-        
         // Let's use reflection to instantiate it for the test
         val callbackClass = AppDatabase::class.java.declaredClasses.find { it.simpleName == "AppDatabaseCallback" }
         assertNotNull(callbackClass)
@@ -310,12 +320,13 @@ class AppDatabaseTest {
         // This should not throw even though obtainTypedArray throws
         callback.onCreate(mockDb)
         
-        // Reaching here means it handled the exception (it's launched in scope, so we might need to wait or just check it doesn't crash)
+        // Reaching here means it handled the exception
         assertTrue(true)
     }
 
+    @DisplayName("Close and Reset - Close Throws Exception - Handles Error Gracefully")
     @Test
-    fun `closeAndReset handles close exception gracefully`() {
+    fun closeAndReset_closeThrowsException_handlesErrorGracefully() {
         val mockDb = mock(AppDatabase::class.java)
         `when`(mockDb.isOpen).thenReturn(true)
         `when`(mockDb.close()).thenThrow(RuntimeException("Close failed"))
@@ -331,8 +342,9 @@ class AppDatabaseTest {
         assertNull(instanceField.get(null))
     }
 
+    @DisplayName("Migration 1 To 2 - Applied to Legacy Database - Applies Composite Primary Keys and Type Indices")
     @Test
-    fun `test MIGRATION_1_2`() {
+    fun migration1To2_appliedToLegacyDatabase_appliesCompositePrimaryKeysAndTypeIndices() {
         val dbFile = File(context.cacheDir, "test_migration.db")
         if (dbFile.exists()) dbFile.delete()
         

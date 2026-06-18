@@ -17,16 +17,17 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.junit.jupiter.api.DisplayName
 import org.junit.runner.RunWith
+import org.d1scw0rld.bookbag.DisplayNameRobolectricRunner
 import org.robolectric.Robolectric
-import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.shadows.ShadowLooper
 import org.robolectric.shadows.ShadowToast
 import java.io.File
 
-@RunWith(RobolectricTestRunner::class)
+@RunWith(DisplayNameRobolectricRunner::class)
 @Config(sdk = [28])
 class FileSelectorDialogTest {
 
@@ -73,8 +74,9 @@ class FileSelectorDialogTest {
         tempDir.delete()
     }
 
+    @DisplayName("New Instance - With File Provided - Sets Current Location to Parent Directory")
     @Test
-    fun testNewInstance_withFile_setsCurrentLocationToParent() {
+    fun newInstance_withFileProvided_setsCurrentLocationToParentDirectory() {
         val dialog = FileSelectorDialog.newInstance(
             currentFile = file1,
             operation = FileOperation.SAVE,
@@ -88,8 +90,9 @@ class FileSelectorDialogTest {
         assertEquals("data.db", args?.getString("key_current_file_name"))
     }
 
+    @DisplayName("New Instance - With Directory Provided - Sets Current Location to Directory")
     @Test
-    fun testNewInstance_withDirectory_setsCurrentLocationToDirectory() {
+    fun newInstance_withDirectoryProvided_setsCurrentLocationToDirectory() {
         val dialog = FileSelectorDialog.newInstance(
             currentFile = tempDir,
             operation = FileOperation.LOAD,
@@ -103,8 +106,9 @@ class FileSelectorDialogTest {
         assertNull(args?.getString("key_current_file_name"))
     }
 
+    @DisplayName("OnCreateDialog - Save Operation Mode - Inflates Views and Populates Fields and Filters")
     @Test
-    fun testOnCreateDialog_inflatesAndPreparesViews_saveMode() {
+    fun onCreateDialog_saveOperationMode_inflatesViewsAndPopulatesFieldsAndFilters() {
         val dialog = FileSelectorDialog.newInstance(
             currentFile = file1,
             operation = FileOperation.SAVE,
@@ -151,8 +155,9 @@ class FileSelectorDialogTest {
         dialog.dismiss()
     }
 
+    @DisplayName("OnCreateDialog - Load Operation Mode - Disables FileName Text Editing")
     @Test
-    fun testOnCreateDialog_loadMode_disablesFileNameEdit() {
+    fun onCreateDialog_loadOperationMode_disablesFileNameTextEditing() {
         val dialog = FileSelectorDialog.newInstance(
             currentFile = tempDir,
             operation = FileOperation.LOAD,
@@ -174,8 +179,9 @@ class FileSelectorDialogTest {
         dialog.dismiss()
     }
 
+    @DisplayName("OnItemClick - Directory Row Item Clicked - Navigates to Directory and Updates Title")
     @Test
-    fun testOnItemClick_directoryNavigation() {
+    fun onItemClick_directoryRowItemClicked_navigatesToDirectoryAndUpdateTitle() {
         val dialog = FileSelectorDialog.newInstance(
             currentFile = tempDir,
             operation = FileOperation.LOAD,
@@ -199,8 +205,9 @@ class FileSelectorDialogTest {
         dialog.dismiss()
     }
 
+    @DisplayName("OnItemClick - File Row Item Clicked - Updates FileName EditText Value")
     @Test
-    fun testOnItemClick_fileSelection() {
+    fun onItemClick_fileRowItemClicked_updatesFileNameEditTextValue() {
         val dialog = FileSelectorDialog.newInstance(
             currentFile = tempDir,
             operation = FileOperation.SAVE,
@@ -229,8 +236,9 @@ class FileSelectorDialogTest {
         dialog.dismiss()
     }
 
+    @DisplayName("Handle Save Or Load - Empty FileName Input - Shows Warning Dialog")
     @Test
-    fun testSaveOrLoadTrigger_emptyFileName_showsDialog() {
+    fun handleSaveOrLoad_emptyFileNameInput_showsWarningDialog() {
         val dialog = FileSelectorDialog.newInstance(
             currentFile = tempDir,
             operation = FileOperation.SAVE,
@@ -259,8 +267,9 @@ class FileSelectorDialogTest {
         dialog.dismiss()
     }
 
+    @DisplayName("Handle Save Or Load - Valid FileName Input - Triggers Callback and Dismisses Dialog")
     @Test
-    fun testSaveOrLoadTrigger_validFile_triggersListenerAndDismisses() {
+    fun handleSaveOrLoad_validFileNameInput_triggersCallbackAndDismissesDialog() {
         val dialog = FileSelectorDialog.newInstance(
             currentFile = tempDir,
             operation = FileOperation.SAVE,
@@ -300,8 +309,9 @@ class FileSelectorDialogTest {
         assertFalse(activeFragment.isAdded)
     }
 
+    @DisplayName("Handle Save Or Load - Non Existent File to Load - Shows Toast and Does Not Trigger Callback")
     @Test
-    fun testSaveOrLoadTrigger_missingFileOnLoad_showsToast() {
+    fun handleSaveOrLoad_nonExistentFileToLoad_showsToastAndDoesNotTriggerCallback() {
         val dialog = FileSelectorDialog.newInstance(
             currentFile = tempDir,
             operation = FileOperation.LOAD,
@@ -339,8 +349,9 @@ class FileSelectorDialogTest {
         activeFragment.dismiss()
     }
 
+    @DisplayName("OnMenuItemClick - Create New Folder Action Clicked - Creates Directory Successfully and Refreshes List")
     @Test
-    fun testToolbarMenu_actionNewFolder_createsFolderAndRefreshes() {
+    fun onMenuItemClick_createNewFolderActionClicked_createsDirectorySuccessfullyAndRefreshesList() {
         val dialog = FileSelectorDialog.newInstance(
             currentFile = tempDir,
             operation = FileOperation.SAVE,
@@ -402,8 +413,9 @@ class FileSelectorDialogTest {
         field.set(dialog, listener)
     }
 
+    @DisplayName("OnSaveInstanceState - State Saved - Serializes and Saves Current Location Path")
     @Test
-    fun testOnSaveInstanceState_restoresCorrectly() {
+    fun onSaveInstanceState_stateSaved_serializesAndSavesCurrentLocationPath() {
         val dialog = FileSelectorDialog.newInstance(
             currentFile = file1,
             operation = FileOperation.SAVE,

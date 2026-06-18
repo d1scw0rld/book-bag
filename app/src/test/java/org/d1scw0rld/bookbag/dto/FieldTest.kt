@@ -4,11 +4,16 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.junit.jupiter.api.DisplayName
+import org.junit.runner.RunWith
+import org.d1scw0rld.bookbag.DisplayNameRunner
 
+@RunWith(DisplayNameRunner::class)
 class FieldTest {
 
+    @DisplayName("Constructor - Secondary Instantiation - Sets Correct ID Name and Type")
     @Test
-    fun `secondary constructor sets correct id, name, and type`() {
+    fun constructor_secondaryInstantiation_setsCorrectAttributes() {
         val field = Field(15, "Genre", Field.TYPE_MULTI_SPINNER)
         assertEquals(15, field.id)
         assertEquals("Genre", field.name)
@@ -16,8 +21,9 @@ class FieldTest {
         assertFalse(field.isVisible)
     }
 
+    @DisplayName("Set Visibility - Boolean Value Provided - Modifies State and Returns Self")
     @Test
-    fun `setVisibility builder modifies field state and returns self`() {
+    fun setVisibility_booleanValueProvided_modifiesStateAndReturnsSelf() {
         val field = Field()
         val result = field.setVisibility(true)
         
@@ -26,8 +32,9 @@ class FieldTest {
         assertEquals(field, result)
     }
 
+    @DisplayName("Set Input Type - Integer Value Provided - Modifies State and Returns Self")
     @Test
-    fun `setInputType builder modifies field state and returns self`() {
+    fun setInputType_integerValueProvided_modifiesStateAndReturnsSelf() {
         val field = Field()
         val result = field.setInputType(3)
         

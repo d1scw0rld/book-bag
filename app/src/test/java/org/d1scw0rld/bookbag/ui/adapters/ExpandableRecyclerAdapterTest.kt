@@ -7,11 +7,12 @@ import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
+import org.junit.jupiter.api.DisplayName
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
+import org.d1scw0rld.bookbag.DisplayNameRobolectricRunner
 import org.robolectric.annotation.Config
 
-@RunWith(RobolectricTestRunner::class)
+@RunWith(DisplayNameRobolectricRunner::class)
 @Config(sdk = [28])
 class ExpandableRecyclerAdapterTest {
 
@@ -51,8 +52,9 @@ class ExpandableRecyclerAdapterTest {
         context = ApplicationProvider.getApplicationContext()
     }
 
+    @DisplayName("Get Item ID - Default Implementation - Returns Position as ID")
     @Test
-    fun testDefaultGetItemId() {
+    fun getItemId_defaultImplementation_returnsPositionAsId() {
         val adapter = TestExpandableAdapter(context)
         adapter.setItems(
             listOf(
@@ -64,8 +66,9 @@ class ExpandableRecyclerAdapterTest {
         assertEquals(1L, adapter.getItemId(1))
     }
 
+    @DisplayName("Toggle Expanded Items - Accordion Mode Enabled - Collapses Other Headers on Expansion")
     @Test
-    fun testAccordionMode_collapsesOtherHeadersOnExpansion() {
+    fun toggleExpandedItems_accordionModeEnabled_collapsesOtherHeadersOnExpansion() {
         val adapter = TestExpandableAdapter(context)
         adapter.mode = 1 // Set to MODE_ACCORDION
 
@@ -101,8 +104,9 @@ class ExpandableRecyclerAdapterTest {
         assertEquals(ExpandableRecyclerAdapter.TYPE_ITEM, adapter.getItemViewType(2))   // Item 2.1
     }
 
+    @DisplayName("Expand All - Already Fully Expanded - Does Nothing")
     @Test
-    fun testExpandAll_whenAlreadyExpanded_doesNothing() {
+    fun expandAll_alreadyFullyExpanded_doesNothing() {
         val adapter = TestExpandableAdapter(context)
         val items = listOf(
             TestListItem(ExpandableRecyclerAdapter.TYPE_HEADER, "Header 1"),
@@ -116,8 +120,9 @@ class ExpandableRecyclerAdapterTest {
         assertEquals(2, adapter.itemCount)
     }
 
+    @DisplayName("Remove Item At - Valid Position - Recalculates Internal Index List and Expand Map")
     @Test
-    fun testRemoveItemAt_recalculatesInternalIndexListAndExpandMap() {
+    fun removeItemAt_validPosition_recalculatesInternalIndexListAndExpandMap() {
         val adapter = TestExpandableAdapter(context)
         val items = listOf(
             TestListItem(ExpandableRecyclerAdapter.TYPE_HEADER, "Header 1"),
@@ -137,8 +142,9 @@ class ExpandableRecyclerAdapterTest {
         assertEquals(ExpandableRecyclerAdapter.TYPE_ITEM, adapter.getItemViewType(2))   // Item 2.1
     }
 
+    @DisplayName("Handle Click - Header ViewHolder Clicked - Triggers SetExpanded and OnExpansionToggled Callbacks")
     @Test
-    fun testHeaderViewHolder_setExpandedAndToggledCallbacks() {
+    fun handleClick_headerViewHolderClicked_triggersSetExpandedAndOnExpansionToggledCallbacks() {
         val adapter = TestExpandableAdapter(context)
         adapter.setItems(listOf(
             TestListItem(ExpandableRecyclerAdapter.TYPE_HEADER, "Header 1"),
