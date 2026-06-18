@@ -112,6 +112,15 @@ dependencies {
     // Robolectric to mock the Android framework (Context, Resources, Database) on the local JVM
     testImplementation 'org.robolectric:robolectric:4.16.1'
     
+    // Espresso and UI/Integration Testing on local JVM
+    testImplementation 'androidx.test.espresso:espresso-core:3.7.0'
+    testImplementation 'androidx.test.ext:junit:1.3.0'
+    testImplementation 'androidx.fragment:fragment-testing:1.8.9'
+    
+    // Hilt Testing
+    testImplementation 'com.google.dagger:hilt-android-testing:2.59.2'
+    kspTest 'com.google.dagger:hilt-compiler:2.59.2'
+    
     // Room Test Helpers
     testImplementation "androidx.room:room-testing:2.8.4"
     androidTestImplementation "androidx.room:room-testing:2.8.4"
