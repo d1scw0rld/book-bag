@@ -32,6 +32,7 @@ import org.d1scw0rld.bookbag.R
 import org.d1scw0rld.bookbag.data.DbConstants
 import org.d1scw0rld.bookbag.databinding.FragmentEditBookBinding
 import org.d1scw0rld.bookbag.dto.Field
+import org.d1scw0rld.bookbag.ui.factories.FieldsFactory
 import org.d1scw0rld.bookbag.ui.fields.FieldEditTextUpdatableClearable
 import org.d1scw0rld.bookbag.ui.state.UiState
 import org.d1scw0rld.bookbag.viewmodel.EditBookViewModel
@@ -145,9 +146,10 @@ class EditBookFragment : BaseFragment(), IBackPressListener {
                             val loadedBook = state.data.book
 
                             // 1. Only initialize fields once to prevent losing user edits
-                            if (fieldsRoot.childCount == 0) {
+                            if (fieldsRoot.isEmpty()) {
                                 // 2. Properties map is pre-fetched asynchronously in the ViewModel
-                                fieldsFactory = FieldsFactory(ctx, loadedBook, state.data.propertiesMap)
+                                fieldsFactory =
+                                    FieldsFactory(ctx, loadedBook, state.data.propertiesMap)
 
                                 addFields(fieldsRoot)
                                 createAddFieldsPopupMenu(fieldsRoot)

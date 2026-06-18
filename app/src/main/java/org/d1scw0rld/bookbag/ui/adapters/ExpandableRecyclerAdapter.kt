@@ -1,4 +1,4 @@
-package org.d1scw0rld.bookbag.dto
+package org.d1scw0rld.bookbag.ui.adapters
 
 import android.content.Context
 import android.util.SparseIntArray

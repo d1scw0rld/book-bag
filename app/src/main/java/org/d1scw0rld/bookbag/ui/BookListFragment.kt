@@ -38,7 +38,6 @@ import kotlinx.coroutines.launch
 import org.d1scw0rld.bookbag.data.DbConstants
 import org.d1scw0rld.bookbag.data.relation.BookRelationsMapper
 import org.d1scw0rld.bookbag.databinding.FragmentBookListBinding
-import org.d1scw0rld.bookbag.dto.BooksAdapter
 import org.d1scw0rld.bookbag.ui.fileselector.FileOperation
 import org.d1scw0rld.bookbag.ui.fileselector.FileSelectorDialog
 import org.d1scw0rld.bookbag.ui.fileselector.OnHandleFileListener
@@ -52,6 +51,7 @@ import androidx.navigation.findNavController
 import androidx.core.content.edit
 import androidx.core.view.MenuProvider
 import org.d1scw0rld.bookbag.R
+import org.d1scw0rld.bookbag.ui.adapters.BooksAdapter
 
 @AndroidEntryPoint
 class BookListFragment : BaseFragment() {

@@ -50,6 +50,14 @@ android {
     buildFeatures {
         viewBinding true
     }
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+            all {
+                useJUnitPlatform()
+            }
+        }
+    }
     namespace 'org.d1scw0rld.bookbag'
 }
 
@@ -82,4 +90,29 @@ dependencies {
     // ViewModel & Lifecycle KTX
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.2"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.2"
+
+    // Unit Testing
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'androidx.test:core-ktx:1.7.0'
+    
+    // JUnit 5 (Jupiter) API & Engines
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:6.1.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:6.1.0'
+    testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:6.1.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:6.1.0'
+    
+    // Mockito for clean, decoupled dependency mocking
+    testImplementation 'org.mockito:mockito-core:5.23.0'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:6.3.0'
+    
+    // Coroutine testing tools (TestDispatcher, runTest)
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0'
+    androidTestImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0'
+    
+    // Robolectric to mock the Android framework (Context, Resources, Database) on the local JVM
+    testImplementation 'org.robolectric:robolectric:4.16.1'
+    
+    // Room Test Helpers
+    testImplementation "androidx.room:room-testing:2.8.4"
+    androidTestImplementation "androidx.room:room-testing:2.8.4"
 }

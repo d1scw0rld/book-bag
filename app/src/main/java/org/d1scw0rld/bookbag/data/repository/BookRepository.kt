@@ -13,4 +13,6 @@ interface BookRepository {
     suspend fun saveBookWithFields(book: Book)
     suspend fun deleteBookAndRelations(bookId: Long)
     suspend fun getFieldsByType(typeId: Int): List<FieldEntity>
+    suspend fun importDatabase(filePath: String): Boolean
+    suspend fun exportDatabase(filePath: String): Boolean
 }

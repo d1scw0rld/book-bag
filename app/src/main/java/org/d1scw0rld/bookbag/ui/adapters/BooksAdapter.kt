@@ -1,17 +1,16 @@
-package org.d1scw0rld.bookbag.dto
+package org.d1scw0rld.bookbag.ui.adapters
 
 import android.content.Context
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.view.View
-import android.view.View.OnClickListener
-import android.view.View.OnLongClickListener
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import org.d1scw0rld.bookbag.R
+import org.d1scw0rld.bookbag.dto.ParentResult
 
 class BooksAdapter(
     context: Context,
@@ -22,9 +21,9 @@ class BooksAdapter(
     private var filterText = ""
     private val listItemsNotFiltered: ArrayList<BookListItem>
 
-    private var onBookClickListener: OnClickListener? = null
-    private var onBookLongClickListener: OnLongClickListener? = null
-    private var onHeaderClickListener: OnClickListener? = null
+    private var onBookClickListener: View.OnClickListener? = null
+    private var onBookLongClickListener: View.OnLongClickListener? = null
+    private var onHeaderClickListener: View.OnClickListener? = null
 
     companion object {
         private const val INITIAL_POSITION = 0f
@@ -53,7 +52,7 @@ class BooksAdapter(
         return items
     }
 
-    fun setHeaderClickListener(onHeaderClickListener: OnClickListener?) {
+    fun setHeaderClickListener(onHeaderClickListener: View.OnClickListener?) {
         this.onHeaderClickListener = onHeaderClickListener
     }
 
@@ -179,11 +178,11 @@ class BooksAdapter(
         return allChildrenCount
     }
 
-    fun setBookClickListener(onClickListener: OnClickListener?) {
+    fun setBookClickListener(onClickListener: View.OnClickListener?) {
         this.onBookClickListener = onClickListener
     }
 
-    fun setBookLongClickListener(onLongClickListener: OnLongClickListener?) {
+    fun setBookLongClickListener(onLongClickListener: View.OnLongClickListener?) {
         this.onBookLongClickListener = onLongClickListener
     }
 

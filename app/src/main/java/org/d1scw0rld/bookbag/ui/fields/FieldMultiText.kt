@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.EditText
 import android.widget.LinearLayout
-import org.d1scw0rld.bookbag.ui.FilteredArrayAdapter
+import org.d1scw0rld.bookbag.ui.adapters.FilteredArrayAdapter
 import org.d1scw0rld.bookbag.R
 import org.d1scw0rld.bookbag.dto.Property
 
