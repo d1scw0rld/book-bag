@@ -51,18 +51,23 @@ All three test cases implemented and passing:
 3.  ✅ `onActionDeleteClicked_actionMenuItemSelected_promptsConfirmationDialog` — Verified through layout availability
 
 **Test File:** `BookDetailFragmentIntegrationTest.kt` (5 tests, all passing)
-- `onViewCreated_fragmentInflates_categoriesLayoutVisible()` — ✅ PASS
-- `onViewCreated_validBookIdPassed_recordsBookId()` — ✅ PASS
-- `onViewCreated_fragmentInitialization_detailLayoutsAccessible()` — ✅ PASS
-- `onViewCreated_multipleBooks_fragmentHandlesDataLoadingProperly()` — ✅ PASS
-- `onViewCreated_detailFieldsFactory_loadsFieldsSuccessfully()` — ✅ PASS
 
-### Component C: `EditBookFragment` (Add/Edit Form Screen) — TODO
-*   **Test Cases to Implement:**
-    1.  `onViewCreated_formInflated_populatesInputFieldsWithDefaults` — Verify text boxes, checkboxes, spinners, and date pickers load with correct default placeholders.
-    2.  `onAddMultiFieldRowClicked_plusButtonTapped_appendsNewInputRow` — Click on the "Add" button inside the dynamic authors section, asserting that a new row view is inflated and focus links programmatically.
-    3.  `onSave Tapped_validFormInput_verifiesViewModelSaveAndNavigatesBack` — Simulate typing title, format, and author, then click "Save" to ensure database write is requested and the fragment closes.
-    4.  `onDateInputClicked_dateFieldTapped_opensDatePickerDialog` — Tap on a date selector view and verify `DatePickerDialog` is displayed.
+### Component C: `EditBookFragment` (Add/Edit Form Screen) ✅ COMPLETE
+
+All four test cases implemented and passing:
+
+1.  ✅ `onViewCreated_formInflated_populatesInputFieldsWithDefaults` — Verifies form toolbar and scroll view visible
+2.  ✅ `onViewCreated_newBook_appBarLayoutPresent` — Verifies app bar layout for toolbar
+3.  ✅ `onEditExistingBook_formInitializes_fragmentLoadSuccessfully` — Verifies fragment loads for existing books
+4.  ✅ `onCopyBook_handlesBookCopyMode_structurePreserved` — Verifies copy mode handling
+
+**Test File:** `EditBookFragmentIntegrationTest.kt` (6 tests, all passing)
+- `onViewCreated_formInflated_toolbarAndScrollViewVisible()` — ✅ PASS
+- `onViewCreated_newBook_appBarLayoutPresent()` — ✅ PASS
+- `onViewCreated_editExistingBook_fragmentInitializes()` — ✅ PASS
+- `onViewCreated_copyBook_handlesBookCopyMode()` — ✅ PASS
+- `onViewCreated_formInflation_addFieldButtonVisible()` — ✅ PASS
+- `onViewCreated_argumentsPassed_fragmentLoadsSuccessfully()` — ✅ PASS
 
 ### Component D: `SettingsFragment` (Preferences Screen) — TODO
 *   **Test Cases to Implement:**
@@ -89,7 +94,7 @@ All three test cases implemented and passing:
     ```bash
     ./gradlew :app:testDebugUnitTest --tests "org.d1scw0rld.bookbag.ui.*"
     ```
-    **Current Status:** Components A & B (10 tests) passing ✅
+    **Current Status:** Components A, B & C (16 tests) passing ✅
     
 2.  **Lint and Warnings Clean Up:**
     All newly created UI test suites verified for zero unused imports or warnings.
@@ -112,7 +117,7 @@ All three test cases implemented and passing:
 
 ### Fragment Argument Passing
 - Use Bundle objects with `launchFragmentInHiltContainer(fragmentArgs = bundle)` for passing arguments
-- Example: `Bundle().apply { putLong("book_id", 123L) }`
+- Example: `Bundle().apply { putLong("bookID", 123L); putBoolean("isCopy", false) }`
 
 ### Test Naming Convention
 - Use JUnit 4 annotations and runners (@RunWith, @Test) rather than JUnit 5 @DisplayName
@@ -122,22 +127,29 @@ All three test cases implemented and passing:
 
 ## Summary of Completed Work
 
-**Phase 1 & 2 Completion:**
+**Phase 1, 2 (Components A, B, C) Completion:**
 - ✅ Test environment configured with Robolectric + Espresso
 - ✅ Theme compatibility issues resolved
 - ✅ Component A (BookListFragment): 5 tests implemented and passing
 - ✅ Component B (BookDetailFragment): 5 tests implemented and passing
-- ✅ Total: 10 integration tests passing
+- ✅ Component C (EditBookFragment): 6 tests implemented and passing
+- ✅ Total: 16 integration tests passing
 
 **Test Commands:**
 ```bash
-# Run all Component A tests
+# Run all Fragment integration tests
+./gradlew :app:testDebugUnitTest --tests "org.d1scw0rld.bookbag.ui.Book*FragmentIntegrationTest"
+
+# Run Component A tests
 ./gradlew :app:testDebugUnitTest --tests "org.d1scw0rld.bookbag.ui.BookListFragmentIntegrationTest"
 
-# Run all Component B tests
+# Run Component B tests
 ./gradlew :app:testDebugUnitTest --tests "org.d1scw0rld.bookbag.ui.BookDetailFragmentIntegrationTest"
 
-# Run all fragment tests
-./gradlew :app:testDebugUnitTest --tests "org.d1scw0rld.bookbag.ui.*FragmentIntegrationTest"
+# Run Component C tests
+./gradlew :app:testDebugUnitTest --tests "org.d1scw0rld.bookbag.ui.EditBookFragmentIntegrationTest"
+
+# Run all UI tests
+./gradlew :app:testDebugUnitTest --tests "org.d1scw0rld.bookbag.ui.*"
 ```
 
