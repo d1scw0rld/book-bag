@@ -3,6 +3,9 @@ package org.d1scw0rld.bookbag.ui.adapters
 import android.content.Context
 import android.view.LayoutInflater
 import android.widget.FrameLayout
+import android.widget.TextView
+import androidx.appcompat.widget.AppCompatTextView
+import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ApplicationProvider
 import org.d1scw0rld.bookbag.R
 import org.d1scw0rld.bookbag.dto.BookResult
@@ -219,7 +222,7 @@ class BooksAdapterTest {
         val itemHolder = adapter.onCreateViewHolder(parentView, ExpandableRecyclerAdapter.TYPE_ITEM) as BooksAdapter.ItemViewHolder
 
         // Use reflection to set layoutPosition so handleClick() toggles expansion without throwing IndexOutOfBoundsException
-        val positionField = androidx.recyclerview.widget.RecyclerView.ViewHolder::class.java.getDeclaredField("mPosition")
+        val positionField = RecyclerView.ViewHolder::class.java.getDeclaredField("mPosition")
         positionField.isAccessible = true
         positionField.set(headerHolder, 0)
         positionField.set(itemHolder, 1)
@@ -233,5 +236,52 @@ class BooksAdapterTest {
 
         itemHolder.view.performLongClick()
         assertTrue(bookLongClicked)
+    }
+
+    @Test
+    fun testCreateViewHolder_elseBranch() {
+        val adapter = BooksAdapter(context, parentsResults)
+        val parentView = FrameLayout(context)
+        
+        // Pass an invalid view type (999) to trigger the else branch in onCreateViewHolder
+        val holder = adapter.onCreateViewHolder(parentView, 999)
+        assertTrue(holder is BooksAdapter.ItemViewHolder)
+    }
+
+    @Test
+    fun testItemViewHolder_bindingWithSpannableFiltering() {
+        val adapter = BooksAdapter(context, parentsResults)
+        adapter.filter("Code")
+
+        val parentView = FrameLayout(context)
+        val itemView = LayoutInflater.from(context).inflate(R.layout.item_book, parentView, false) as android.view.ViewGroup
+        val tvItem = itemView.findViewById<TextView>(R.id.tv_item)
+        val index = itemView.indexOfChild(tvItem)
+        itemView.removeView(tvItem)
+
+        // Capture the text assigned to the textview exactly as passed to find the ForegroundColorSpan
+        var capturedText: CharSequence? = null
+        val customTextView = object : AppCompatTextView(context) {
+            override fun setText(text: CharSequence?, type: BufferType?) {
+                capturedText = text
+                super.setText(text, type)
+            }
+        }.apply {
+            id = R.id.tv_item
+        }
+        itemView.addView(customTextView, index)
+
+        val itemHolder = adapter.ItemViewHolder(itemView)
+
+        // Bind item at index 1 ("Clean Code")
+        itemHolder.bind(1)
+
+        val text = capturedText
+        assertTrue(text is android.text.Spannable)
+        val spannable = text as android.text.Spannable
+        val spans = spannable.getSpans(0, spannable.length, android.text.style.ForegroundColorSpan::class.java)
+        
+        // Assert that the ForegroundColorSpan is added
+        assertEquals(1, spans.size)
     }
 }

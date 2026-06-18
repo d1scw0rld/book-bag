@@ -490,4 +490,302 @@ class FieldsFactoryTest {
         val titleView = view.findViewById<Title>(R.id.title)
         assertEquals("Title Text", titleView.getTitle())
     }
+
+    @Test
+    fun testAddAutocompleteField_itemClickUpdatesProperty() {
+        val field = Field(DbConstants.FLD_SERIE, "Series", Field.TYPE_TEXT_AUTOCOMPLETE)
+        factory.addAutocompleteField(rootView, field)
+
+        val view = rootView.getChildAt(0) as FieldAutoCompleteTextView
+        val autoComplete = view.findViewById<android.widget.AutoCompleteTextView>(R.id.autoCompleteTextView)
+
+        val selectedProperty = Property(DbConstants.FLD_SERIE, "Harry Potter Book", 1001L)
+        val mockAdapter = org.mockito.Mockito.mock(android.widget.AdapterView::class.java)
+        org.mockito.Mockito.`when`(mockAdapter.getItemAtPosition(0)).thenReturn(selectedProperty)
+
+        // Simulate item click
+        autoComplete.onItemClickListener?.onItemClick(mockAdapter, view, 0, 0L)
+
+        val currentProperty = book.properties.first { it.fieldTypeId == DbConstants.FLD_SERIE }
+        assertEquals(1001L, currentProperty.id)
+        assertEquals("Harry Potter Book", currentProperty.value)
+    }
+
+    @Test
+    fun testAddFieldMultiText_addRemoveCallbacks() {
+        val field = Field(DbConstants.FLD_AUTHOR, "Authors", Field.TYPE_MULTIFIELD)
+        factory.addFieldMultiText(rootView, field)
+        val view = rootView.getChildAt(0) as FieldMultiText
+
+        // Extract listener using reflection
+        val listenerField = FieldMultiText::class.java.getDeclaredField("onAddRemoveFieldListener")
+        listenerField.isAccessible = true
+        val listener = listenerField.get(view) as FieldMultiText.OnAddRemoveFieldListener
+
+        val dummyView = View(context)
+
+        // 1. Test onAddNewField
+        listener.onAddNewField(dummyView)
+        val newProperty = dummyView.tag as Property
+        assertEquals(DbConstants.FLD_AUTHOR, newProperty.fieldTypeId)
+        assertTrue(book.properties.contains(newProperty))
+
+        // 2. Test onFieldUpdated with match suggestion
+        listener.onFieldUpdated(dummyView, "J.K. Rowling")
+        assertEquals(4L, newProperty.id)
+        assertEquals("J.K. Rowling", newProperty.value)
+
+        // 3. Test onFieldUpdated with new custom author
+        listener.onFieldUpdated(dummyView, "Brand New Author")
+        assertEquals(0L, newProperty.id)
+        assertEquals("Brand New Author", newProperty.value)
+
+        // 4. Test onItemSelect
+        val selection = Property(DbConstants.FLD_AUTHOR, "Selected Author", 777L)
+        listener.onItemSelect(dummyView, selection)
+        assertEquals(777L, newProperty.id)
+        assertEquals("Selected Author", newProperty.value)
+
+        // 5. Test onFieldRemove
+        listener.onFieldRemove(dummyView)
+        assertFalse(book.properties.contains(newProperty))
+    }
+
+    @Test
+    fun testAddFieldMultiSpinner_selectionCallbacks() {
+        val field = Field(DbConstants.FLD_GENRE, "Genre", Field.TYPE_MULTI_SPINNER)
+        factory.addFieldMultiSpinner(rootView, field)
+        val view = rootView.getChildAt(0) as FieldMultiSpinner
+
+        // Extract listener using reflection
+        val listenerField = FieldMultiSpinner::class.java.getDeclaredField("onUpdateListener")
+        listenerField.isAccessible = true
+        val listener = listenerField.get(view) as FieldMultiSpinner.OnUpdateListener
+
+        // 1. Match selected = true
+        val item1 = FieldMultiSpinner.Item("Fantasy").apply { isSelected = true }
+        listener.onUpdate(item1)
+        val matchedProp = Property(DbConstants.FLD_GENRE, "Fantasy", 5L)
+        assertTrue(book.properties.contains(matchedProp))
+
+        // 2. Match selected = false
+        val item2 = FieldMultiSpinner.Item("Fantasy").apply { isSelected = false }
+        listener.onUpdate(item2)
+        assertFalse(book.properties.contains(matchedProp))
+
+        // 3. Match selected = true with a brand new custom genre
+        val item3 = FieldMultiSpinner.Item("Sci-Fi").apply { isSelected = true }
+        listener.onUpdate(item3)
+        val newGenreProp = Property(DbConstants.FLD_GENRE, "Sci-Fi", 0L)
+        assertTrue(book.properties.contains(newGenreProp))
+    }
+
+    @Test
+    fun testAddFieldSpinner_onNothingSelected_andPositionZero() {
+        val field = Field(DbConstants.FLD_STATUS, "Status", Field.TYPE_SPINNER)
+        factory.addFieldSpinner(rootView, field)
+        val view = rootView.getChildAt(0) as FieldSpinner
+        val spinner = view.findViewById<Spinner>(R.id.action_select_type)
+
+        // Select position 0 (placeholder header, pos > 0 is false)
+        spinner.onItemSelectedListener?.onItemSelected(spinner, null, 0, 0L)
+
+        // Trigger onNothingSelected
+        spinner.onItemSelectedListener?.onNothingSelected(spinner)
+    }
+
+    @Test
+    fun testAddFieldDate_dueDate() {
+        val field = Field(DbConstants.FLD_DUE_DATE, "Due Date", Field.TYPE_DATE)
+        book.dueDate = Changeable(20230520)
+
+        factory.addFieldDate(rootView, field)
+
+        val view = rootView.getChildAt(0) as FieldDate
+        assertNotNull(view)
+        assertEquals(20230520, view.getDate().toInt())
+    }
+
+    @Test
+    fun testAddFieldDate_updateListener() {
+        val field = Field(DbConstants.FLD_READ_DATE, "Read Date", Field.TYPE_DATE)
+        book.readDate = Changeable(20230515)
+
+        factory.addFieldDate(rootView, field)
+        val view = rootView.getChildAt(0) as FieldDate
+
+        // Get update listener using reflection
+        val listenerField = FieldDate::class.java.getDeclaredField("onUpdateListener")
+        listenerField.isAccessible = true
+        val listener = listenerField.get(view) as FieldDate.OnUpdateListener
+
+        // Simulate date being set by date picker
+        view.setDate(org.d1scw0rld.bookbag.dto.Date(20240101))
+        listener.onUpdate(view)
+
+        assertEquals(20240101, book.readDate.value)
+    }
+
+    @Test
+    fun testAddFieldMoney_fractionalDecimalChecks_edgeCases() {
+        val field = Field(DbConstants.FLD_PRICE, "Price", Field.TYPE_MONEY)
+        book.price = Changeable("1500|3") // Currency ID 3
+
+        factory.addFieldMoney(rootView, field)
+
+        val view = rootView.getChildAt(0) as FieldMoney
+        val editText = view.findViewById<EditText>(R.id.editTextX)
+
+        val testInputs = listOf(
+            "15.55" to "1555|3" // exactly 2 decimal digits
+        )
+
+        for ((input, expectedValue) in testInputs) {
+            val normalizedInput = input.replace(".", DbConstants.separator.toString())
+            editText.setText(normalizedInput)
+            editText.onFocusChangeListener?.onFocusChange(editText, false)
+            assertEquals(expectedValue, book.price.value)
+        }
+    }
+
+    // Custom wrapper class with NO constructor taking String to trigger reflection exception
+    class BadTextWrapper {
+        override fun toString(): String = "Bad"
+    }
+
+    @Test
+    fun testAddFieldText_reflectionException_isCaught() {
+        val changeableCustom = Changeable(BadTextWrapper())
+        val field = Field(DbConstants.FLD_TITLE, "Custom", Field.TYPE_TEXT)
+        factory.addFieldText(rootView, field, changeableCustom)
+
+        val view = rootView.getChildAt(0) as FieldEditTextUpdatableClearable
+        val editText = view.findViewById<EditText>(R.id.editTextX)
+        
+        // This will trigger NoSuchMethodException during constructor lookup, executing the catch block
+        editText.setText("Trigger Exception")
+        editText.onFocusChangeListener?.onFocusChange(editText, false)
+        
+        // Assert we caught it and did not crash
+        assertTrue(true)
+    }
+
+    @Test
+    fun testAddFieldMoney_valueField() {
+        val field = Field(DbConstants.FLD_VALUE, "Value", Field.TYPE_MONEY)
+        book.value = Changeable("1500|3")
+
+        factory.addFieldMoney(rootView, field)
+
+        val view = rootView.getChildAt(0) as FieldMoney
+        assertNotNull(view)
+    }
+
+    @Test
+    fun testAddFieldMoney_onNothingSelected() {
+        val field = Field(DbConstants.FLD_PRICE, "Price", Field.TYPE_MONEY)
+        book.price = Changeable("1500|3")
+        factory.addFieldMoney(rootView, field)
+
+        val view = rootView.getChildAt(0) as FieldMoney
+        val spinner = view.findViewById<Spinner>(R.id.action_select_type)
+        
+        // Trigger onNothingSelected callback directly
+        spinner.onItemSelectedListener?.onNothingSelected(spinner)
+    }
+
+    @Test
+    fun testGetPropertyValues_missingKey_returnsEmptyList() {
+        val list = factory.getPropertyValues(999)
+        assertTrue(list.isEmpty())
+    }
+
+    @Test
+    fun testAddFieldMultiText_unfilteredHidingViaCustomCollection() {
+        val field = Field(DbConstants.FLD_AUTHOR, "Author", Field.TYPE_MULTIFIELD).apply { isVisible = false }
+        
+        // Setup book with properties ignoring blank additions
+        val customProperties = object : ArrayList<Property>() {
+            override fun add(element: Property): Boolean {
+                if (element.value.trim().isEmpty()) return false
+                return super.add(element)
+            }
+        }
+        book.properties = customProperties
+
+        rootView.removeAllViews()
+        factory.addFieldMultiText(rootView, field)
+
+        // The field should now be hidden!
+        assertEquals(View.GONE, rootView.getChildAt(0).visibility)
+    }
+
+    @Test
+    fun testAddAutocompleteField_unmatchedUpdatesProperty() {
+        val field = Field(DbConstants.FLD_SERIE, "Series", Field.TYPE_TEXT_AUTOCOMPLETE)
+        factory.addAutocompleteField(rootView, field)
+
+        val view = rootView.getChildAt(0) as FieldAutoCompleteTextView
+        val editText = view.findViewById<EditText>(R.id.autoCompleteTextView)
+
+        // Set unmatched suggestion
+        editText.setText("Unmatched New Series")
+        editText.onFocusChangeListener?.onFocusChange(editText, false)
+
+        val currentProperty = book.properties.first { it.fieldTypeId == DbConstants.FLD_SERIE }
+        assertEquals(0L, currentProperty.id)
+        assertEquals("Unmatched New Series", currentProperty.value)
+    }
+
+    @Test
+    fun testAddFieldMoney_onItemSelected() {
+        val field = Field(DbConstants.FLD_PRICE, "Price", Field.TYPE_MONEY)
+        book.price = Changeable("1500|3")
+        factory.addFieldMoney(rootView, field)
+
+        val view = rootView.getChildAt(0) as FieldMoney
+        val spinner = view.findViewById<Spinner>(R.id.action_select_type)
+        
+        // Select index 0 (USD with ID 3)
+        spinner.onItemSelectedListener?.onItemSelected(spinner, null, 0, 0L)
+        
+        // This should set the currency id to currencies[0].id which is 3
+        assertEquals("1500|3", book.price.value)
+    }
+
+    @Test
+    fun testAddFieldCheckBox_updatesCheckState_unmatched() {
+        val field = Field(DbConstants.FLD_READ, "Read State", Field.TYPE_CHECK_BOX)
+        
+        // Clear properties Map for read state to force null matchedProperty
+        propertiesMap[DbConstants.FLD_READ] = emptyList()
+
+        factory.addFieldCheckBox(rootView, field)
+
+        val view = rootView.getChildAt(0) as FieldCheckBox
+        val checkBox = view.findViewById<android.widget.CheckBox>(R.id.check_box)
+
+        checkBox.isChecked = true
+        checkBox.onFocusChangeListener?.onFocusChange(checkBox, false)
+
+        val property = book.properties.first { it.fieldTypeId == DbConstants.FLD_READ }
+        assertEquals(0L, property.id)
+        assertEquals("true", property.value)
+    }
+
+    @Test
+    fun testAddFieldRating_matchesProperty() {
+        val field = Field(DbConstants.FLD_RATING, "Rating", Field.TYPE_RATING)
+        factory.addFieldRating(rootView, field)
+
+        val view = rootView.getChildAt(0) as FieldRating
+        val ratingBar = view.findViewById<android.widget.RatingBar>(R.id.rating_bar)
+        
+        // Set rating to 4.5f which matches "4.5" in propertiesMap
+        ratingBar.onRatingBarChangeListener?.onRatingChanged(ratingBar, 4.5f, true)
+
+        val property = book.properties.first { it.fieldTypeId == DbConstants.FLD_RATING }
+        assertEquals(6L, property.id)
+        assertEquals("4.5", property.value)
+    }
 }
