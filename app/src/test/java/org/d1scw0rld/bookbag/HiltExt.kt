@@ -9,9 +9,9 @@ import androidx.test.core.app.ApplicationProvider
 
 inline fun <reified T : Fragment> launchFragmentInHiltContainer(
     fragmentArgs: Bundle? = null,
-    themeResId: Int = android.R.style.Theme_Material_Light_NoActionBar,
-    crossinline action: Fragment.() -> Unit = {}
-) {
+    themeResId: Int = androidx.appcompat.R.style.Theme_AppCompat_Light_NoActionBar,
+    crossinline action: T.() -> Unit = {}
+): ActivityScenario<HiltTestActivity> {
     val startActivityIntent = Intent.makeMainActivity(
         ComponentName(
             ApplicationProvider.getApplicationContext(),
@@ -22,26 +22,17 @@ inline fun <reified T : Fragment> launchFragmentInHiltContainer(
         themeResId
     )
 
-    ActivityScenario.launch<HiltTestActivity>(startActivityIntent).onActivity { activity ->
-        val fragment: Fragment = activity.supportFragmentManager.fragmentFactory.instantiate(
-            Preconditions.checkNotNull(T::class.java.classLoader),
+    return ActivityScenario.launch<HiltTestActivity>(startActivityIntent).onActivity { activity ->
+        val fragment: T = activity.supportFragmentManager.fragmentFactory.instantiate(
+            HiltTestActivity::class.java.classLoader!!,
             T::class.java.name
-        )
+        ) as T
         fragment.arguments = fragmentArgs
         activity.supportFragmentManager
             .beginTransaction()
-            .add(android.R.id.content, fragment, "")
+            .add(android.R.id.content, fragment, "tag")
             .commitNow()
 
         fragment.action()
-    }
-}
-
-object Preconditions {
-    fun <T> checkNotNull(reference: T?): T {
-        if (reference == null) {
-            throw NullPointerException()
-        }
-        return reference
     }
 }

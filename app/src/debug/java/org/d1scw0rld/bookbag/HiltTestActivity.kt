@@ -7,7 +7,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class HiltTestActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         // Ensure AppCompat theme is applied for tests
-        setTheme(R.style.AppBaseTheme)
+        setTheme(R.style.AppTheme)
         super.onCreate(savedInstanceState)
     }
 }

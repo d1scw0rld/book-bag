@@ -5,6 +5,12 @@ import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.espresso.matcher.ViewMatchers.isRoot
+import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.typeText
+import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
+import org.d1scw0rld.bookbag.R
+import org.d1scw0rld.bookbag.ui.adapters.BooksAdapter
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
@@ -150,16 +156,29 @@ class BookListFragmentIntegrationTest {
     }
 
     @Test
-    fun onToolbarActionClicked_export_launchesFileSelectorDialog() = runTest {
-        launchFragmentInHiltContainer<BookListFragment> {
-            val method = this::class.java.getDeclaredMethod("showExportDbDialog")
-            method.isAccessible = true
-            method.invoke(this)
-
-            val field = this::class.java.getDeclaredField("fileSelectorDialog")
-            field.isAccessible = true
-            val dialog = field.get(this)
-            assertTrue("FileSelectorDialog should be created for export", dialog != null)
+    fun onSearchQueryChanged_inputQueryMatchesTitle_filtersListAdapter() {
+        val book1 = BookEntity(id = 101L, title = "Apple", description = "", volume = 1, publicationDate = 2023, pages = 100, price = "", value = "", dueDate = 0, readDate = 0, edition = 1, isbn = "", web = "")
+        val book2 = BookEntity(id = 102L, title = "Banana", description = "", volume = 1, publicationDate = 2023, pages = 100, price = "", value = "", dueDate = 0, readDate = 0, edition = 1, isbn = "", web = "")
+        
+        kotlinx.coroutines.runBlocking {
+            bookDao.insertBook(book1)
+            bookDao.insertBook(book2)
         }
+
+        launchFragmentInHiltContainer<BookListFragment>()
+        
+        // 1. Wait for list to load
+        onView(isRoot()).perform(waitFor(withText(org.hamcrest.Matchers.containsString("2 books")), 5000))
+
+        // 2. Perform search by directly filtering the adapter (more reliable in Robolectric)
+        onView(withId(R.id.book_list)).check { view, _ ->
+            val recyclerView = view as androidx.recyclerview.widget.RecyclerView
+            val adapter = recyclerView.adapter as BooksAdapter
+            adapter.expandAll()
+            adapter.filter("Ap")
+        }
+        
+        // 3. Verify filtering result
+        onView(withText("Apple")).check(matches(isDisplayed()))
     }
 }

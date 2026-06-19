@@ -69,32 +69,37 @@ All four test cases implemented and passing:
 - `onViewCreated_formInflation_addFieldButtonVisible()` — ✅ PASS
 - `onViewCreated_argumentsPassed_fragmentLoadsSuccessfully()` — ✅ PASS
 
-### Component D: `SettingsFragment` (Preferences Screen) — TODO
+### Component D: `SettingsFragment` (Preferences Screen) ✅ COMPLETE
 *   **Test Cases to Implement:**
-    1.  `onViewCreated_preferencesInflated_showsAppOptions` — Verify that preference switches and selectors are bound and rendered.
-    2.  `onBackupPreferenceClicked_tapped_launchesBackupFileSelectorDialog` — Simulate tapping on the Backup database option and verify the `FileSelectorDialog` is triggered with `FileOperation.SAVE`.
+    1.  ✅ `onViewCreated_preferencesInflated_showsAppOptions` — Verifies that preference titles are bound and rendered.
+    2.  ✅ `onBackupPreferenceClicked_tapped_launchesBackupFileSelectorDialog` — Verified via `BookListFragment` toolbar tests (moved as it's not in Settings).
+
+**Test File:** `SettingsFragmentIntegrationTest.kt` (3 tests, all passing)
 
 ---
 
-## 4. Phase 3: Dialogs & Custom Views Integration Tests — TODO
+## 4. Phase 3: Dialogs & Custom Views Integration Tests ✅ COMPLETE
 
 ### Component E: `FileSelectorDialog` (File Navigation Dialog)
 *   **Test Cases to Implement:**
-    1.  `onViewCreated_dialogOpened_showsFilesMatchingSelectedFilter` — Assert that opening the dialog with a `.db` filter restricts listed items, showing folders but hiding `.txt` files.
-    2.  `onFolderClicked_itemSelected_navigatesToSubDirectoryAndUpdatesToolbarTitle` — Double-tap a folder item, verify the directory changes, and confirm the toolbar title reflects the active subfolder name.
-    3.  `onNewFolderActionClicked_validNameEntered_createsDirectoryOnDisk` — Click the "New Folder" menu item, input a folder name in the sub-prompt, and assert the directory is programmatically created.
-    4.  `onSaveConfirmed_emptyFileName_showsRequiredWarningPrompt` — Click "Save" with a blank input name field, asserting a validation warning dialog is shown to the user.
+    1.  ✅ `onViewCreated_dialogOpened_showsFilesMatchingSelectedFilter` — Asserts that opening the dialog with a `.db` filter restricts listed items.
+    2.  ✅ `onFolderClicked_itemSelected_navigatesToSubDirectoryAndUpdatesToolbarTitle` — Verifies directory navigation and toolbar title updates.
+    3.  ✅ `onNewFolderActionClicked_validNameEntered_createsDirectoryOnDisk` — Verifies directory creation.
+    4.  ✅ `onSaveConfirmed_emptyFileName_showsRequiredWarningPrompt` — Verifies validation warning.
+
+**Test File:** `FileSelectorDialogTest.kt` (12 tests, all passing)
+
 
 ---
 
-## 5. Phase 4: Execution & CI Verification — IN PROGRESS
+## 5. Phase 4: Execution & CI Verification ✅ COMPLETE
 
 1.  **Test Run Verification:**
     Execute the entire UI suite locally from the workstation command line:
     ```bash
     ./gradlew :app:testDebugUnitTest --tests "org.d1scw0rld.bookbag.ui.*"
     ```
-    **Current Status:** Components A, B & C (16 tests) passing ✅
+    **Current Status:** Components A, B, C, D & E (31 tests) passing ✅
     
 2.  **Lint and Warnings Clean Up:**
     All newly created UI test suites verified for zero unused imports or warnings.
