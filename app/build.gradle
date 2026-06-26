@@ -63,7 +63,8 @@ android {
 
 dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'com.google.android.material:material:1.13.0'
+    implementation 'androidx.test.espresso:espresso-contrib:3.7.0'
+    implementation 'com.google.android.material:material:1.14.0'
     implementation "androidx.preference:preference:1.2.1"
     // Keep this lower version, because of ugly preferences screen look
     implementation 'com.wdullaer:materialdatetimepicker:3.6.4'
@@ -78,18 +79,18 @@ dependencies {
     implementation 'androidx.core:core:1.19.0'
 
     // Room Database
-    def room_version = "2.7.0-alpha12"
+    def room_version = "2.8.4"
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
     ksp "androidx.room:room-compiler:$room_version"
 
     // Hilt DI
-    implementation "com.google.dagger:hilt-android:2.59.2"
-    ksp "com.google.dagger:hilt-compiler:2.59.2"
+    implementation "com.google.dagger:hilt-android:2.60"
+    ksp "com.google.dagger:hilt-compiler:2.60"
 
     // ViewModel & Lifecycle KTX
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.2"
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.2"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.11.0"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.11.0"
 
     // Unit Testing
     testImplementation 'junit:junit:4.13.2'
@@ -118,8 +119,8 @@ dependencies {
     testImplementation 'androidx.fragment:fragment-testing:1.8.9'
     
     // Hilt Testing
-    testImplementation 'com.google.dagger:hilt-android-testing:2.59.2'
-    kspTest 'com.google.dagger:hilt-compiler:2.59.2'
+    testImplementation 'com.google.dagger:hilt-android-testing:2.60'
+    kspTest 'com.google.dagger:hilt-compiler:2.60'
     
     // Room Test Helpers
     testImplementation "androidx.room:room-testing:2.8.4"

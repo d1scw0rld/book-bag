@@ -49,20 +49,20 @@ class FieldsFactoryTest {
         
         book = Book(
             id = 0L,
-            title = Changeable("Initial Title"),
-            description = Changeable("Initial Desc"),
-            pages = Changeable(123),
+            title = Changeable(TITLE_INITIAL),
+            description = Changeable(DESC_INITIAL),
+            pages = Changeable(PAGES_INITIAL),
             properties = ArrayList()
         )
 
         propertiesMap = mutableMapOf(
-            DbConstants.FLD_SERIE to listOf(Property(DbConstants.FLD_SERIE, "Harry Potter", 1L)),
-            DbConstants.FLD_STATUS to listOf(Property(DbConstants.FLD_STATUS, "Owned", 2L)),
-            DbConstants.FLD_CURRENCY to listOf(Property(DbConstants.FLD_CURRENCY, "USD", 3L)),
-            DbConstants.FLD_AUTHOR to listOf(Property(DbConstants.FLD_AUTHOR, "J.K. Rowling", 4L)),
-            DbConstants.FLD_GENRE to listOf(Property(DbConstants.FLD_GENRE, "Fantasy", 5L)),
-            DbConstants.FLD_RATING to listOf(Property(DbConstants.FLD_RATING, "4.5", 6L)),
-            DbConstants.FLD_READ to listOf(Property(DbConstants.FLD_READ, "true", 7L))
+            DbConstants.FLD_SERIE to listOf(Property(DbConstants.FLD_SERIE, SERIES_HP, 1L)),
+            DbConstants.FLD_STATUS to listOf(Property(DbConstants.FLD_STATUS, STATUS_OWNED, 2L)),
+            DbConstants.FLD_CURRENCY to listOf(Property(DbConstants.FLD_CURRENCY, CURRENCY_USD, 3L)),
+            DbConstants.FLD_AUTHOR to listOf(Property(DbConstants.FLD_AUTHOR, AUTHOR_ROWLING, 4L)),
+            DbConstants.FLD_GENRE to listOf(Property(DbConstants.FLD_GENRE, GENRE_FANTASY, 5L)),
+            DbConstants.FLD_RATING to listOf(Property(DbConstants.FLD_RATING, RATING_4_5, 6L)),
+            DbConstants.FLD_READ to listOf(Property(DbConstants.FLD_READ, READ_TRUE, 7L))
         )
 
         rootView = LinearLayout(context)
@@ -81,14 +81,14 @@ class FieldsFactoryTest {
 
         val editText = view.findViewById<EditText>(R.id.editTextX)
         assertNotNull(editText)
-        assertEquals("Initial Title", editText.text.toString())
+        assertEquals(TITLE_INITIAL, editText.text.toString())
 
         // Act - change text and trigger focus change to lose focus and save
-        editText.setText("Updated Book Title")
+        editText.setText(TITLE_UPDATED)
         editText.onFocusChangeListener?.onFocusChange(editText, false)
 
         // Assert - verify book DTO changed
-        assertEquals("Updated Book Title", book.title.value)
+        assertEquals(TITLE_UPDATED, book.title.value)
     }
 
     @DisplayName("Add Field Text - Integer Field Value Updated On Focus Lost - Updates Book DTO Value")
@@ -100,10 +100,10 @@ class FieldsFactoryTest {
         val view = rootView.getChildAt(0) as FieldEditTextUpdatableClearable
         val editText = view.findViewById<EditText>(R.id.editTextX)
 
-        editText.setText("456")
+        editText.setText(PAGES_UPDATED_STR)
         editText.onFocusChangeListener?.onFocusChange(editText, false)
 
-        assertEquals(456, book.pages.value)
+        assertEquals(PAGES_UPDATED_INT, book.pages.value)
     }
 
     @DisplayName("Add Autocomplete Field - Input Matches Suggestion On Focus Lost - Updates Property Value")
@@ -118,13 +118,13 @@ class FieldsFactoryTest {
 
         val editText = view.findViewById<EditText>(R.id.autoCompleteTextView)
         // Set match suggestion Harry Potter
-        editText.setText("Harry Potter")
+        editText.setText(SERIES_HP)
         editText.onFocusChangeListener?.onFocusChange(editText, false)
 
         // Verify it matched property
         val currentProperty = book.properties.first { it.fieldTypeId == DbConstants.FLD_SERIE }
         assertEquals(1L, currentProperty.id)
-        assertEquals("Harry Potter", currentProperty.value)
+        assertEquals(SERIES_HP, currentProperty.value)
     }
 
     @DisplayName("Add Field Spinner - New Item Selected - Updates Selected Property Value")
@@ -142,7 +142,7 @@ class FieldsFactoryTest {
 
         val property = book.properties.first { it.fieldTypeId == DbConstants.FLD_STATUS }
         assertEquals(2L, property.id)
-        assertEquals("Owned", property.value)
+        assertEquals(STATUS_OWNED, property.value)
     }
 
     @DisplayName("Add Field MultiText - Initial Authors Provided - Inflates and Binds To Views")
@@ -151,7 +151,7 @@ class FieldsFactoryTest {
         val field = Field(DbConstants.FLD_AUTHOR, "Authors", Field.TYPE_MULTIFIELD)
         
         // Populate author in properties first
-        val authorProperty = Property(DbConstants.FLD_AUTHOR, "J.K. Rowling", 4L)
+        val authorProperty = Property(DbConstants.FLD_AUTHOR, AUTHOR_ROWLING, 4L)
         book.properties.add(authorProperty)
 
         factory.addFieldMultiText(rootView, field)
@@ -178,7 +178,7 @@ class FieldsFactoryTest {
         val field = Field(DbConstants.FLD_PRICE, "Price", Field.TYPE_MONEY)
         
         // Preset price
-        book.price = Changeable("1500|3") // 15.00 with currency ID 3
+        book.price = Changeable(PRICE_INITIAL) // 15.00 with currency ID 3
 
         factory.addFieldMoney(rootView, field)
 
@@ -192,7 +192,7 @@ class FieldsFactoryTest {
         editText.onFocusChangeListener?.onFocusChange(editText, false)
 
         // Value in book should update to 2550 with currency 3 -> "2550|3"
-        assertEquals("2550|3", book.price.value)
+        assertEquals(PRICE_UPDATED, book.price.value)
     }
 
     @DisplayName("Add Field Date - Initial Read Date Provided - Inflates and Binds to Views")
@@ -286,11 +286,11 @@ class FieldsFactoryTest {
         val editText = view.findViewById<EditText>(R.id.editTextX)
         
         // Act
-        editText.setText("Updated Custom Value")
+        editText.setText(TITLE_CUSTOM)
         editText.onFocusChangeListener?.onFocusChange(editText, false)
 
         // Assert
-        assertEquals("Updated Custom Value", changeableCustom.value.text)
+        assertEquals(TITLE_CUSTOM, changeableCustom.value.text)
     }
 
     @DisplayName("Add Field Text - Reflection Exception - Is Caught Safely")
@@ -370,7 +370,7 @@ class FieldsFactoryTest {
     @Test
     fun addFieldMoney_fractionalDecimalInputsPassedOnFocusLost_updatesPriceValue() {
         val field = Field(DbConstants.FLD_PRICE, "Price", Field.TYPE_MONEY)
-        book.price = Changeable("1500|3") // Currency ID 3
+        book.price = Changeable(PRICE_INITIAL) // Currency ID 3
 
         factory.addFieldMoney(rootView, field)
 
@@ -382,7 +382,7 @@ class FieldsFactoryTest {
             "-" to "",
             "," to "",
             "-," to "",
-            "15" to "1500|3",
+            "15" to PRICE_INITIAL,
             "15.5" to "1550|3",
             "15.50" to "1550|3"
         )
@@ -448,7 +448,7 @@ class FieldsFactoryTest {
     @Test
     fun addFieldMoney_edgeCaseFractionalInputsPassedOnFocusLost_updatesPriceValue() {
         val field = Field(DbConstants.FLD_PRICE, "Price", Field.TYPE_MONEY)
-        book.price = Changeable("1500|3") // Currency ID 3
+        book.price = Changeable(PRICE_INITIAL) // Currency ID 3
 
         factory.addFieldMoney(rootView, field)
 
@@ -525,7 +525,7 @@ class FieldsFactoryTest {
         // Case 2: isVisible = false, id != 0 -> VISIBLE
         book.properties.clear()
         val field2 = Field(DbConstants.FLD_STATUS, "Status", Field.TYPE_SPINNER).apply { isVisible = false }
-        val prop = Property(DbConstants.FLD_STATUS, "Owned", 999L)
+        val prop = Property(DbConstants.FLD_STATUS, STATUS_OWNED, 999L)
         book.properties.add(prop)
         rootView.removeAllViews()
         factory.addFieldSpinner(rootView, field2)
@@ -560,7 +560,7 @@ class FieldsFactoryTest {
 
         book.properties.clear()
         val field2 = Field(DbConstants.FLD_GENRE, "Genre", Field.TYPE_MULTI_SPINNER).apply { isVisible = false }
-        book.properties.add(Property(DbConstants.FLD_GENRE, "Fantasy"))
+        book.properties.add(Property(DbConstants.FLD_GENRE, GENRE_FANTASY))
         rootView.removeAllViews()
         factory.addFieldMultiSpinner(rootView, field2)
         assertEquals(View.VISIBLE, rootView.getChildAt(0).visibility)
@@ -649,9 +649,9 @@ class FieldsFactoryTest {
         assertTrue(book.properties.contains(newProperty))
 
         // 2. Test onFieldUpdated with match suggestion
-        listener.onFieldUpdated(dummyView, "J.K. Rowling")
+        listener.onFieldUpdated(dummyView, AUTHOR_ROWLING)
         assertEquals(4L, newProperty.id)
-        assertEquals("J.K. Rowling", newProperty.value)
+        assertEquals(AUTHOR_ROWLING, newProperty.value)
 
         // 3. Test onFieldUpdated with new custom author
         listener.onFieldUpdated(dummyView, "Brand New Author")
@@ -682,20 +682,20 @@ class FieldsFactoryTest {
         val listener = listenerField.get(view) as FieldMultiSpinner.OnUpdateListener
 
         // 1. Match selected = true
-        val item1 = FieldMultiSpinner.Item("Fantasy").apply { isSelected = true }
+        val item1 = FieldMultiSpinner.Item(GENRE_FANTASY).apply { isSelected = true }
         listener.onUpdate(item1)
-        val matchedProp = Property(DbConstants.FLD_GENRE, "Fantasy", 5L)
+        val matchedProp = Property(DbConstants.FLD_GENRE, GENRE_FANTASY, 5L)
         assertTrue(book.properties.contains(matchedProp))
 
         // 2. Match selected = false
-        val item2 = FieldMultiSpinner.Item("Fantasy").apply { isSelected = false }
+        val item2 = FieldMultiSpinner.Item(GENRE_FANTASY).apply { isSelected = false }
         listener.onUpdate(item2)
         assertFalse(book.properties.contains(matchedProp))
 
         // 3. Match selected = true with a brand new custom genre
-        val item3 = FieldMultiSpinner.Item("Sci-Fi").apply { isSelected = true }
+        val item3 = FieldMultiSpinner.Item(GENRE_SCIFI).apply { isSelected = true }
         listener.onUpdate(item3)
-        val newGenreProp = Property(DbConstants.FLD_GENRE, "Sci-Fi", 0L)
+        val newGenreProp = Property(DbConstants.FLD_GENRE, GENRE_SCIFI, 0L)
         assertTrue(book.properties.contains(newGenreProp))
     }
 
@@ -737,19 +737,19 @@ class FieldsFactoryTest {
         val editText = view.findViewById<EditText>(R.id.autoCompleteTextView)
 
         // Set unmatched suggestion
-        editText.setText("Unmatched New Series")
+        editText.setText(SERIES_UNMATCHED)
         editText.onFocusChangeListener?.onFocusChange(editText, false)
 
         val currentProperty = book.properties.first { it.fieldTypeId == DbConstants.FLD_SERIE }
         assertEquals(0L, currentProperty.id)
-        assertEquals("Unmatched New Series", currentProperty.value)
+        assertEquals(SERIES_UNMATCHED, currentProperty.value)
     }
 
     @DisplayName("OnItemSelected - Currency Selected From Spinner - Updates Price Currency ID")
     @Test
     fun onItemSelected_currencySelectedFromSpinner_updatesPriceCurrencyId() {
         val field = Field(DbConstants.FLD_PRICE, "Price", Field.TYPE_MONEY)
-        book.price = Changeable("1500|3")
+        book.price = Changeable(PRICE_INITIAL)
         factory.addFieldMoney(rootView, field)
 
         val view = rootView.getChildAt(0) as FieldMoney
@@ -759,7 +759,7 @@ class FieldsFactoryTest {
         spinner.onItemSelectedListener?.onItemSelected(spinner, null, 0, 0L)
         
         // This should set the currency id to currencies[0].id which is 3
-        assertEquals("1500|3", book.price.value)
+        assertEquals(PRICE_INITIAL, book.price.value)
     }
 
     @DisplayName("OnCheckedChanged - Checkbox Toggled With No Matched Property - Clears ID and Updates Property Value")
@@ -797,11 +797,36 @@ class FieldsFactoryTest {
 
         val property = book.properties.first { it.fieldTypeId == DbConstants.FLD_RATING }
         assertEquals(6L, property.id)
-        assertEquals("4.5", property.value)
+        assertEquals(RATING_4_5, property.value)
     }
 
     // Custom wrapper class to test reflection fallback
     class CustomTextWrapper(val text: String) {
         override fun toString(): String = text
+    }
+
+    companion object {
+        private const val TITLE_INITIAL = "Initial Title"
+        private const val DESC_INITIAL = "Initial Desc"
+        private const val PAGES_INITIAL = 123
+
+        private const val SERIES_HP = "Harry Potter"
+        private const val STATUS_OWNED = "Owned"
+        private const val CURRENCY_USD = "USD"
+        private const val AUTHOR_ROWLING = "J.K. Rowling"
+        private const val GENRE_FANTASY = "Fantasy"
+        private const val RATING_4_5 = "4.5"
+        private const val READ_TRUE = "true"
+
+        private const val TITLE_UPDATED = "Updated Book Title"
+        private const val PAGES_UPDATED_STR = "456"
+        private const val PAGES_UPDATED_INT = 456
+
+        private const val PRICE_INITIAL = "1500|3"
+        private const val PRICE_UPDATED = "2550|3"
+
+        private const val GENRE_SCIFI = "Sci-Fi"
+        private const val SERIES_UNMATCHED = "Unmatched New Series"
+        private const val TITLE_CUSTOM = "Updated Custom Value"
     }
 }

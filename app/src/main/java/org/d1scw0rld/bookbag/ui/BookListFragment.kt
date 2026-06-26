@@ -1,14 +1,9 @@
 package org.d1scw0rld.bookbag.ui
 
-import android.Manifest
 import android.content.Intent
-import android.content.SharedPreferences
-import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
-import android.provider.Settings
 import android.util.Log
 import android.view.ActionMode
 import android.view.LayoutInflater
@@ -17,109 +12,105 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.ActivityResultRegistry
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
 import androidx.appcompat.widget.SearchView
-import androidx.core.content.ContextCompat
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.findNavController
 import androidx.navigation.ui.NavigationUI
-import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import org.d1scw0rld.bookbag.R
 import org.d1scw0rld.bookbag.data.DbConstants
 import org.d1scw0rld.bookbag.data.relation.BookRelationsMapper
 import org.d1scw0rld.bookbag.databinding.FragmentBookListBinding
+import org.d1scw0rld.bookbag.ui.adapters.BooksAdapter
 import org.d1scw0rld.bookbag.ui.fileselector.FileOperation
 import org.d1scw0rld.bookbag.ui.fileselector.FileSelectorDialog
 import org.d1scw0rld.bookbag.ui.fileselector.OnHandleFileListener
 import org.d1scw0rld.bookbag.ui.state.UiState
 import org.d1scw0rld.bookbag.viewmodel.BookListViewModel
 import org.d1scw0rld.bookbag.viewmodel.FileOperationType
+import org.d1scw0rld.bookbag.viewmodel.PendingAction
+import org.d1scw0rld.bookbag.viewmodel.PermissionEvent
 import java.io.File
-import java.util.Calendar
-import java.util.Locale
-import androidx.navigation.findNavController
-import androidx.core.content.edit
-import androidx.core.view.MenuProvider
-import org.d1scw0rld.bookbag.R
-import org.d1scw0rld.bookbag.ui.adapters.BooksAdapter
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class BookListFragment : BaseFragment() {
 
+    @Inject
+    lateinit var activityResultRegistry: ActivityResultRegistry
+
     companion object {
         private const val TAG = "BookListFragment"
-        private const val PREF_ORDER_ID = "order_id"
-        private const val PREF_EXPAND_ALL = "pref_expand_all"
-        private const val PREF_EXPORT_FOLDER = "pref_export_folder"
     }
 
     private var _binding: FragmentBookListBinding? = null
     private val binding get() = _binding!!
 
     private val fileFilter = arrayOf("*.*", ".db")
-    private val orderItems = ArrayList<OrderItem>()
 
-    private enum class PendingAction {
-        NONE, IMPORT, EXPORT
-    }
-
-    private var pendingAction = PendingAction.NONE
-    private var isExpandAll = false
     private var isTwoPane = false
-    private var orderId = DbConstants.SRT_TTL
     private var clickedItemIndex = -1
     private var bookId: Long = 0
-    private var exportFolderAbsPath: String = ""
 
-    private val viewModel: BookListViewModel by viewModels()
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal val viewModel: BookListViewModel by viewModels()
     private lateinit var booksAdapter: BooksAdapter
-    private lateinit var preferences: SharedPreferences
     private var selectedBookView: View? = null
     private lateinit var recyclerView: RecyclerView
-    private var actionMode: ActionMode? = null
+    
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal var actionMode: ActionMode? = null
     private var fileSelectorDialog: FileSelectorDialog? = null
 
-    private val requestPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            if (isGranted) {
-                checkCreateExportFolder(exportFolderAbsPath)
-                executePendingAction()
-            } else {
-                showToast(R.string.msg_acc_dnd)
-                pendingAction = PendingAction.NONE
-            }
+    private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
+    private lateinit var manageStorageLauncher: ActivityResultLauncher<Intent>
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        
+        requestPermissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestPermission(),
+            activityResultRegistry
+        ) { isGranted ->
+            if (!isGranted) showToast(R.string.msg_acc_dnd)
+            viewModel.onPermissionResult(isGranted)
         }
 
-    private val manageStorageLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
+        manageStorageLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult(),
+            activityResultRegistry
+        ) { _ ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                if (Environment.isExternalStorageManager()) {
-                    checkCreateExportFolder(exportFolderAbsPath)
-                    executePendingAction()
-                } else {
-                    showToast(R.string.msg_acc_dnd)
-                    pendingAction = PendingAction.NONE
-                }
+                if (!Environment.isExternalStorageManager()) showToast(R.string.msg_acc_dnd)
+                viewModel.onManageStorageResult()
             }
         }
+    }
 
     private fun executePendingAction() {
-        if (pendingAction == PendingAction.IMPORT) {
+        val action = viewModel.pendingAction.value
+        if (action == PendingAction.IMPORT) {
             showImportDbDialog()
-        } else if (pendingAction == PendingAction.EXPORT) {
+        } else if (action == PendingAction.EXPORT) {
             showExportDbDialog()
         }
-        pendingAction = PendingAction.NONE
+        viewModel.resetPendingAction()
     }
 
     private val onCategoryClickListener = View.OnClickListener { deselectBookView() }
@@ -151,7 +142,8 @@ class BookListFragment : BaseFragment() {
         true
     }
 
-    private val onActionModeCallback = object : ActionMode.Callback {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal val onActionModeCallback = object : ActionMode.Callback {
         override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
             mode.menuInflater.inflate(R.menu.menu_context, menu)
             return true
@@ -200,17 +192,6 @@ class BookListFragment : BaseFragment() {
         viewModel.exportDatabase(filePath)
     }
 
-    private val onSharedPreferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, key ->
-        if (key.equals(PREF_EXPAND_ALL, ignoreCase = true)) {
-            isExpandAll = prefs.getBoolean(PREF_EXPAND_ALL, false)
-        }
-        if (key.equals(PREF_EXPORT_FOLDER, ignoreCase = true)) {
-            exportFolderAbsPath = getExportFolderAbsPath(prefs.getString(PREF_EXPORT_FOLDER, getString(
-                R.string.app_name)) ?: getString(R.string.app_name))
-            checkCreateExportFolder(exportFolderAbsPath)
-        }
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -225,14 +206,7 @@ class BookListFragment : BaseFragment() {
         toolbar.title = requireActivity().title
         (requireActivity() as AppCompatActivity).setSupportActionBar(toolbar)
 
-        preferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
-        preferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
-        loadPreferences()
-        checkCreateExportFolder(exportFolderAbsPath)
-
         DbConstants.initFields(resources)
-
-        getOrderItems()
 
         return binding.root
     }
@@ -292,6 +266,39 @@ class BookListFragment : BaseFragment() {
 
         observeUiState()
         observeFileOperationState()
+        observePermissionEvents()
+    }
+
+    private fun showRationaleDialog(onConfirm: Runnable) {
+        AlertDialog.Builder(requireContext(), R.style.AppCompatAlertDialogStyle)
+            .setTitle(R.string.permission_required_title)
+            .setMessage(R.string.permission_required_message)
+            .setPositiveButton(R.string.permission_required_button) { _, _ -> onConfirm.run() }
+            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+            .show()
+    }
+
+    private fun observePermissionEvents() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.permissionEvent.collect { event ->
+                    when (event) {
+                        is PermissionEvent.ShowRationale -> {
+                            showRationaleDialog { viewModel.onPermissionRationaleConfirmed() }
+                        }
+                        is PermissionEvent.RequestLegacyPermission -> {
+                            requestPermissionLauncher.launch(event.permission)
+                        }
+                        is PermissionEvent.RequestManageStorage -> {
+                            manageStorageLauncher.launch(event.intent)
+                        }
+                        is PermissionEvent.PermissionGranted -> {
+                            executePendingAction()
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private fun observeUiState() {
@@ -305,20 +312,20 @@ class BookListFragment : BaseFragment() {
                         is UiState.Success -> {
                             hideProgressBar()
                             val books = state.data
-                            val mappedParents = BookRelationsMapper.mapBooksToParents(books, orderId)
+                            val mappedParents = BookRelationsMapper.mapBooksToParents(books, viewModel.orderId.value)
                             booksAdapter.updateData(mappedParents)
-                            if (isExpandAll) {
+                            if (viewModel.isExpandAll.value) {
                                 booksAdapter.expandAll()
                             }
-                            for (orderItem in orderItems) {
-                                if (orderItem.id == orderId) {
-                                    binding.include.tvBooksOrder.text = orderItem.title
-                                    binding.include.tvBooksCount.text = resources.getQuantityString(
-                                        R.plurals.books,
-                                        booksAdapter.getAllChildrenCount(),
-                                        booksAdapter.getAllChildrenCount()
-                                    )
-                                }
+                            
+                            val currentOrder = viewModel.orderItems.find { it.id == viewModel.orderId.value }
+                            if (currentOrder != null) {
+                                binding.include.tvBooksOrder.text = currentOrder.title
+                                binding.include.tvBooksCount.text = resources.getQuantityString(
+                                    R.plurals.books,
+                                    booksAdapter.getAllChildrenCount(),
+                                    booksAdapter.getAllChildrenCount()
+                                )
                             }
                         }
                         is UiState.Error -> {
@@ -367,9 +374,6 @@ class BookListFragment : BaseFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        if (::preferences.isInitialized) {
-            preferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
-        }
         selectedBookView = null
         _binding = null
     }
@@ -381,93 +385,16 @@ class BookListFragment : BaseFragment() {
         }
     }
 
-    private fun getExportFolderAbsPath(exportFolder: String): String {
-        @Suppress("DEPRECATION")
-        return Environment.getExternalStorageDirectory().toString() + File.separator + exportFolder + File.separator
-    }
-
-    private fun checkAndRequestPermissions(action: PendingAction): Boolean {
-        pendingAction = action
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            if (!Environment.isExternalStorageManager()) {
-                showRationaleDialog {
-                    var intent: Intent? = null
-                    try {
-                        intent = Intent(
-                            Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
-                            Uri.fromParts("package", requireContext().packageName, null)
-                        )
-                    } catch (e: Exception) {
-                        Log.e(TAG, e.toString())
-                    }
-                    if (intent == null) {
-                        intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
-                    }
-                    manageStorageLauncher.launch(intent)
-                }
-                return false
-            }
-        } else {
-            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED
-            ) {
-                showRationaleDialog {
-                    requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                }
-                return false
-            }
-        }
-        pendingAction = PendingAction.NONE
-        return true
-    }
-
-    private fun showRationaleDialog(onConfirm: Runnable) {
-        AlertDialog.Builder(requireContext(), R.style.AppCompatAlertDialogStyle)
-            .setTitle(R.string.permission_required_title)
-            .setMessage(R.string.permission_required_message)
-            .setPositiveButton(R.string.permission_required_button) { _, _ -> onConfirm.run() }
-            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
-            .show()
-    }
-
-    private fun checkCreateExportFolder(exportFolderAbsPath: String) {
-        val file = File(exportFolderAbsPath)
-        if (!file.isDirectory) {
-            if (!file.mkdirs()) {
-                Log.w(TAG, getString(R.string.log_err_create_export_folder, exportFolderAbsPath))
-            }
-        }
-    }
-
-    private fun getOrderItems() {
-        orderItems.add(OrderItem(DbConstants.SRT_TTL, getString(R.string.srt_title)))
-        orderItems.add(OrderItem(DbConstants.SRT_AUT, getString(R.string.srt_author)))
-        orderItems.add(OrderItem(DbConstants.SRT_WNT_PBL_TTL, getString(R.string.srt_wanted_pbl_ttl)))
-        orderItems.add(OrderItem(DbConstants.SRT_WNT_PBL_AUT, getString(R.string.srt_wanted_pbl_aut)))
-        orderItems.add(OrderItem(DbConstants.SRT_RD_AUT, getString(R.string.srt_read_aut)))
-        orderItems.add(OrderItem(DbConstants.SRT_RD_TTL, getString(R.string.srt_read_ttl)))
-        orderItems.add(OrderItem(DbConstants.SRT_NOT_RD_AUT, getString(R.string.srt_not_read_aut)))
-        orderItems.add(OrderItem(DbConstants.SRT_NOT_RD_TTL, getString(R.string.srt_not_read_ttl)))
-        orderItems.add(OrderItem(DbConstants.SRT_PBL_AUT, getString(R.string.srt_pbl_aut)))
-        orderItems.add(OrderItem(DbConstants.SRT_PBL_TTL, getString(R.string.srt_pbl_ttl)))
-        orderItems.add(OrderItem(DbConstants.SRT_LND_TTL, getString(R.string.srt_lnd_ttl)))
-        orderItems.add(OrderItem(DbConstants.SRT_LND_BRW, getString(R.string.srt_lnd_brw)))
-    }
-
     private fun optionsItemSelect(item: MenuItem): Boolean {
         deselectBookAndHideDetails()
 
         return when (item.itemId) {
             R.id.action_imp_db -> {
-                if (checkAndRequestPermissions(PendingAction.IMPORT)) {
-                    showImportDbDialog()
-                }
+                viewModel.onActionClicked(PendingAction.IMPORT)
                 true
             }
             R.id.action_exp_db -> {
-                if (checkAndRequestPermissions(PendingAction.EXPORT)) {
-                    showExportDbDialog()
-                }
+                viewModel.onActionClicked(PendingAction.EXPORT)
                 true
             }
             R.id.action_exp_all -> {
@@ -550,8 +477,9 @@ class BookListFragment : BaseFragment() {
         }
     }
 
-    private fun showImportDbDialog() {
-        val importFolder = File(exportFolderAbsPath)
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal fun showImportDbDialog() {
+        val importFolder = File(viewModel.exportFolderAbsPath.value)
         fileSelectorDialog = FileSelectorDialog.newInstance(
             importFolder,
             FileOperation.LOAD,
@@ -562,8 +490,8 @@ class BookListFragment : BaseFragment() {
     }
 
     private fun showExportDbDialog() {
-        val fileName = getFileName()
-        val exportFile = File(exportFolderAbsPath + fileName)
+        val fileName = viewModel.getExportFileName()
+        val exportFile = File(viewModel.exportFolderAbsPath.value + fileName)
         fileSelectorDialog = FileSelectorDialog.newInstance(
             exportFile,
             FileOperation.SAVE,
@@ -573,36 +501,20 @@ class BookListFragment : BaseFragment() {
         fileSelectorDialog?.show(parentFragmentManager, null)
     }
 
-    private fun getFileName(): String {
-        val calendar = Calendar.getInstance(Locale.getDefault())
-        val extIndex = DbConstants.DATABASE_NAME.lastIndexOf(".")
-        return String.format(
-            getString(R.string.fmt_fl_nm),
-            DbConstants.DATABASE_NAME.substring(0, extIndex),
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH) + 1,
-            calendar.get(Calendar.DAY_OF_MONTH),
-            calendar.get(Calendar.HOUR_OF_DAY),
-            calendar.get(Calendar.MINUTE),
-            DbConstants.DATABASE_NAME.substring(extIndex + 1)
-        )
-    }
-
-    private fun showOrderPopupMenu(view: View) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal fun showOrderPopupMenu(view: View) {
         val popupMenu = PopupMenu(requireContext(), view)
-        for (orderItem in orderItems) {
+        for (orderItem in viewModel.orderItems) {
             popupMenu.menu
                 .add(1, orderItem.id, 0, orderItem.title)
                 .apply {
                     isCheckable = true
-                    isChecked = (orderItem.id == orderId)
+                    isChecked = (orderItem.id == viewModel.orderId.value)
                 }
         }
         popupMenu.menu.setGroupCheckable(1, true, true)
         popupMenu.setOnMenuItemClickListener { menuItem ->
-            orderId = menuItem.itemId
-            saveOrderID(orderId)
-            setupRecyclerView()
+            viewModel.updateOrderId(menuItem.itemId)
             true
         }
         popupMenu.show()
@@ -611,20 +523,4 @@ class BookListFragment : BaseFragment() {
     private fun setupRecyclerView() {
         viewModel.loadBooks()
     }
-
-    private fun loadPreferences() {
-        orderId = preferences.getInt(PREF_ORDER_ID, DbConstants.SRT_TTL)
-        isExpandAll = preferences.getBoolean(PREF_EXPAND_ALL, false)
-        exportFolderAbsPath = getExportFolderAbsPath(
-            preferences.getString(PREF_EXPORT_FOLDER, getString(R.string.app_name)) ?: getString(R.string.app_name)
-        )
-    }
-
-    private fun saveOrderID(orderId: Int) {
-        preferences.edit {
-            putInt(PREF_ORDER_ID, orderId)
-        }
-    }
-
-    private class OrderItem(var id: Int, var title: String)
 }

@@ -44,18 +44,18 @@ class BookListFragmentTest {
     fun onViewCreated_initialState_loadsBooksFromViewModel() = runTest {
         // Arrange: Insert a book into the database
         val book = BookEntity(
-            id = 1L,
-            title = "Testing Book",
-            description = "Description",
+            id = ID_1,
+            title = TITLE_1,
+            description = DESC_1,
             volume = 1,
             publicationDate = 2023,
             pages = 100,
-            price = "1000|1",
-            value = "1000|1",
+            price = PRICE_1,
+            value = PRICE_1,
             dueDate = 0,
             readDate = 0,
             edition = 1,
-            isbn = "12345",
+            isbn = ISBN_1,
             web = ""
         )
         bookDao.insertBook(book)
@@ -67,8 +67,21 @@ class BookListFragmentTest {
         // Note: BooksAdapter groups by title first letter by default (DbConstants.SRT_TTL)
         // So we expect to see "T" as header and "Testing Book" as item.
         // Wait for the list header and count to appear (baseline UI check)
-        onView(isRoot()).perform(waitFor(withText("T"), 2000))
-        onView(withText("T")).check(matches(isDisplayed()))
-        onView(withText("1 book")).check(matches(isDisplayed()))
+        onView(isRoot()).perform(waitFor(withText(LETTER_T), TIMEOUT_2000))
+        onView(withText(LETTER_T)).check(matches(isDisplayed()))
+        onView(withText(COUNT_1_TEXT)).check(matches(isDisplayed()))
+    }
+
+    companion object {
+        private const val ID_1 = 1L
+        private const val TITLE_1 = "Testing Book"
+        private const val DESC_1 = "Description"
+        private const val PRICE_1 = "1000|1"
+        private const val ISBN_1 = "12345"
+
+        private const val LETTER_T = "T"
+        private const val COUNT_1_TEXT = "1 book"
+
+        private const val TIMEOUT_2000 = 2000L
     }
 }
