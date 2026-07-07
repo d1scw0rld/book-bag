@@ -53,8 +53,8 @@ const val TAG = "BookListViewModel"
 class BookListViewModel @Inject constructor(
     private val repository: BookRepository,
     private val preferences: SharedPreferences,
-    @ApplicationContext private val context: Context,
-    private val permissionsManager: PermissionsManager
+    private val permissionsManager: PermissionsManager,
+    @param:ApplicationContext private val context: Context
 ) : ViewModel() {
 
     companion object {
@@ -83,6 +83,9 @@ class BookListViewModel @Inject constructor(
 
     private val _exportFolderAbsPath = MutableStateFlow("")
     val exportFolderAbsPath: StateFlow<String> = _exportFolderAbsPath.asStateFlow()
+
+    private val _bookId = MutableStateFlow(0L)
+    val bookId: StateFlow<Long> = _bookId.asStateFlow()
 
     val orderItems = listOf(
         OrderItem(DbConstants.SRT_TTL, context.getString(R.string.srt_title)),
@@ -113,7 +116,6 @@ class BookListViewModel @Inject constructor(
     }
 
     override fun onCleared() {
-        super.onCleared()
         preferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
     }
 
@@ -175,10 +177,14 @@ class BookListViewModel @Inject constructor(
         }
     }
 
-    fun deleteBook(bookId: Long) {
+    fun deleteBook() {
         viewModelScope.launch {
-            repository.deleteBookAndRelations(bookId)
+            repository.deleteBookAndRelations(_bookId.value)
         }
+    }
+
+    fun updateBookId(id: Long) {
+        _bookId.value = id
     }
 
     fun updateOrderId(newOrderId: Int) {
@@ -225,7 +231,7 @@ class BookListViewModel @Inject constructor(
                 _fileOpState.value = UiState.Success(FileOperationType.IMPORT)
                 loadBooks()
             } else {
-                _fileOpState.value = UiState.Error(Exception("Import failed"))
+                _fileOpState.value = UiState.Error(Exception(context.getString(R.string.import_failed)))
             }
         }
     }
@@ -237,7 +243,7 @@ class BookListViewModel @Inject constructor(
             if (success) {
                 _fileOpState.value = UiState.Success(FileOperationType.EXPORT)
             } else {
-                _fileOpState.value = UiState.Error(Exception("Export failed"))
+                _fileOpState.value = UiState.Error(Exception(context.getString(R.string.export_failed)))
             }
         }
     }

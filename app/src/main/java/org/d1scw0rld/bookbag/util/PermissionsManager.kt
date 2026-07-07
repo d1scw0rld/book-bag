@@ -15,7 +15,7 @@ import javax.inject.Singleton
 
 @Singleton
 class PermissionsManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) {
     /**
      * Returns true if the app has the necessary storage permissions for the current Android version.

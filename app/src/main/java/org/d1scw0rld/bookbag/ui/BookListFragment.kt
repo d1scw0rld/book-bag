@@ -52,12 +52,12 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class BookListFragment : BaseFragment() {
 
-    @Inject
-    lateinit var activityResultRegistry: ActivityResultRegistry
-
     companion object {
         private const val TAG = "BookListFragment"
     }
+
+    @Inject
+    lateinit var activityResultRegistry: ActivityResultRegistry
 
     private var _binding: FragmentBookListBinding? = null
     private val binding get() = _binding!!
@@ -65,8 +65,6 @@ class BookListFragment : BaseFragment() {
     private val fileFilter = arrayOf("*.*", ".db")
 
     private var isTwoPane = false
-    private var clickedItemIndex = -1
-    private var bookId: Long = 0
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal val viewModel: BookListViewModel by viewModels()
@@ -156,12 +154,12 @@ class BookListFragment : BaseFragment() {
         override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
             return when (item.itemId) {
                 R.id.action_edit -> {
-                    navigateToEditBook(requireView(), bookId, false)
+                    navigateToEditBook(requireView(), viewModel.bookId.value, false)
                     mode.finish()
                     true
                 }
                 R.id.action_duplicate -> {
-                    navigateToEditBook(requireView(), bookId, true)
+                    navigateToEditBook(requireView(), viewModel.bookId.value, true)
                     mode.finish()
                     true
                 }
@@ -180,7 +178,7 @@ class BookListFragment : BaseFragment() {
     }
 
     private fun deleteBook() {
-        viewModel.deleteBook(bookId)
+        viewModel.deleteBook()
         deselectBookAndHideDetails()
     }
 
@@ -415,13 +413,13 @@ class BookListFragment : BaseFragment() {
     }
 
     private fun getSelectedBook(v: View) {
-        clickedItemIndex = recyclerView.getChildLayoutPosition(v)
-        bookId = booksAdapter.getItemId(clickedItemIndex)
+        val clickedItemIndex = recyclerView.getChildLayoutPosition(v)
+        viewModel.updateBookId(booksAdapter.getItemId(clickedItemIndex))
         v.isSelected = true
     }
 
     private fun navigateToBookDetails(v: View) {
-        val action = BookListFragmentDirections.actionBookListFragmentToBookFragment(bookId)
+        val action = BookListFragmentDirections.actionBookListFragmentToBookFragment(viewModel.bookId.value)
         v.findNavController().navigate(action)
     }
 
@@ -455,7 +453,7 @@ class BookListFragment : BaseFragment() {
 
     private fun showBookDetails() {
         val arguments = Bundle().apply {
-            putLong(BookDetailFragment.BOOK_ID, bookId)
+            putLong(BookDetailFragment.BOOK_ID, viewModel.bookId.value)
         }
         val fragment = BookDetailFragment().apply {
             this.arguments = arguments

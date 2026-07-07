@@ -163,5 +163,7 @@
    <string name="log_err_updating_field">Error updating field value</string>
    <string name="log_err_create_export_folder">Can\'t create export folder: %s</string>
    <string name="log_err_file_op">File operation error</string>
+   <string name="import_failed">Import failed</string>
+   <string name="export_failed">Export failed</string>
 
 </resources>

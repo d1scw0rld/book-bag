@@ -71,7 +71,7 @@ class BookListViewModelTest {
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(expectedBooks))
 
         // Act
-        viewModel = BookListViewModel(repository, preferences, context, permissionsManager)
+        viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
 
         // Assert
         assertTrue(viewModel.uiState.value is UiState.Success)
@@ -88,7 +88,7 @@ class BookListViewModelTest {
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flow { throw expectedException })
 
         // Act
-        viewModel = BookListViewModel(repository, preferences, context, permissionsManager)
+        viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
 
         // Assert
         assertTrue(viewModel.uiState.value is UiState.Error)
@@ -101,10 +101,11 @@ class BookListViewModelTest {
     fun deleteBook_validBookIdProvided_invokesRepositoryDelete() = runTest(testDispatcher) {
         // Arrange
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
-        viewModel = BookListViewModel(repository, preferences, context, permissionsManager)
+        viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
+        viewModel.updateBookId(100L)
 
         // Act
-        viewModel.deleteBook(100L)
+        viewModel.deleteBook()
 
         // Assert
         verify(repository).deleteBookAndRelations(100L)
@@ -117,7 +118,7 @@ class BookListViewModelTest {
         val filePath = "/path/to/import.db"
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
         whenever(repository.importDatabase(filePath)).thenReturn(true)
-        viewModel = BookListViewModel(repository, preferences, context, permissionsManager)
+        viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
 
         // Act
         viewModel.importDatabase(filePath)
@@ -134,7 +135,7 @@ class BookListViewModelTest {
         val filePath = "/path/to/import.db"
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
         whenever(repository.importDatabase(filePath)).thenReturn(false)
-        viewModel = BookListViewModel(repository, preferences, context, permissionsManager)
+        viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
 
         // Act
         viewModel.importDatabase(filePath)
@@ -151,7 +152,7 @@ class BookListViewModelTest {
         val filePath = "/path/to/export.db"
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
         whenever(repository.exportDatabase(filePath)).thenReturn(true)
-        viewModel = BookListViewModel(repository, preferences, context, permissionsManager)
+        viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
 
         // Act
         viewModel.exportDatabase(filePath)
@@ -168,7 +169,7 @@ class BookListViewModelTest {
         val filePath = "/path/to/export.db"
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
         whenever(repository.exportDatabase(filePath)).thenReturn(false)
-        viewModel = BookListViewModel(repository, preferences, context, permissionsManager)
+        viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
 
         // Act
         viewModel.exportDatabase(filePath)
@@ -185,7 +186,7 @@ class BookListViewModelTest {
         val filePath = "/path/to/export.db"
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
         whenever(repository.exportDatabase(filePath)).thenReturn(true)
-        viewModel = BookListViewModel(repository, preferences, context, permissionsManager)
+        viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
 
         viewModel.exportDatabase(filePath)
 
@@ -201,7 +202,7 @@ class BookListViewModelTest {
     fun getExportFileName_defaultDatabaseName_returnsFormattedFilenameWithTimestamp() {
         // Arrange
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
-        viewModel = BookListViewModel(repository, preferences, context, permissionsManager)
+        viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
 
         // Act
         val fileName = viewModel.getExportFileName()
@@ -220,7 +221,7 @@ class BookListViewModelTest {
         // Arrange
         val newOrderId = 5
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
-        viewModel = BookListViewModel(repository, preferences, context, permissionsManager)
+        viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
 
         // Act
         viewModel.updateOrderId(newOrderId)
@@ -237,7 +238,7 @@ class BookListViewModelTest {
         // Arrange
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
         whenever(permissionsManager.hasStoragePermission()).thenReturn(true)
-        viewModel = BookListViewModel(repository, preferences, context, permissionsManager)
+        viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
         
         val events = mutableListOf<PermissionEvent>()
         val job = launch { viewModel.permissionEvent.toList(events) }
@@ -258,7 +259,7 @@ class BookListViewModelTest {
         // Arrange
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
         whenever(permissionsManager.hasStoragePermission()).thenReturn(false)
-        viewModel = BookListViewModel(repository, preferences, context, permissionsManager)
+        viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
         
         val events = mutableListOf<PermissionEvent>()
         val job = launch { viewModel.permissionEvent.toList(events) }
@@ -282,7 +283,7 @@ class BookListViewModelTest {
         whenever(permissionsManager.isAndroidRorAbove()).thenReturn(true)
         val mockIntent = mock(android.content.Intent::class.java)
         whenever(permissionsManager.getManageStorageIntent()).thenReturn(mockIntent)
-        viewModel = BookListViewModel(repository, preferences, context, permissionsManager)
+        viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
         
         val events = mutableListOf<PermissionEvent>()
         val job = launch { viewModel.permissionEvent.toList(events) }
@@ -304,7 +305,7 @@ class BookListViewModelTest {
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
         whenever(permissionsManager.isAndroidRorAbove()).thenReturn(false)
         whenever(permissionsManager.getStoragePermissionRequest()).thenReturn("android.permission.READ_EXTERNAL_STORAGE")
-        viewModel = BookListViewModel(repository, preferences, context, permissionsManager)
+        viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
         
         val events = mutableListOf<PermissionEvent>()
         val job = launch { viewModel.permissionEvent.toList(events) }
@@ -325,7 +326,7 @@ class BookListViewModelTest {
         // Arrange
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
         whenever(permissionsManager.hasStoragePermission()).thenReturn(true)
-        viewModel = BookListViewModel(repository, preferences, context, permissionsManager)
+        viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
         
         val events = mutableListOf<PermissionEvent>()
         val job = launch { viewModel.permissionEvent.toList(events) }
@@ -345,7 +346,7 @@ class BookListViewModelTest {
         // Arrange
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
         whenever(permissionsManager.hasStoragePermission()).thenReturn(false)
-        viewModel = BookListViewModel(repository, preferences, context, permissionsManager)
+        viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
         viewModel.onActionClicked(PendingAction.IMPORT)
         
         // Act
@@ -360,7 +361,7 @@ class BookListViewModelTest {
     fun sharedPreferenceChangeListener_expandAllChanged_updatesStateFlow() {
         // Arrange
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
-        viewModel = BookListViewModel(repository, preferences, context, permissionsManager)
+        viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
         
         // Act
         preferences.edit { putBoolean("pref_expand_all", true) }
@@ -384,7 +385,7 @@ class BookListViewModelTest {
             null
         }
 
-        val viewModel = BookListViewModel(repository, mockPreferences, context, permissionsManager)
+        val viewModel = BookListViewModel(repository, mockPreferences, permissionsManager, context)
         
         // Act: Manually invoke onCleared via reflection
         val onClearedMethod = Class.forName("androidx.lifecycle.ViewModel").getDeclaredMethod("onCleared")
