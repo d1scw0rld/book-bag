@@ -13,17 +13,19 @@ import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import com.google.android.material.appbar.CollapsingToolbarLayout
-import org.d1scw0rld.bookbag.waitFor
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
+import kotlinx.coroutines.test.runTest
 import org.d1scw0rld.bookbag.DisplayNameRobolectricRunner
 import org.d1scw0rld.bookbag.R
 import org.d1scw0rld.bookbag.data.DbConstants
 import org.d1scw0rld.bookbag.data.dao.BookDao
 import org.d1scw0rld.bookbag.data.entity.BookEntity
+import org.d1scw0rld.bookbag.dto.Date
+import org.d1scw0rld.bookbag.dto.Price
 import org.d1scw0rld.bookbag.launchFragmentInHiltContainer
-import org.hamcrest.Matchers.allOf
+import org.d1scw0rld.bookbag.waitFor
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
@@ -31,13 +33,10 @@ import org.junit.Test
 import org.junit.jupiter.api.DisplayName
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mock
+import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import javax.inject.Inject
-import kotlinx.coroutines.test.runTest
-import org.d1scw0rld.bookbag.dto.Date
-import org.d1scw0rld.bookbag.dto.Price
-import org.robolectric.RuntimeEnvironment
 
 @HiltAndroidTest
 @RunWith(DisplayNameRobolectricRunner::class)
@@ -155,6 +154,68 @@ class BookDetailFragmentIntegrationTest {
         onView(withText(formatDate(READ_DATE_20231225))).perform(scrollTo()).check(matches(isDisplayed()))
     }
 
+    @DisplayName("On View Created - Empty Or Zero Values - Fields Not Displayed")
+    @Test
+    @Config(application = HiltTestApplication::class, sdk = [28], qualifiers = "w480dp-h3000dp")
+    fun onViewCreated_emptyOrZeroValues_fieldsNotDisplayed() = runTest {
+        val book = BookEntity(
+            id = ID_204,
+            title = TITLE_EMPTY,
+            description = DESC_EMPTY,
+            volume = 0,
+            publicationDate = 0,
+            pages = 0,
+            price = PRICE_EMPTY,
+            value = PRICE_EMPTY,
+            dueDate = DATE_ZERO,
+            readDate = DATE_ZERO,
+            edition = 0,
+            isbn = "",
+            web = ""
+        )
+        bookDao.insertBook(book)
+
+        val mockNavController = mock(NavController::class.java)
+        val args = Bundle().apply { putLong(ARG_BOOK_ID, ID_204) }
+        launchFragmentInHiltContainer<BookFragment>(
+            fragmentArgs = args,
+            themeResId = style.Theme_AppCompat_Light_NoActionBar
+        ) {
+            Navigation.setViewNavController(requireView(), mockNavController)
+        }
+        Shadows.shadowOf(getMainLooper()).idle()
+
+        // Assert: Wait for the form to finish loading by checking the toolbar title
+        onView(androidx.test.espresso.matcher.ViewMatchers.isRoot())
+            .perform(waitFor(object : org.hamcrest.TypeSafeMatcher<android.view.View>() {
+                override fun describeTo(description: org.hamcrest.Description) {
+                    description.appendText("toolbar title matches $TITLE_EMPTY")
+                }
+                override fun matchesSafely(view: android.view.View): Boolean {
+                    val toolbar = view.findViewById<CollapsingToolbarLayout>(R.id.toolbar_layout)
+                    return toolbar?.title == TITLE_EMPTY
+                }
+            }, TIMEOUT_5000))
+
+        // Assert: Title is set on the CollapsingToolbarLayout
+        onView(withId(R.id.toolbar_layout)).check { view, _ ->
+            assertEquals(TITLE_EMPTY, (view as CollapsingToolbarLayout).title)
+        }
+
+        // Assert: No field labels are displayed because values are empty/zero
+        onView(withText(R.string.fld_description)).check(doesNotExist())
+        onView(withText(R.string.fld_volume)).check(doesNotExist())
+        onView(withText(R.string.fld_publication_date)).check(doesNotExist())
+        onView(withText(R.string.fld_pages)).check(doesNotExist())
+        onView(withText(R.string.fld_edition)).check(doesNotExist())
+        onView(withText(R.string.fld_isbn)).check(doesNotExist())
+        onView(withText(R.string.fld_web)).check(doesNotExist())
+        onView(withText(R.string.fld_price)).check(doesNotExist())
+        onView(withText(R.string.fld_value)).check(doesNotExist())
+        onView(withText(R.string.fld_due_date)).check(doesNotExist())
+        onView(withText(R.string.fld_read_date)).check(doesNotExist())
+    }
+
     @DisplayName("On View Created - Multiple Books - Fragment Handles Data Loading Properly")
     @Test
     @Config(application = HiltTestApplication::class, sdk = [28], qualifiers = "w480dp-h3000dp")
@@ -168,7 +229,7 @@ class BookDetailFragmentIntegrationTest {
             publicationDate = PUB_DATE_2022,
             pages = PAGES_100,
             price = PRICE_1000_1,
-            value = PRICE_1000_1,
+            value = VALUE_1500_1,
             dueDate = DUE_DATE_20220101,
             readDate = READ_DATE_20211225,
             edition = EDITION_1,
@@ -238,11 +299,10 @@ class BookDetailFragmentIntegrationTest {
         onView(withText(WEB_FIRST)).perform(scrollTo()).check(matches(isDisplayed()))
 
         onView(withText(R.string.fld_price)).perform(scrollTo()).check(matches(isDisplayed()))
-        // Use allOf(withText(), withId()) or rely on the container to avoid ambiguous matches
-        onView(allOf(
-            withId(R.id.tv_value),
-            withText(formatPrice(PRICE_1000_1))
-        )).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(formatPrice(PRICE_1000_1))).perform(scrollTo()).check(matches(isDisplayed()))
+
+        onView(withText(R.string.fld_value)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(formatPrice(VALUE_1500_1))).perform(scrollTo()).check(matches(isDisplayed()))
 
         onView(withText(R.string.fld_due_date)).perform(scrollTo()).check(matches(isDisplayed()))
         onView(withText(formatDate(DUE_DATE_20220101))).perform(scrollTo()).check(matches(isDisplayed()))
@@ -276,14 +336,17 @@ class BookDetailFragmentIntegrationTest {
         private const val ID_201 = 201L
         private const val ID_202 = 202L
         private const val ID_203 = 203L
+        private const val ID_204 = 204L
 
         private const val TITLE_FIRST = "First Book"
         private const val TITLE_SECOND = "Second Book"
         private const val TITLE_COMPLETE = "Complete Book Data"
+        private const val TITLE_EMPTY = "Empty Book"
 
         private const val DESC_FIRST = "First"
         private const val DESC_SECOND = "Second"
         private const val DESC_COMPLETE = "Full description text"
+        private const val DESC_EMPTY = ""
 
         private const val VOL_1 = 1
         private const val VOL_2 = 2
@@ -298,10 +361,12 @@ class BookDetailFragmentIntegrationTest {
         private const val PAGES_500 = 500
 
         private const val PRICE_1000_1 = "1000|1"
+        private const val VALUE_1500_1 = "1500|1"
         private const val PRICE_2000_1 = "2000|1"
         private const val VALUE_3000_2 = "3000|2"
         private const val PRICE_5000_2 = "5000|2"
         private const val VALUE_6000_3 = "6000|3"
+        private const val PRICE_EMPTY = ""
 
         private const val DUE_DATE_20220101 = 20220101
         private const val DUE_DATE_20230101 = 20230101
@@ -322,6 +387,9 @@ class BookDetailFragmentIntegrationTest {
         private const val WEB_FIRST = "https://first.com"
         private const val WEB_SECOND = "https://second.com"
         private const val WEB_COMPLETE = "https://completebook.com"
+        
+        private const val DATE_ZERO = 0
+        
         private const val TIMEOUT_5000 = 5000L
     }
 }
