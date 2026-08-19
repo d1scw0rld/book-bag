@@ -96,8 +96,8 @@ class BookFragment : BaseFragment(), IBackPressListener {
                     R.id.action_delete -> {
                         viewLifecycleOwner.lifecycleScope.launch {
                             bookRepository.deleteBookAndRelations(bookId)
-                            navigateToBookList()
                         }
+                        navigateToBookList()
                         true
                     }
                     else -> false
