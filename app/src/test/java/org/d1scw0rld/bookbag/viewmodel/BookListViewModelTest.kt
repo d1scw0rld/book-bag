@@ -64,7 +64,7 @@ class BookListViewModelTest {
     fun loadBooks_repositorySucceeds_emitsSuccessUiStateWithBookList() = runTest(testDispatcher) {
         // Arrange
         val bookRelation = BookWithFields(
-            book = BookEntity(id = 1L, title = "Clean Code", description = null, volume = null, publicationDate = null, pages = null, price = null, value = null, dueDate = null, readDate = null, edition = null, isbn = null, web = null),
+            book = BookEntity(id = TEST_BOOK_ID_1, title = TITLE_CLEAN_CODE, description = null, volume = null, publicationDate = null, pages = null, price = null, value = null, dueDate = null, readDate = null, edition = null, isbn = null, web = null),
             fields = emptyList()
         )
         val expectedBooks = listOf(bookRelation)
@@ -76,15 +76,15 @@ class BookListViewModelTest {
         // Assert
         assertTrue(viewModel.uiState.value is UiState.Success)
         val successData = (viewModel.uiState.value as UiState.Success).data
-        assertEquals(1, successData.size)
-        assertEquals("Clean Code", successData[0].book.title)
+        assertEquals(EXPECTED_SUCCESS_DATA_SIZE_1, successData.size)
+        assertEquals(TITLE_CLEAN_CODE, successData[0].book.title)
     }
 
     @DisplayName("Load Books - Repository Throws Exception - Emits Error UI State")
     @Test
     fun loadBooks_repositoryThrowsException_emitsErrorUiState() = runTest(testDispatcher) {
         // Arrange
-        val expectedException = RuntimeException("Database error")
+        val expectedException = RuntimeException(ERROR_DB_MESSAGE)
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flow { throw expectedException })
 
         // Act
@@ -93,7 +93,7 @@ class BookListViewModelTest {
         // Assert
         assertTrue(viewModel.uiState.value is UiState.Error)
         val errorException = (viewModel.uiState.value as UiState.Error).exception
-        assertEquals("Database error", errorException.message)
+        assertEquals(ERROR_DB_MESSAGE, errorException.message)
     }
 
     @DisplayName("Delete Book - Valid Book ID Provided - Invokes Repository Delete")
@@ -102,26 +102,25 @@ class BookListViewModelTest {
         // Arrange
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
         viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
-        viewModel.updateBookId(100L)
+        viewModel.updateBookId(TEST_BOOK_ID_100)
 
         // Act
         viewModel.deleteBook()
 
         // Assert
-        verify(repository).deleteBookAndRelations(100L)
+        verify(repository).deleteBookAndRelations(TEST_BOOK_ID_100)
     }
 
     @DisplayName("Import Database - Import Succeeds - Updates File Op State With Success")
     @Test
     fun importDatabase_importSucceeds_updatesFileOpStateWithSuccess() = runTest(testDispatcher) {
         // Arrange
-        val filePath = "/path/to/import.db"
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
-        whenever(repository.importDatabase(filePath)).thenReturn(true)
+        whenever(repository.importDatabase(FILE_PATH_IMPORT)).thenReturn(true)
         viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
 
         // Act
-        viewModel.importDatabase(filePath)
+        viewModel.importDatabase(FILE_PATH_IMPORT)
 
         // Assert
         assertTrue(viewModel.fileOpState.value is UiState.Success)
@@ -132,30 +131,28 @@ class BookListViewModelTest {
     @Test
     fun importDatabase_importFails_updatesFileOpStateWithError() = runTest(testDispatcher) {
         // Arrange
-        val filePath = "/path/to/import.db"
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
-        whenever(repository.importDatabase(filePath)).thenReturn(false)
+        whenever(repository.importDatabase(FILE_PATH_IMPORT)).thenReturn(false)
         viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
 
         // Act
-        viewModel.importDatabase(filePath)
+        viewModel.importDatabase(FILE_PATH_IMPORT)
 
         // Assert
         assertTrue(viewModel.fileOpState.value is UiState.Error)
-        assertEquals("Import failed", (viewModel.fileOpState.value as UiState.Error).exception.message)
+        assertEquals(ERROR_IMPORT_FAILED, (viewModel.fileOpState.value as UiState.Error).exception.message)
     }
 
     @DisplayName("Export Database - Export Succeeds - Updates File Op State With Success")
     @Test
     fun exportDatabase_exportSucceeds_updatesFileOpStateWithSuccess() = runTest(testDispatcher) {
         // Arrange
-        val filePath = "/path/to/export.db"
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
-        whenever(repository.exportDatabase(filePath)).thenReturn(true)
+        whenever(repository.exportDatabase(FILE_PATH_EXPORT)).thenReturn(true)
         viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
 
         // Act
-        viewModel.exportDatabase(filePath)
+        viewModel.exportDatabase(FILE_PATH_EXPORT)
 
         // Assert
         assertTrue(viewModel.fileOpState.value is UiState.Success)
@@ -166,29 +163,27 @@ class BookListViewModelTest {
     @Test
     fun exportDatabase_exportFails_updatesFileOpStateWithError() = runTest(testDispatcher) {
         // Arrange
-        val filePath = "/path/to/export.db"
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
-        whenever(repository.exportDatabase(filePath)).thenReturn(false)
+        whenever(repository.exportDatabase(FILE_PATH_EXPORT)).thenReturn(false)
         viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
 
         // Act
-        viewModel.exportDatabase(filePath)
+        viewModel.exportDatabase(FILE_PATH_EXPORT)
 
         // Assert
         assertTrue(viewModel.fileOpState.value is UiState.Error)
-        assertEquals("Export failed", (viewModel.fileOpState.value as UiState.Error).exception.message)
+        assertEquals(ERROR_EXPORT_FAILED, (viewModel.fileOpState.value as UiState.Error).exception.message)
     }
 
     @DisplayName("Consume File Operation - Active File Op State - Resets File Op State to Null")
     @Test
     fun consumeFileOperation_activeFileOpState_resetsFileOpStateToNull() = runTest(testDispatcher) {
         // Arrange
-        val filePath = "/path/to/export.db"
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
-        whenever(repository.exportDatabase(filePath)).thenReturn(true)
+        whenever(repository.exportDatabase(FILE_PATH_EXPORT)).thenReturn(true)
         viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
 
-        viewModel.exportDatabase(filePath)
+        viewModel.exportDatabase(FILE_PATH_EXPORT)
 
         // Act
         viewModel.consumeFileOperation()
@@ -211,24 +206,23 @@ class BookListViewModelTest {
         // Format from strings.xml: "%s_%d%02d%02d%02d%02d.%s"
         // DbConstants.DATABASE_NAME is "book_bag.db"
         // Expected pattern: book_bag_YYYYMMDDHHMM.db
-        val regex = Regex("""book_bag_\d{12}\.db""")
-        assertTrue("Filename '$fileName' should match pattern", regex.matches(fileName))
+        val regex = Regex(PATTERN_FILE_NAME)
+        assertTrue(ASSERT_MSG_FILENAME_MATCH, regex.matches(fileName))
     }
 
     @DisplayName("Update Order ID - Valid New ID - Updates State and Preferences and Reloads Books")
     @Test
     fun updateOrderId_validNewId_updatesStateAndPreferencesAndReloadsBooks() = runTest(testDispatcher) {
         // Arrange
-        val newOrderId = 5
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
         viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
 
         // Act
-        viewModel.updateOrderId(newOrderId)
+        viewModel.updateOrderId(TEST_ORDER_ID)
 
         // Assert
-        assertEquals(newOrderId, viewModel.orderId.value)
-        assertEquals(newOrderId, preferences.getInt("order_id", -1))
+        assertEquals(TEST_ORDER_ID, viewModel.orderId.value)
+        assertEquals(TEST_ORDER_ID, preferences.getInt(PREF_KEY_ORDER_ID, -1))
         verify(repository, atLeastOnce()).getAllBooksWithFieldsFlow()
     }
 
@@ -248,7 +242,7 @@ class BookListViewModelTest {
 
         // Assert
         assertEquals(PendingAction.IMPORT, viewModel.pendingAction.value)
-        assertEquals(1, events.size)
+        assertEquals(EXPECTED_EVENTS_SIZE_1, events.size)
         assertTrue(events[0] is PermissionEvent.PermissionGranted)
         job.cancel()
     }
@@ -269,7 +263,7 @@ class BookListViewModelTest {
 
         // Assert
         assertEquals(PendingAction.EXPORT, viewModel.pendingAction.value)
-        assertEquals(1, events.size)
+        assertEquals(EXPECTED_EVENTS_SIZE_1, events.size)
         assertTrue(events[0] is PermissionEvent.ShowRationale)
         assertEquals(PendingAction.EXPORT, (events[0] as PermissionEvent.ShowRationale).action)
         job.cancel()
@@ -292,7 +286,7 @@ class BookListViewModelTest {
         viewModel.onPermissionRationaleConfirmed()
 
         // Assert
-        assertEquals(1, events.size)
+        assertEquals(EXPECTED_EVENTS_SIZE_1, events.size)
         assertTrue(events[0] is PermissionEvent.RequestManageStorage)
         assertEquals(mockIntent, (events[0] as PermissionEvent.RequestManageStorage).intent)
         job.cancel()
@@ -304,7 +298,7 @@ class BookListViewModelTest {
         // Arrange
         whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(flowOf(emptyList()))
         whenever(permissionsManager.isAndroidRorAbove()).thenReturn(false)
-        whenever(permissionsManager.getStoragePermissionRequest()).thenReturn("android.permission.READ_EXTERNAL_STORAGE")
+        whenever(permissionsManager.getStoragePermissionRequest()).thenReturn(PERMISSION_READ_EXTERNAL_STORAGE)
         viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
         
         val events = mutableListOf<PermissionEvent>()
@@ -314,9 +308,9 @@ class BookListViewModelTest {
         viewModel.onPermissionRationaleConfirmed()
 
         // Assert
-        assertEquals(1, events.size)
+        assertEquals(EXPECTED_EVENTS_SIZE_1, events.size)
         assertTrue(events[0] is PermissionEvent.RequestLegacyPermission)
-        assertEquals("android.permission.READ_EXTERNAL_STORAGE", (events[0] as PermissionEvent.RequestLegacyPermission).permission)
+        assertEquals(PERMISSION_READ_EXTERNAL_STORAGE, (events[0] as PermissionEvent.RequestLegacyPermission).permission)
         job.cancel()
     }
 
@@ -335,7 +329,7 @@ class BookListViewModelTest {
         viewModel.onManageStorageResult()
 
         // Assert
-        assertEquals(1, events.size)
+        assertEquals(EXPECTED_EVENTS_SIZE_1, events.size)
         assertTrue(events[0] is PermissionEvent.PermissionGranted)
         job.cancel()
     }
@@ -364,7 +358,7 @@ class BookListViewModelTest {
         viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
         
         // Act
-        preferences.edit { putBoolean("pref_expand_all", true) }
+        preferences.edit { putBoolean(PREF_KEY_EXPAND_ALL, true) }
 
         // Assert
         assertTrue(viewModel.isExpandAll.value)
@@ -388,11 +382,40 @@ class BookListViewModelTest {
         val viewModel = BookListViewModel(repository, mockPreferences, permissionsManager, context)
         
         // Act: Manually invoke onCleared via reflection
-        val onClearedMethod = Class.forName("androidx.lifecycle.ViewModel").getDeclaredMethod("onCleared")
+        val onClearedMethod = Class.forName(CLASS_VIEW_MODEL).getDeclaredMethod(METHOD_ON_CLEARED)
         onClearedMethod.isAccessible = true
         onClearedMethod.invoke(viewModel)
 
         // Assert
         verify(mockPreferences).unregisterOnSharedPreferenceChangeListener(capturedListener)
+    }
+
+    companion object {
+        const val TEST_BOOK_ID_1 = 1L
+        const val TEST_BOOK_ID_100 = 100L
+        const val TEST_ORDER_ID = 5
+
+        const val TITLE_CLEAN_CODE = "Clean Code"
+
+        const val ERROR_DB_MESSAGE = "Database error"
+        const val ERROR_IMPORT_FAILED = "Import failed"
+        const val ERROR_EXPORT_FAILED = "Export failed"
+
+        const val FILE_PATH_IMPORT = "/path/to/import.db"
+        const val FILE_PATH_EXPORT = "/path/to/export.db"
+        const val PATTERN_FILE_NAME = """book_bag_\d{12}\.db"""
+
+        const val PREF_KEY_ORDER_ID = "order_id"
+        const val PREF_KEY_EXPAND_ALL = "pref_expand_all"
+
+        const val PERMISSION_READ_EXTERNAL_STORAGE = "android.permission.READ_EXTERNAL_STORAGE"
+
+        const val CLASS_VIEW_MODEL = "androidx.lifecycle.ViewModel"
+        const val METHOD_ON_CLEARED = "onCleared"
+
+        const val EXPECTED_SUCCESS_DATA_SIZE_1 = 1
+        const val EXPECTED_EVENTS_SIZE_1 = 1
+        
+        const val ASSERT_MSG_FILENAME_MATCH = "Filename should match pattern"
     }
 }

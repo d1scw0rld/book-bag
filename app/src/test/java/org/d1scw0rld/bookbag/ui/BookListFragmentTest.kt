@@ -47,16 +47,16 @@ class BookListFragmentTest {
             id = ID_1,
             title = TITLE_1,
             description = DESC_1,
-            volume = 1,
-            publicationDate = 2023,
-            pages = 100,
+            volume = DEFAULT_VOLUME,
+            publicationDate = DEFAULT_PUBLICATION_DATE,
+            pages = DEFAULT_PAGES,
             price = PRICE_1,
             value = PRICE_1,
-            dueDate = 0,
-            readDate = 0,
-            edition = 1,
+            dueDate = DEFAULT_DUE_DATE,
+            readDate = DEFAULT_READ_DATE,
+            edition = DEFAULT_EDITION,
             isbn = ISBN_1,
-            web = ""
+            web = DEFAULT_WEB
         )
         bookDao.insertBook(book)
 
@@ -78,6 +78,14 @@ class BookListFragmentTest {
         private const val DESC_1 = "Description"
         private const val PRICE_1 = "1000|1"
         private const val ISBN_1 = "12345"
+
+        private const val DEFAULT_VOLUME = 1
+        private const val DEFAULT_PUBLICATION_DATE = 2023
+        private const val DEFAULT_PAGES = 100
+        private const val DEFAULT_DUE_DATE = 0
+        private const val DEFAULT_READ_DATE = 0
+        private const val DEFAULT_EDITION = 1
+        private const val DEFAULT_WEB = ""
 
         private const val LETTER_T = "T"
         private const val COUNT_1_TEXT = "1 book"

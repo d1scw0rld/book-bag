@@ -3,6 +3,7 @@ package org.d1scw0rld.bookbag.ui.adapters
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.*
 import org.junit.Before
@@ -58,50 +59,50 @@ class ExpandableRecyclerAdapterTest {
         val adapter = TestExpandableAdapter(context)
         adapter.setItems(
             listOf(
-                TestListItem(ExpandableRecyclerAdapter.TYPE_HEADER, "Header 1"),
-                TestListItem(ExpandableRecyclerAdapter.TYPE_HEADER, "Header 2"),
+                TestListItem(ExpandableRecyclerAdapter.TYPE_HEADER, HEADER_TEXT_1),
+                TestListItem(ExpandableRecyclerAdapter.TYPE_HEADER, HEADER_TEXT_2),
             )
         )
-        assertEquals(0L, adapter.getItemId(0))
-        assertEquals(1L, adapter.getItemId(1))
+        assertEquals(ID_0, adapter.getItemId(INDEX_0))
+        assertEquals(ID_1, adapter.getItemId(INDEX_1))
     }
 
     @DisplayName("Toggle Expanded Items - Accordion Mode Enabled - Collapses Other Headers on Expansion")
     @Test
     fun toggleExpandedItems_accordionModeEnabled_collapsesOtherHeadersOnExpansion() {
         val adapter = TestExpandableAdapter(context)
-        adapter.mode = 1 // Set to MODE_ACCORDION
+        adapter.mode = MODE_ACCORDION
 
         val items = listOf(
-            TestListItem(ExpandableRecyclerAdapter.TYPE_HEADER, "Header 1"),
-            TestListItem(ExpandableRecyclerAdapter.TYPE_ITEM, "Item 1.1"),
-            TestListItem(ExpandableRecyclerAdapter.TYPE_ITEM, "Item 1.2"),
-            TestListItem(ExpandableRecyclerAdapter.TYPE_HEADER, "Header 2"),
-            TestListItem(ExpandableRecyclerAdapter.TYPE_ITEM, "Item 2.1")
+            TestListItem(ExpandableRecyclerAdapter.TYPE_HEADER, HEADER_TEXT_1),
+            TestListItem(ExpandableRecyclerAdapter.TYPE_ITEM, ITEM_TEXT_1_1),
+            TestListItem(ExpandableRecyclerAdapter.TYPE_ITEM, ITEM_TEXT_1_2),
+            TestListItem(ExpandableRecyclerAdapter.TYPE_HEADER, HEADER_TEXT_2),
+            TestListItem(ExpandableRecyclerAdapter.TYPE_ITEM, ITEM_TEXT_2_1)
         )
         adapter.setItems(items)
 
-        assertEquals(2, adapter.itemCount)
+        assertEquals(EXPECTED_ITEM_COUNT_2, adapter.itemCount)
 
         val holder1 = adapter.HeaderViewHolder(View(context))
-        val positionField = androidx.recyclerview.widget.RecyclerView.ViewHolder::class.java.getDeclaredField("mPosition")
+        val positionField = RecyclerView.ViewHolder::class.java.getDeclaredField(FIELD_MPOSITION)
         positionField.isAccessible = true
-        positionField.set(holder1, 0)
+        positionField.set(holder1, INDEX_0)
 
         // Expand Header 1
         holder1.handleClick()
-        assertEquals(4, adapter.itemCount)
+        assertEquals(EXPECTED_ITEM_COUNT_4, adapter.itemCount)
 
         // Expand Header 2 (Header 2 is at visible index 3)
         val holder2 = adapter.HeaderViewHolder(View(context))
-        positionField.set(holder2, 3)
+        positionField.set(holder2, INDEX_3)
         holder2.handleClick()
 
         // Accordion mode should collapse Header 1 automatically!
-        assertEquals(3, adapter.itemCount)
-        assertEquals(ExpandableRecyclerAdapter.TYPE_HEADER, adapter.getItemViewType(0)) // Header 1 (collapsed)
-        assertEquals(ExpandableRecyclerAdapter.TYPE_HEADER, adapter.getItemViewType(1)) // Header 2 (expanded)
-        assertEquals(ExpandableRecyclerAdapter.TYPE_ITEM, adapter.getItemViewType(2))   // Item 2.1
+        assertEquals(EXPECTED_ITEM_COUNT_3, adapter.itemCount)
+        assertEquals(ExpandableRecyclerAdapter.TYPE_HEADER, adapter.getItemViewType(INDEX_0)) // Header 1 (collapsed)
+        assertEquals(ExpandableRecyclerAdapter.TYPE_HEADER, adapter.getItemViewType(INDEX_1)) // Header 2 (expanded)
+        assertEquals(ExpandableRecyclerAdapter.TYPE_ITEM, adapter.getItemViewType(INDEX_2))   // Item 2.1
     }
 
     @DisplayName("Expand All - Already Fully Expanded - Does Nothing")
@@ -109,15 +110,15 @@ class ExpandableRecyclerAdapterTest {
     fun expandAll_alreadyFullyExpanded_doesNothing() {
         val adapter = TestExpandableAdapter(context)
         val items = listOf(
-            TestListItem(ExpandableRecyclerAdapter.TYPE_HEADER, "Header 1"),
-            TestListItem(ExpandableRecyclerAdapter.TYPE_ITEM, "Item 1.1")
+            TestListItem(ExpandableRecyclerAdapter.TYPE_HEADER, HEADER_TEXT_1),
+            TestListItem(ExpandableRecyclerAdapter.TYPE_ITEM, ITEM_TEXT_1_1)
         )
         adapter.setItems(items)
         adapter.expandAll()
-        assertEquals(2, adapter.itemCount)
+        assertEquals(EXPECTED_ITEM_COUNT_2, adapter.itemCount)
 
         adapter.expandAll()
-        assertEquals(2, adapter.itemCount)
+        assertEquals(EXPECTED_ITEM_COUNT_2, adapter.itemCount)
     }
 
     @DisplayName("Remove Item At - Valid Position - Recalculates Internal Index List and Expand Map")
@@ -125,21 +126,21 @@ class ExpandableRecyclerAdapterTest {
     fun removeItemAt_validPosition_recalculatesInternalIndexListAndExpandMap() {
         val adapter = TestExpandableAdapter(context)
         val items = listOf(
-            TestListItem(ExpandableRecyclerAdapter.TYPE_HEADER, "Header 1"),
-            TestListItem(ExpandableRecyclerAdapter.TYPE_ITEM, "Item 1.1"),
-            TestListItem(ExpandableRecyclerAdapter.TYPE_HEADER, "Header 2"),
-            TestListItem(ExpandableRecyclerAdapter.TYPE_ITEM, "Item 2.1")
+            TestListItem(ExpandableRecyclerAdapter.TYPE_HEADER, HEADER_TEXT_1),
+            TestListItem(ExpandableRecyclerAdapter.TYPE_ITEM, ITEM_TEXT_1_1),
+            TestListItem(ExpandableRecyclerAdapter.TYPE_HEADER, HEADER_TEXT_2),
+            TestListItem(ExpandableRecyclerAdapter.TYPE_ITEM, ITEM_TEXT_2_1)
         )
         adapter.setItems(items)
         adapter.expandAll()
-        assertEquals(4, adapter.itemCount)
+        assertEquals(EXPECTED_ITEM_COUNT_4, adapter.itemCount)
 
-        adapter.removeItemAt(1) // Remove Item 1.1
+        adapter.removeItemAt(INDEX_1) // Remove Item 1.1
 
-        assertEquals(3, adapter.itemCount)
-        assertEquals(ExpandableRecyclerAdapter.TYPE_HEADER, adapter.getItemViewType(0)) // Header 1
-        assertEquals(ExpandableRecyclerAdapter.TYPE_HEADER, adapter.getItemViewType(1)) // Header 2
-        assertEquals(ExpandableRecyclerAdapter.TYPE_ITEM, adapter.getItemViewType(2))   // Item 2.1
+        assertEquals(EXPECTED_ITEM_COUNT_3, adapter.itemCount)
+        assertEquals(ExpandableRecyclerAdapter.TYPE_HEADER, adapter.getItemViewType(INDEX_0)) // Header 1
+        assertEquals(ExpandableRecyclerAdapter.TYPE_HEADER, adapter.getItemViewType(INDEX_1)) // Header 2
+        assertEquals(ExpandableRecyclerAdapter.TYPE_ITEM, adapter.getItemViewType(INDEX_2))   // Item 2.1
     }
 
     @DisplayName("Handle Click - Header ViewHolder Clicked - Triggers SetExpanded and OnExpansionToggled Callbacks")
@@ -147,8 +148,8 @@ class ExpandableRecyclerAdapterTest {
     fun handleClick_headerViewHolderClicked_triggersSetExpandedAndOnExpansionToggledCallbacks() {
         val adapter = TestExpandableAdapter(context)
         adapter.setItems(listOf(
-            TestListItem(ExpandableRecyclerAdapter.TYPE_HEADER, "Header 1"),
-            TestListItem(ExpandableRecyclerAdapter.TYPE_ITEM, "Item 1.1")
+            TestListItem(ExpandableRecyclerAdapter.TYPE_HEADER, HEADER_TEXT_1),
+            TestListItem(ExpandableRecyclerAdapter.TYPE_ITEM, ITEM_TEXT_1_1)
         ))
 
         var setExpandedCalled = false
@@ -166,12 +167,12 @@ class ExpandableRecyclerAdapterTest {
         }
 
         val customHolder = adapter.CallbackHeaderViewHolder(View(context))
-        val positionField = androidx.recyclerview.widget.RecyclerView.ViewHolder::class.java.getDeclaredField("mPosition")
+        val positionField = RecyclerView.ViewHolder::class.java.getDeclaredField(FIELD_MPOSITION)
         positionField.isAccessible = true
-        positionField.set(customHolder, 0)
+        positionField.set(customHolder, INDEX_0)
 
         // Bind triggers setExpanded
-        customHolder.bind(0)
+        customHolder.bind(INDEX_0)
         assertTrue(setExpandedCalled)
         assertFalse(lastExpandedValue)
 
@@ -182,5 +183,29 @@ class ExpandableRecyclerAdapterTest {
         assertTrue(lastExpandedValue)
         assertTrue(onExpansionToggledCalled)
         assertFalse(lastToggledValue)
+    }
+
+    companion object {
+        const val HEADER_TEXT_1 = "Header 1"
+        const val HEADER_TEXT_2 = "Header 2"
+        const val ITEM_TEXT_1_1 = "Item 1.1"
+        const val ITEM_TEXT_1_2 = "Item 1.2"
+        const val ITEM_TEXT_2_1 = "Item 2.1"
+        
+        const val ID_0 = 0L
+        const val ID_1 = 1L
+        
+        const val INDEX_0 = 0
+        const val INDEX_1 = 1
+        const val INDEX_2 = 2
+        const val INDEX_3 = 3
+
+        const val EXPECTED_ITEM_COUNT_2 = 2
+        const val EXPECTED_ITEM_COUNT_3 = 3
+        const val EXPECTED_ITEM_COUNT_4 = 4
+
+        const val MODE_ACCORDION = 1
+        
+        const val FIELD_MPOSITION = "mPosition"
     }
 }

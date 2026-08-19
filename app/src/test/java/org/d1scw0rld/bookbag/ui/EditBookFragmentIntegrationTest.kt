@@ -1,6 +1,7 @@
 package org.d1scw0rld.bookbag.ui
 
 import android.os.Bundle
+import android.os.Looper.getMainLooper
 import android.widget.EditText
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
@@ -179,7 +180,7 @@ class EditBookFragmentIntegrationTest {
         }
         
         launchFragmentInHiltContainer<EditBookFragment>(fragmentArgs = args)
-        Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
+        Shadows.shadowOf(getMainLooper()).idle()
         
         // 1. Wait for the Title field's internal EditText (it has ID R.id.editTextX).
         // Using wait by hint for more robustness as multiple views might have the same ID.

@@ -49,12 +49,12 @@ class BookDetailViewModelTest {
     @Test
     fun loadBook_validBookId_fetchesCurrenciesAndBookDetailsSuccessfully() = runTest {
         // Arrange
-        val bookId = 12L
+        val bookId = TEST_BOOK_ID
         val mockBook = BookWithFields(
-            book = BookEntity(id = bookId, title = "Clean Code", description = null, volume = null, publicationDate = null, pages = null, price = null, value = null, dueDate = null, readDate = null, edition = null, isbn = null, web = null),
+            book = BookEntity(id = bookId, title = TITLE_CLEAN_CODE, description = null, volume = null, publicationDate = null, pages = null, price = null, value = null, dueDate = null, readDate = null, edition = null, isbn = null, web = null),
             fields = emptyList()
         )
-        val mockCurrency = FieldEntity(id = 50L, typeId = 12, name = "USD")
+        val mockCurrency = FieldEntity(id = FIELD_ID_USD, typeId = FIELD_TYPE_ID_USD, name = CURRENCY_USD)
 
         whenever(repository.getFieldsByType(any())).thenReturn(listOf(mockCurrency))
         whenever(repository.getBookWithFieldsFlow(bookId)).thenReturn(flowOf(mockBook))
@@ -66,34 +66,34 @@ class BookDetailViewModelTest {
         assertTrue(viewModel.uiState.value is UiState.Success)
         val data = (viewModel.uiState.value as UiState.Success).data
         assertEquals(bookId, data.bookWithFields?.book?.id)
-        assertEquals("USD", data.currencies[0].value)
-        assertEquals(12, data.currencies[0].fieldTypeId)
+        assertEquals(CURRENCY_USD, data.currencies[0].value)
+        assertEquals(FIELD_TYPE_ID_USD, data.currencies[0].fieldTypeId)
     }
 
     @DisplayName("Load Book - Repository Currencies Fetch Fails - Emits Error UI State")
     @Test
     fun loadBook_repositoryCurrenciesFetchFails_emitsErrorUiState() = runTest {
         // Arrange
-        whenever(repository.getFieldsByType(any())).thenThrow(RuntimeException("Currencies fetch failed"))
+        whenever(repository.getFieldsByType(any())).thenThrow(RuntimeException(ERROR_CURRENCY_FETCH_FAILED))
 
         // Act
-        viewModel.loadBook(12L)
+        viewModel.loadBook(TEST_BOOK_ID)
 
         // Assert
         assertTrue(viewModel.uiState.value is UiState.Error)
         val exception = (viewModel.uiState.value as UiState.Error).exception
-        assertEquals("Currencies fetch failed", exception.message)
+        assertEquals(ERROR_CURRENCY_FETCH_FAILED, exception.message)
     }
 
     @DisplayName("Load Book - Repository Flow Throws Exception - Emits Error UI State")
     @Test
     fun loadBook_repositoryFlowThrowsException_emitsErrorUiState() = runTest {
         // Arrange
-        val bookId = 12L
-        val mockCurrency = FieldEntity(id = 50L, typeId = 12, name = "USD")
+        val bookId = TEST_BOOK_ID
+        val mockCurrency = FieldEntity(id = FIELD_ID_USD, typeId = FIELD_TYPE_ID_USD, name = CURRENCY_USD)
 
         whenever(repository.getFieldsByType(any())).thenReturn(listOf(mockCurrency))
-        whenever(repository.getBookWithFieldsFlow(bookId)).thenReturn(flow { throw RuntimeException("Database stream error") })
+        whenever(repository.getBookWithFieldsFlow(bookId)).thenReturn(flow { throw RuntimeException(ERROR_DB_STREAM_ERROR) })
 
         // Act
         viewModel.loadBook(bookId)
@@ -101,6 +101,17 @@ class BookDetailViewModelTest {
         // Assert
         assertTrue(viewModel.uiState.value is UiState.Error)
         val exception = (viewModel.uiState.value as UiState.Error).exception
-        assertEquals("Database stream error", exception.message)
+        assertEquals(ERROR_DB_STREAM_ERROR, exception.message)
+    }
+
+    companion object {
+        const val TEST_BOOK_ID = 12L
+        const val TITLE_CLEAN_CODE = "Clean Code"
+        const val FIELD_ID_USD = 50L
+        const val FIELD_TYPE_ID_USD = 12
+        const val CURRENCY_USD = "USD"
+        
+        const val ERROR_CURRENCY_FETCH_FAILED = "Currencies fetch failed"
+        const val ERROR_DB_STREAM_ERROR = "Database stream error"
     }
 }

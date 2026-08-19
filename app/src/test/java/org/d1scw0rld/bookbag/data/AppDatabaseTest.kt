@@ -37,10 +37,10 @@ class AppDatabaseTest {
         context = ApplicationProvider.getApplicationContext()
         AppDatabase.closeAndReset()
         // Clean up any existing DB file
-        val dbFile = context.getDatabasePath("book_bag.db")
+        val dbFile = context.getDatabasePath(DB_NAME)
         if (dbFile.exists()) dbFile.delete()
-        File(dbFile.path + "-wal").delete()
-        File(dbFile.path + "-shm").delete()
+        File(dbFile.path + WAL_SUFFIX).delete()
+        File(dbFile.path + SHM_SUFFIX).delete()
     }
 
     @After
@@ -81,7 +81,7 @@ class AppDatabaseTest {
         val db = AppDatabase.getDatabase(context, scope)
         triggerDbOpen(db)
         
-        val targetFile = File(context.cacheDir, "exported.db")
+        val targetFile = File(context.cacheDir, EXPORTED_DB_NAME)
         if (targetFile.exists()) targetFile.delete()
         
         val result = AppDatabase.exportDatabase(context, targetFile.absolutePath)
@@ -94,54 +94,54 @@ class AppDatabaseTest {
     @Test
     fun importDatabase_validBackupFile_restoresDatabaseAndCleansUpJournalFiles() {
         // 1. Create a source database file
-        val backupFile = File(context.cacheDir, "backup.db")
+        val backupFile = File(context.cacheDir, BACKUP_DB_NAME)
         val sqliteDb = android.database.sqlite.SQLiteDatabase.openOrCreateDatabase(backupFile, null)
-        sqliteDb.execSQL("CREATE TABLE test (id INTEGER)")
+        sqliteDb.execSQL(CREATE_TABLE_TEST)
         sqliteDb.close()
         
         // 2. Create dummy WAL/SHM files for the current DB
-        val dbFile = context.getDatabasePath("book_bag.db")
+        val dbFile = context.getDatabasePath(DB_NAME)
         dbFile.parentFile?.mkdirs()
-        val walFile = File(dbFile.absolutePath + "-wal")
-        val shmFile = File(dbFile.absolutePath + "-shm")
-        walFile.writeText("dummy wal")
-        shmFile.writeText("dummy shm")
+        val walFile = File(dbFile.absolutePath + WAL_SUFFIX)
+        val shmFile = File(dbFile.absolutePath + SHM_SUFFIX)
+        walFile.writeText(DUMMY_TEXT_WAL)
+        shmFile.writeText(DUMMY_TEXT_SHM)
         
         // 3. Perform import
         val result = AppDatabase.importDatabase(context, backupFile.absolutePath)
         
-        assertTrue("Import should return true", result)
-        assertFalse("WAL file should be deleted", walFile.exists())
-        assertFalse("SHM file should be deleted", shmFile.exists())
-        assertTrue("Restored DB should exist", dbFile.exists())
+        assertTrue(IMPORT_TRUE_MSG, result)
+        assertFalse(WAL_DELETED_MSG, walFile.exists())
+        assertFalse(SHM_DELETED_MSG, shmFile.exists())
+        assertTrue(RESTORED_DB_MSG, dbFile.exists())
     }
 
     @DisplayName("Import Database - Non Existent File Path - Returns False")
     @Test
     fun importDatabase_nonExistentFilePath_returnsFalse() {
-        val result = AppDatabase.importDatabase(context, "/invalid/path/db.db")
+        val result = AppDatabase.importDatabase(context, INVALID_DB_PATH)
         assertFalse(result)
     }
 
     @DisplayName("Sanitize Database Schema - Legacy Nullable Columns Provided - Reconstructs Schema To Not Null")
     @Test
     fun sanitizeDatabaseSchema_legacyNullableColumnsProvided_reconstructsSchemaToNotNull() {
-        val dbFile = context.getDatabasePath("book_bag.db")
+        val dbFile = context.getDatabasePath(DB_NAME)
         dbFile.parentFile?.let { if (!it.exists()) it.mkdirs() }
         
         val db = android.database.sqlite.SQLiteDatabase.openOrCreateDatabase(dbFile, null)
-        db.execSQL("CREATE TABLE books (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, description TEXT, volume INTEGER, publication_date INTEGER, pages INTEGER, price TEXT, value TEXT, due_date INTEGER, read_date INTEGER, edition INTEGER, isbn TEXT, web TEXT)") 
-        val bookValues = ContentValues().apply { putNull("title") }
-        db.insert("books", null, bookValues)
+        db.execSQL(CREATE_TABLE_BOOKS_LEGACY) 
+        val bookValues = ContentValues().apply { putNull(COL_TITLE) }
+        db.insert(TABLE_BOOKS, null, bookValues)
         
-        db.execSQL("CREATE TABLE fields (_id INTEGER PRIMARY KEY AUTOINCREMENT, type_id INTEGER, name TEXT)") 
+        db.execSQL(CREATE_TABLE_FIELDS_LEGACY) 
         val fieldValues = ContentValues().apply {
-            putNull("type_id")
-            putNull("name")
+            putNull(COL_TYPE_ID)
+            putNull(COL_NAME)
         }
-        db.insert("fields", null, fieldValues)
+        db.insert(TABLE_FIELDS, null, fieldValues)
         
-        db.execSQL("CREATE TABLE book_fields (book_id INTEGER, field_id INTEGER)") 
+        db.execSQL(CREATE_TABLE_BOOK_FIELDS_LEGACY) 
         db.close()
         
         val roomDb = AppDatabase.getDatabase(context, scope)
@@ -149,29 +149,29 @@ class AppDatabaseTest {
         
         val checkDb = android.database.sqlite.SQLiteDatabase.openDatabase(dbFile.absolutePath, null, android.database.sqlite.SQLiteDatabase.OPEN_READONLY)
         
-        checkDb.rawQuery("PRAGMA table_info(books)", null).use { cursor ->
+        checkDb.rawQuery(PRAGMA_INFO_BOOKS, null).use { cursor ->
             while (cursor.moveToNext()) {
-                if (cursor.getString(cursor.getColumnIndex("name")) == "title") {
-                    assertEquals("Title should be NOT NULL", 1, cursor.getInt(cursor.getColumnIndex("notnull")))
+                if (cursor.getString(cursor.getColumnIndex(COL_NAME)) == COL_TITLE) {
+                    assertEquals(TITLE_NOT_NULL_MSG, 1, cursor.getInt(cursor.getColumnIndex(COL_NOTNULL)))
                 }
             }
         }
 
-        checkDb.rawQuery("PRAGMA table_info(fields)", null).use { cursor ->
+        checkDb.rawQuery(PRAGMA_INFO_FIELDS, null).use { cursor ->
             while (cursor.moveToNext()) {
-                val colName = cursor.getString(cursor.getColumnIndex("name"))
-                if (colName == "name" || colName == "type_id") {
+                val colName = cursor.getString(cursor.getColumnIndex(COL_NAME))
+                if (colName == COL_NAME || colName == COL_TYPE_ID) {
                     assertEquals("$colName should be NOT NULL", 1, cursor.getInt(notnullIdx(cursor)))
                 }
             }
         }
 
-        checkDb.rawQuery("PRAGMA table_info(book_fields)", null).use { cursor ->
+        checkDb.rawQuery(PRAGMA_INFO_BOOK_FIELDS, null).use { cursor ->
             var pkCount = 0
             while (cursor.moveToNext()) {
-                if (cursor.getInt(cursor.getColumnIndex("pk")) > 0) pkCount++
+                if (cursor.getInt(cursor.getColumnIndex(COL_PK)) > 0) pkCount++
             }
-            assertEquals("Should have composite primary key", 2, pkCount)
+            assertEquals(COMPOSITE_PK_MSG, 2, pkCount)
         }
         
         checkDb.close()
@@ -181,12 +181,12 @@ class AppDatabaseTest {
     @DisplayName("Sanitize Database Schema - Missing Reconstruction Columns - Handles Failure Gracefully")
     @Test
     fun sanitizeDatabaseSchema_missingReconstructionColumns_handlesFailureGracefully() {
-        val dbFile = context.getDatabasePath("book_bag.db")
+        val dbFile = context.getDatabasePath(DB_NAME)
         dbFile.parentFile?.let { if (!it.exists()) it.mkdirs() }
         
         // 1. Create a DB with 'books' table missing some expected columns
         val db = android.database.sqlite.SQLiteDatabase.openOrCreateDatabase(dbFile, null)
-        db.execSQL("CREATE TABLE books (_id INTEGER PRIMARY KEY, title TEXT)") // title is nullable, so reconstruction will be triggered
+        db.execSQL(CREATE_TABLE_BOOKS_MISSING_COLS) // title is nullable, so reconstruction will be triggered
         // But many columns like 'description' are missing, so the INSERT INTO ... SELECT will fail
         db.close()
         
@@ -199,19 +199,19 @@ class AppDatabaseTest {
         AppDatabase.closeAndReset()
     }
 
-    private fun notnullIdx(cursor: android.database.Cursor) = cursor.getColumnIndex("notnull")
+    private fun notnullIdx(cursor: android.database.Cursor) = cursor.getColumnIndex(COL_NOTNULL)
 
     @DisplayName("Sanitize Database Schema - Already Valid Schema Provided - Returns Early Without Changes")
     @Test
     fun sanitizeDatabaseSchema_alreadyValidSchemaProvided_returnsEarlyWithoutChanges() {
-        val dbFile = context.getDatabasePath("book_bag.db")
+        val dbFile = context.getDatabasePath(DB_NAME)
         dbFile.parentFile?.let { if (!it.exists()) it.mkdirs() }
         
         val db = android.database.sqlite.SQLiteDatabase.openOrCreateDatabase(dbFile, null)
-        db.execSQL("CREATE TABLE books (_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, description TEXT, volume INTEGER, publication_date INTEGER, pages INTEGER, price TEXT, value TEXT, due_date INTEGER, read_date INTEGER, edition INTEGER, isbn TEXT, web TEXT)")
-        db.execSQL("CREATE TABLE fields (_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, type_id INTEGER NOT NULL, name TEXT NOT NULL)")
+        db.execSQL(CREATE_TABLE_BOOKS_VALID)
+        db.execSQL(CREATE_TABLE_FIELDS_VALID)
         // Include Foreign Keys to satisfy Room validation if it happens
-        db.execSQL("CREATE TABLE book_fields (book_id INTEGER NOT NULL, field_id INTEGER NOT NULL, PRIMARY KEY(book_id, field_id), FOREIGN KEY(book_id) REFERENCES books(_id) ON UPDATE NO ACTION ON DELETE CASCADE, FOREIGN KEY(field_id) REFERENCES fields(_id) ON UPDATE NO ACTION ON DELETE CASCADE)")
+        db.execSQL(CREATE_TABLE_BOOK_FIELDS_VALID)
         db.close()
         
         val roomDb = AppDatabase.getDatabase(context, scope)
@@ -234,17 +234,17 @@ class AppDatabaseTest {
             delay(100.milliseconds)
         }
         
-        assertFalse("Database should be prepopulated with fields", fields.isEmpty())
+        assertFalse(PREPOPULATED_MSG, fields.isEmpty())
     }
 
     @DisplayName("Export Database - Source Database File Missing - Returns False")
     @Test
     fun exportDatabase_sourceDatabaseFileMissing_returnsFalse() {
         AppDatabase.closeAndReset()
-        val dbFile = context.getDatabasePath("book_bag.db")
+        val dbFile = context.getDatabasePath(DB_NAME)
         if (dbFile.exists()) dbFile.delete()
         
-        val targetFile = File(context.cacheDir, "exported.db")
+        val targetFile = File(context.cacheDir, EXPORTED_DB_NAME)
         val result = AppDatabase.exportDatabase(context, targetFile.absolutePath)
         
         assertFalse(result)
@@ -263,10 +263,10 @@ class AppDatabaseTest {
     @DisplayName("Import Database - Copy Exception Thrown - Returns False")
     @Test
     fun importDatabase_copyExceptionThrown_returnsFalse() {
-        val backupFile = File(context.cacheDir, "backup.db")
-        backupFile.writeText("fake content")
+        val backupFile = File(context.cacheDir, BACKUP_DB_NAME)
+        backupFile.writeText(FAKE_CONTENT)
         
-        val dbFile = context.getDatabasePath("book_bag.db")
+        val dbFile = context.getDatabasePath(DB_NAME)
         dbFile.parentFile?.mkdirs()
         
         // Make the parent directory non-writable to trigger an exception during copyTo
@@ -283,9 +283,9 @@ class AppDatabaseTest {
     @DisplayName("Sanitize Database Schema - Invalid Database File Provided - Handles Exception Gracefully")
     @Test
     fun sanitizeDatabaseSchema_invalidDatabaseFileProvided_handlesExceptionGracefully() {
-        val dbFile = context.getDatabasePath("book_bag.db")
+        val dbFile = context.getDatabasePath(DB_NAME)
         dbFile.parentFile?.mkdirs()
-        dbFile.writeText("Not a database")
+        dbFile.writeText(NOT_A_DB_TEXT)
         
         // This will call sanitizeDatabaseSchema which will fail to open the DB
         // and catch the exception, logging it.
@@ -305,13 +305,13 @@ class AppDatabaseTest {
         `when`(mockContext.applicationContext).thenReturn(mockAppContext)
         `when`(mockAppContext.resources).thenReturn(mockResources)
         // Trigger exception in obtainTypedArray
-        `when`(mockResources.obtainTypedArray(anyInt())).thenThrow(RuntimeException("Mock error"))
+        `when`(mockResources.obtainTypedArray(anyInt())).thenThrow(RuntimeException(MOCK_ERROR))
         
         // Use a real SupportSQLiteDatabase mock to pass to onCreate
         val mockDb = mock(SupportSQLiteDatabase::class.java)
         
         // Let's use reflection to instantiate it for the test
-        val callbackClass = AppDatabase::class.java.declaredClasses.find { it.simpleName == "AppDatabaseCallback" }
+        val callbackClass = AppDatabase::class.java.declaredClasses.find { it.simpleName == CLASS_APP_DATABASE_CALLBACK }
         assertNotNull(callbackClass)
         val constructor = callbackClass!!.getDeclaredConstructor(Context::class.java, CoroutineScope::class.java)
         constructor.isAccessible = true
@@ -329,10 +329,10 @@ class AppDatabaseTest {
     fun closeAndReset_closeThrowsException_handlesErrorGracefully() {
         val mockDb = mock(AppDatabase::class.java)
         `when`(mockDb.isOpen).thenReturn(true)
-        `when`(mockDb.close()).thenThrow(RuntimeException("Close failed"))
+        `when`(mockDb.close()).thenThrow(RuntimeException(CLOSE_FAILED_ERROR))
         
         // Use reflection to set INSTANCE
-        val instanceField = AppDatabase::class.java.getDeclaredField("INSTANCE")
+        val instanceField = AppDatabase::class.java.getDeclaredField(FIELD_INSTANCE)
         instanceField.isAccessible = true
         instanceField.set(null, mockDb)
         
@@ -345,16 +345,16 @@ class AppDatabaseTest {
     @DisplayName("Migration 1 To 2 - Applied to Legacy Database - Applies Composite Primary Keys and Type Indices")
     @Test
     fun migration1To2_appliedToLegacyDatabase_appliesCompositePrimaryKeysAndTypeIndices() {
-        val dbFile = File(context.cacheDir, "test_migration.db")
+        val dbFile = File(context.cacheDir, TEST_MIGRATION_DB)
         if (dbFile.exists()) dbFile.delete()
         
         val configuration = androidx.sqlite.db.SupportSQLiteOpenHelper.Configuration.builder(context)
             .name(dbFile.absolutePath) // Use absolutePath to be safe
             .callback(object : androidx.sqlite.db.SupportSQLiteOpenHelper.Callback(1) {
                 override fun onCreate(db: SupportSQLiteDatabase) {
-                    db.execSQL("CREATE TABLE books (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT)")
-                    db.execSQL("CREATE TABLE fields (_id INTEGER PRIMARY KEY AUTOINCREMENT, type_id INTEGER, name TEXT)")
-                    db.execSQL("CREATE TABLE book_fields (book_id INTEGER, field_id INTEGER)")
+                    db.execSQL(CREATE_TABLE_BOOKS_MIGRATION)
+                    db.execSQL(CREATE_TABLE_FIELDS_MIGRATION)
+                    db.execSQL(CREATE_TABLE_BOOK_FIELDS_MIGRATION)
                 }
                 override fun onUpgrade(db: SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) {}
             })
@@ -367,26 +367,88 @@ class AppDatabaseTest {
         AppDatabase.MIGRATION_1_2.migrate(db)
         
         // 1. Check index exists
-        db.query("PRAGMA index_list(fields)").use { cursor ->
+        db.query(PRAGMA_INDEX_LIST_FIELDS).use { cursor ->
             var indexFound = false
             while (cursor.moveToNext()) {
-                if (cursor.getString(cursor.getColumnIndex("name")) == "index_fields_type_id") {
+                if (cursor.getString(cursor.getColumnIndex(COL_NAME)) == INDEX_FIELDS_TYPE_ID) {
                     indexFound = true
                     break
                 }
             }
-            assertTrue("Index on fields(type_id) should exist", indexFound)
+            assertTrue(INDEX_EXISTS_MSG, indexFound)
         }
         
         // 2. Check book_fields has composite PK
-        db.query("PRAGMA table_info(book_fields)").use { cursor ->
+        db.query(PRAGMA_INFO_BOOK_FIELDS).use { cursor ->
             var pkCount = 0
             while (cursor.moveToNext()) {
-                if (cursor.getInt(cursor.getColumnIndex("pk")) > 0) pkCount++
+                if (cursor.getInt(cursor.getColumnIndex(COL_PK)) > 0) pkCount++
             }
-            assertEquals("book_fields should have 2 PK columns", 2, pkCount)
+            assertEquals(BOOK_FIELDS_PK_MSG, 2, pkCount)
         }
         
         db.close()
+    }
+
+    companion object {
+        const val DB_NAME = "book_bag.db"
+        const val EXPORTED_DB_NAME = "exported.db"
+        const val BACKUP_DB_NAME = "backup.db"
+        const val TEST_MIGRATION_DB = "test_migration.db"
+        
+        const val WAL_SUFFIX = "-wal"
+        const val SHM_SUFFIX = "-shm"
+        
+        const val INVALID_DB_PATH = "/invalid/path/db.db"
+
+        const val TABLE_BOOKS = "books"
+        const val TABLE_FIELDS = "fields"
+
+        const val COL_NAME = "name"
+        const val COL_TITLE = "title"
+        const val COL_TYPE_ID = "type_id"
+        const val COL_NOTNULL = "notnull"
+        const val COL_PK = "pk"
+
+        const val DUMMY_TEXT_WAL = "dummy wal"
+        const val DUMMY_TEXT_SHM = "dummy shm"
+        const val FAKE_CONTENT = "fake content"
+        const val NOT_A_DB_TEXT = "Not a database"
+        
+        const val IMPORT_TRUE_MSG = "Import should return true"
+        const val WAL_DELETED_MSG = "WAL file should be deleted"
+        const val SHM_DELETED_MSG = "SHM file should be deleted"
+        const val RESTORED_DB_MSG = "Restored DB should exist"
+        const val TITLE_NOT_NULL_MSG = "Title should be NOT NULL"
+        const val COMPOSITE_PK_MSG = "Should have composite primary key"
+        const val PREPOPULATED_MSG = "Database should be prepopulated with fields"
+        const val MOCK_ERROR = "Mock error"
+        const val CLOSE_FAILED_ERROR = "Close failed"
+        const val INDEX_EXISTS_MSG = "Index on fields(type_id) should exist"
+        const val BOOK_FIELDS_PK_MSG = "book_fields should have 2 PK columns"
+
+        const val CLASS_APP_DATABASE_CALLBACK = "AppDatabaseCallback"
+        const val FIELD_INSTANCE = "INSTANCE"
+        const val INDEX_FIELDS_TYPE_ID = "index_fields_type_id"
+
+        const val PRAGMA_INFO_BOOKS = "PRAGMA table_info(books)"
+        const val PRAGMA_INFO_FIELDS = "PRAGMA table_info(fields)"
+        const val PRAGMA_INFO_BOOK_FIELDS = "PRAGMA table_info(book_fields)"
+        const val PRAGMA_INDEX_LIST_FIELDS = "PRAGMA index_list(fields)"
+
+        const val CREATE_TABLE_TEST = "CREATE TABLE test (id INTEGER)"
+        const val CREATE_TABLE_BOOKS_LEGACY = "CREATE TABLE books (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, description TEXT, volume INTEGER, publication_date INTEGER, pages INTEGER, price TEXT, value TEXT, due_date INTEGER, read_date INTEGER, edition INTEGER, isbn TEXT, web TEXT)"
+        const val CREATE_TABLE_FIELDS_LEGACY = "CREATE TABLE fields (_id INTEGER PRIMARY KEY AUTOINCREMENT, type_id INTEGER, name TEXT)"
+        const val CREATE_TABLE_BOOK_FIELDS_LEGACY = "CREATE TABLE book_fields (book_id INTEGER, field_id INTEGER)"
+        
+        const val CREATE_TABLE_BOOKS_VALID = "CREATE TABLE books (_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, description TEXT, volume INTEGER, publication_date INTEGER, pages INTEGER, price TEXT, value TEXT, due_date INTEGER, read_date INTEGER, edition INTEGER, isbn TEXT, web TEXT)"
+        const val CREATE_TABLE_FIELDS_VALID = "CREATE TABLE fields (_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, type_id INTEGER NOT NULL, name TEXT NOT NULL)"
+        const val CREATE_TABLE_BOOK_FIELDS_VALID = "CREATE TABLE book_fields (book_id INTEGER NOT NULL, field_id INTEGER NOT NULL, PRIMARY KEY(book_id, field_id), FOREIGN KEY(book_id) REFERENCES books(_id) ON UPDATE NO ACTION ON DELETE CASCADE, FOREIGN KEY(field_id) REFERENCES fields(_id) ON UPDATE NO ACTION ON DELETE CASCADE)"
+        
+        const val CREATE_TABLE_BOOKS_MISSING_COLS = "CREATE TABLE books (_id INTEGER PRIMARY KEY, title TEXT)"
+        
+        const val CREATE_TABLE_BOOKS_MIGRATION = "CREATE TABLE books (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT)"
+        const val CREATE_TABLE_FIELDS_MIGRATION = "CREATE TABLE fields (_id INTEGER PRIMARY KEY AUTOINCREMENT, type_id INTEGER, name TEXT)"
+        const val CREATE_TABLE_BOOK_FIELDS_MIGRATION = "CREATE TABLE book_fields (book_id INTEGER, field_id INTEGER)"
     }
 }

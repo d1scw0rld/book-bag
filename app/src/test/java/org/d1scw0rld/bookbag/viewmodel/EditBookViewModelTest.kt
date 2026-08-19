@@ -22,6 +22,7 @@ import org.junit.Test
 import org.junit.jupiter.api.DisplayName
 import org.junit.runner.RunWith
 import org.d1scw0rld.bookbag.DisplayNameRunner
+import org.d1scw0rld.bookbag.dto.Field
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
@@ -42,10 +43,10 @@ class EditBookViewModelTest {
         
         // Initialize DbConstants manually to avoid Android resource loading in JVM tests
         DbConstants.FIELDS.clear()
-        DbConstants.FIELDS.add(org.d1scw0rld.bookbag.dto.Field(DbConstants.FLD_TITLE, "Title", org.d1scw0rld.bookbag.dto.Field.TYPE_TEXT))
-        DbConstants.FIELDS.add(org.d1scw0rld.bookbag.dto.Field(DbConstants.FLD_AUTHOR, "Author", org.d1scw0rld.bookbag.dto.Field.TYPE_MULTIFIELD))
-        DbConstants.FIELDS.add(org.d1scw0rld.bookbag.dto.Field(101, "Author Property", org.d1scw0rld.bookbag.dto.Field.TYPE_TEXT))
-        DbConstants.FIELDS.add(org.d1scw0rld.bookbag.dto.Field(DbConstants.FLD_CURRENCY, "Currency", org.d1scw0rld.bookbag.dto.Field.TYPE_SPINNER))
+        DbConstants.FIELDS.add(Field(DbConstants.FLD_TITLE, FIELD_NAME_TITLE, Field.TYPE_TEXT))
+        DbConstants.FIELDS.add(Field(DbConstants.FLD_AUTHOR, FIELD_NAME_AUTHOR, Field.TYPE_MULTIFIELD))
+        DbConstants.FIELDS.add(Field(FIELD_ID_AUTHOR_PROPERTY, FIELD_NAME_AUTHOR_PROPERTY, Field.TYPE_TEXT))
+        DbConstants.FIELDS.add(Field(DbConstants.FLD_CURRENCY, FIELD_NAME_CURRENCY, Field.TYPE_SPINNER))
 
         viewModel = EditBookViewModel(repository)
     }
@@ -62,12 +63,12 @@ class EditBookViewModelTest {
         whenever(repository.getFieldsByType(any())).thenReturn(emptyList())
 
         // Act
-        viewModel.loadBook(bookId = 0L, isCopy = false)
+        viewModel.loadBook(bookId = BOOK_ID_ZERO, isCopy = false)
 
         // Assert
         assertTrue(viewModel.uiState.value is UiState.Success)
         val successData = (viewModel.uiState.value as UiState.Success).data
-        assertEquals(0L, successData.book.id)
+        assertEquals(BOOK_ID_ZERO, successData.book.id)
         assertTrue(viewModel.book.title.value.isEmpty())
     }
 
@@ -75,12 +76,12 @@ class EditBookViewModelTest {
     @Test
     fun loadBook_existingBookIdProvided_loadsBookDetailsAndFetchesPropertiesMap() = runTest {
         // Arrange
-        val bookId = 15L
+        val bookId = BOOK_ID_EXISTING
         val mockRelation = BookWithFields(
-            book = BookEntity(id = bookId, title = "Clean Code", description = null, volume = null, publicationDate = null, pages = null, price = null, value = null, dueDate = null, readDate = null, edition = null, isbn = null, web = null),
+            book = BookEntity(id = bookId, title = TITLE_CLEAN_CODE, description = null, volume = null, publicationDate = null, pages = null, price = null, value = null, dueDate = null, readDate = null, edition = null, isbn = null, web = null),
             fields = emptyList()
         )
-        val mockField = FieldEntity(id = 1L, name = "Author", typeId = 101)
+        val mockField = FieldEntity(id = FIELD_ID_1, name = FIELD_NAME_AUTHOR, typeId = FIELD_ID_AUTHOR_PROPERTY)
 
         whenever(repository.getBookWithFields(bookId)).thenReturn(mockRelation)
         whenever(repository.getFieldsByType(any())).thenReturn(listOf(mockField))
@@ -92,22 +93,22 @@ class EditBookViewModelTest {
         assertTrue(viewModel.uiState.value is UiState.Success)
         val data = (viewModel.uiState.value as UiState.Success).data
         assertEquals(bookId, data.book.id)
-        assertEquals("Clean Code", data.book.title.value)
+        assertEquals(TITLE_CLEAN_CODE, data.book.title.value)
         assertEquals(bookId, viewModel.book.id)
 
         // Check properties are successfully mapped
-        val fetchedList = data.propertiesMap[101]
-        assertEquals(1, fetchedList?.size)
-        assertEquals("Author", fetchedList?.get(0)?.value)
+        val fetchedList = data.propertiesMap[FIELD_ID_AUTHOR_PROPERTY]
+        assertEquals(EXPECTED_PROPERTIES_SIZE_1, fetchedList?.size)
+        assertEquals(FIELD_NAME_AUTHOR, fetchedList?.get(0)?.value)
     }
 
     @DisplayName("Load Book - Is Copy True Provided - Loads Book Details But Resets ID to Zero")
     @Test
     fun loadBook_isCopyTrueProvided_loadsBookDetailsButResetsIdToZero() = runTest {
         // Arrange
-        val bookId = 42L
+        val bookId = BOOK_ID_COPY
         val mockRelation = BookWithFields(
-            book = BookEntity(id = bookId, title = "Refactoring", description = null, volume = null, publicationDate = null, pages = null, price = null, value = null, dueDate = null, readDate = null, edition = null, isbn = null, web = null),
+            book = BookEntity(id = bookId, title = TITLE_REFACTORING, description = null, volume = null, publicationDate = null, pages = null, price = null, value = null, dueDate = null, readDate = null, edition = null, isbn = null, web = null),
             fields = emptyList()
         )
         whenever(repository.getBookWithFields(bookId)).thenReturn(mockRelation)
@@ -119,8 +120,8 @@ class EditBookViewModelTest {
         // Assert
         assertTrue(viewModel.uiState.value is UiState.Success)
         val data = (viewModel.uiState.value as UiState.Success).data
-        assertEquals(0L, data.book.id) // Id is cleared for duplicates
-        assertEquals("Refactoring", data.book.title.value)
+        assertEquals(BOOK_ID_ZERO, data.book.id) // Id is cleared for duplicates
+        assertEquals(TITLE_REFACTORING, data.book.title.value)
     }
 
     @DisplayName("Save Book - Valid Book With Some Empty Properties - Cleans Empty Properties and Saves Successfully")
@@ -128,11 +129,11 @@ class EditBookViewModelTest {
     fun saveBook_validBookWithSomeEmptyProperties_cleansEmptyPropertiesAndSavesSuccessfully() = runTest {
         // Arrange
         val book = viewModel.book
-        book.title.value = "Design Patterns"
+        book.title.value = TITLE_DESIGN_PATTERNS
 
         // Add one valid and one empty property to test filtering logic
-        val prop1 = Property(fieldTypeId = 1, value = "Erich Gamma", id = 101L)
-        val prop2 = Property(fieldTypeId = 2, value = "   ", id = 102L) // empty string
+        val prop1 = Property(fieldTypeId = FIELD_TYPE_ID_1, value = AUTHOR_ERICH_GAMMA, id = FIELD_ID_101)
+        val prop2 = Property(fieldTypeId = FIELD_TYPE_ID_2, value = EMPTY_STRING, id = FIELD_ID_102) // empty string
         book.properties.add(prop1)
         book.properties.add(prop2)
 
@@ -147,14 +148,14 @@ class EditBookViewModelTest {
 
         // Assert
         // Verify property list filtered out empty elements
-        assertEquals(1, book.properties.size)
-        assertEquals("Erich Gamma", book.properties[0].value)
+        assertEquals(EXPECTED_PROPERTIES_SIZE_1, book.properties.size)
+        assertEquals(AUTHOR_ERICH_GAMMA, book.properties[0].value)
 
         // Verify repository save was called
         verify(repository).saveBookWithFields(book)
 
         // Verify save flow emitted true
-        assertEquals(1, results.size)
+        assertEquals(EXPECTED_RESULTS_SIZE_1, results.size)
         assertTrue(results[0])
         collectJob.cancel()
     }
@@ -163,7 +164,7 @@ class EditBookViewModelTest {
     @Test
     fun saveBook_repositoryThrowsException_emitsFalseOnSaveSuccess() = runTest {
         // Arrange: Make repository save fail
-        whenever(repository.saveBookWithFields(any())).thenThrow(RuntimeException("DB Constraint Failed"))
+        whenever(repository.saveBookWithFields(any())).thenThrow(RuntimeException(ERROR_DB_CONSTRAINT_FAILED))
 
         val results = mutableListOf<Boolean>()
         val collectJob = launch(UnconfinedTestDispatcher()) {
@@ -174,8 +175,40 @@ class EditBookViewModelTest {
         viewModel.saveBook()
 
         // Assert
-        assertEquals(1, results.size)
+        assertEquals(EXPECTED_RESULTS_SIZE_1, results.size)
         assertEquals(false, results[0])
         collectJob.cancel()
+    }
+
+    companion object {
+        const val FIELD_NAME_TITLE = "Title"
+        const val FIELD_NAME_AUTHOR = "Author"
+        const val FIELD_NAME_AUTHOR_PROPERTY = "Author Property"
+        const val FIELD_NAME_CURRENCY = "Currency"
+        
+        const val FIELD_ID_AUTHOR_PROPERTY = 101
+        
+        const val BOOK_ID_ZERO = 0L
+        const val BOOK_ID_EXISTING = 15L
+        const val BOOK_ID_COPY = 42L
+        
+        const val FIELD_ID_1 = 1L
+        const val FIELD_ID_101 = 101L
+        const val FIELD_ID_102 = 102L
+        
+        const val FIELD_TYPE_ID_1 = 1
+        const val FIELD_TYPE_ID_2 = 2
+        
+        const val TITLE_CLEAN_CODE = "Clean Code"
+        const val TITLE_REFACTORING = "Refactoring"
+        const val TITLE_DESIGN_PATTERNS = "Design Patterns"
+        
+        const val AUTHOR_ERICH_GAMMA = "Erich Gamma"
+        const val EMPTY_STRING = "   "
+        
+        const val EXPECTED_PROPERTIES_SIZE_1 = 1
+        const val EXPECTED_RESULTS_SIZE_1 = 1
+        
+        const val ERROR_DB_CONSTRAINT_FAILED = "DB Constraint Failed"
     }
 }

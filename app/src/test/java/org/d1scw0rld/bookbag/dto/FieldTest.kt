@@ -14,9 +14,9 @@ class FieldTest {
     @DisplayName("Constructor - Secondary Instantiation - Sets Correct ID Name and Type")
     @Test
     fun constructor_secondaryInstantiation_setsCorrectAttributes() {
-        val field = Field(15, "Genre", Field.TYPE_MULTI_SPINNER)
-        assertEquals(15, field.id)
-        assertEquals("Genre", field.name)
+        val field = Field(TEST_ID, TEST_NAME, Field.TYPE_MULTI_SPINNER)
+        assertEquals(TEST_ID, field.id)
+        assertEquals(TEST_NAME, field.name)
         assertEquals(Field.TYPE_MULTI_SPINNER, field.type)
         assertFalse(field.isVisible)
     }
@@ -25,7 +25,7 @@ class FieldTest {
     @Test
     fun setVisibility_booleanValueProvided_modifiesStateAndReturnsSelf() {
         val field = Field()
-        val result = field.setVisibility(true)
+        val result = field.setVisibility(TEST_VISIBILITY_TRUE)
         
         assertTrue(field.isVisible)
         assertTrue(result.isVisible)
@@ -36,10 +36,17 @@ class FieldTest {
     @Test
     fun setInputType_integerValueProvided_modifiesStateAndReturnsSelf() {
         val field = Field()
-        val result = field.setInputType(3)
+        val result = field.setInputType(TEST_INPUT_TYPE)
         
-        assertEquals(3, field.inputType)
-        assertEquals(3, result.inputType)
+        assertEquals(TEST_INPUT_TYPE, field.inputType)
+        assertEquals(TEST_INPUT_TYPE, result.inputType)
         assertEquals(field, result)
+    }
+
+    companion object {
+        const val TEST_ID = 15
+        const val TEST_NAME = "Genre"
+        const val TEST_VISIBILITY_TRUE = true
+        const val TEST_INPUT_TYPE = 3
     }
 }

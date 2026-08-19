@@ -21,6 +21,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.runner.RunWith
 import org.d1scw0rld.bookbag.DisplayNameRobolectricRunner
 import org.robolectric.Robolectric
+import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.shadows.ShadowLooper
@@ -261,7 +262,7 @@ class FileSelectorDialogTest {
         // Assert warning AlertDialog is shown
         val shadowDialog = ShadowAlertDialog.getLatestAlertDialog()
         assertNotNull(shadowDialog)
-        val shadow = org.robolectric.Shadows.shadowOf(shadowDialog)
+        val shadow = Shadows.shadowOf(shadowDialog)
         assertEquals(activity.getString(R.string.msg_fl_nm_frs), shadow.message)
 
         dialog.dismiss()
@@ -373,7 +374,7 @@ class FileSelectorDialogTest {
         // New folder creation prompt displays an AlertDialog
         val shadowDialog = ShadowAlertDialog.getLatestAlertDialog()
         assertNotNull(shadowDialog)
-        val shadow = org.robolectric.Shadows.shadowOf(shadowDialog)
+        val shadow = Shadows.shadowOf(shadowDialog)
         assertEquals(activity.getString(R.string.btn_new_fld), shadow.title)
 
         // Find EditText inside shadowDialog and input folder name "NewAutoCreatedFolder"
