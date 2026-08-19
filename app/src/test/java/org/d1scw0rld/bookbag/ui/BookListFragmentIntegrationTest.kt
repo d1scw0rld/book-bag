@@ -1,8 +1,11 @@
 package org.d1scw0rld.bookbag.ui
 
 import android.os.Looper
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.view.menu.MenuBuilder
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -112,6 +115,61 @@ class BookListFragmentIntegrationTest {
         }
     }
 
+    @DisplayName("Menu Import - Import Option Selected - Queues Import Action")
+    @Test
+    fun menuImport_importOptionSelected_queuesImportAction() {
+        launchFragmentInHiltContainer<BookListFragment> {
+            val result = invokeOptionsItemSelect(this, R.id.action_imp_db)
+
+            assertTrue(MSG_MENU_IMPORT, result)
+            assertEquals(MSG_ACTION_IMPORT, PendingAction.IMPORT, this.viewModel.pendingAction.value)
+        }
+    }
+
+    @DisplayName("Menu Export - Export Option Selected - Queues Export Action")
+    @Test
+    fun menuExport_exportOptionSelected_queuesExportAction() {
+        launchFragmentInHiltContainer<BookListFragment> {
+            val result = invokeOptionsItemSelect(this, R.id.action_exp_db)
+
+            assertTrue(MSG_MENU_EXPORT, result)
+            assertEquals(MSG_ACTION_EXPORT, PendingAction.EXPORT, this.viewModel.pendingAction.value)
+        }
+    }
+
+    @DisplayName("Menu Expand All - Expand All Option Selected - Returns True")
+    @Test
+    fun menuExpandAll_expandAllOptionSelected_returnsTrue() {
+        launchFragmentInHiltContainer<BookListFragment> {
+            val menuItem = MenuBuilder(requireContext()).add(Menu.NONE, R.id.action_exp_all, Menu.NONE, "expand")
+            val result = invokeOptionsItemSelect(this, menuItem.itemId)
+
+            assertTrue(MSG_MENU_EXPAND_ALL, result)
+        }
+    }
+
+    @DisplayName("Menu Collapse All - Collapse All Option Selected - Returns True")
+    @Test
+    fun menuCollapseAll_collapseAllOptionSelected_returnsTrue() {
+        launchFragmentInHiltContainer<BookListFragment> {
+            val menuItem = MenuBuilder(requireContext()).add(Menu.NONE, R.id.action_clp_all, Menu.NONE, "collapse")
+            val result = invokeOptionsItemSelect(this, menuItem.itemId)
+
+            assertTrue(MSG_MENU_COLLAPSE_ALL, result)
+        }
+    }
+
+    @DisplayName("Menu Sort - Sort Option Selected - Returns True")
+    @Test
+    fun menuSort_sortOptionSelected_returnsTrue() {
+        launchFragmentInHiltContainer<BookListFragment> {
+            val menuItem = MenuBuilder(requireContext()).add(Menu.NONE, R.id.action_sort, Menu.NONE, "sort")
+            val result = invokeOptionsItemSelect(this, menuItem.itemId)
+
+            assertTrue(MSG_MENU_SORT, result)
+        }
+    }
+
     @DisplayName("On Request Permission Result - Is Granted - Executes Pending Action")
     @Test
     fun onRequestPermissionResult_isGranted_executesPendingAction() {
@@ -210,6 +268,14 @@ class BookListFragmentIntegrationTest {
         }
     }
 
+    private fun invokeOptionsItemSelect(fragment: BookListFragment, itemId: Int): Boolean {
+        val menu = MenuBuilder(fragment.requireContext())
+        val item = menu.add(Menu.NONE, itemId, Menu.NONE, itemId.toString())
+        val method = BookListFragment::class.java.getDeclaredMethod("optionsItemSelect", MenuItem::class.java)
+        method.isAccessible = true
+        return method.invoke(fragment, item) as Boolean
+    }
+
     companion object {
         private const val ID_1 = 101L
         private const val ID_2 = 102L
@@ -240,6 +306,13 @@ class BookListFragmentIntegrationTest {
         
         private const val MSG_ACTION_MODE_ACTIVE = "ActionMode should be active"
         private const val MSG_ACTION_RESET = "Action should be reset"
+        private const val MSG_ACTION_IMPORT = "Import action should be queued"
+        private const val MSG_ACTION_EXPORT = "Export action should be queued"
+        private const val MSG_MENU_IMPORT = "Import menu item should be handled"
+        private const val MSG_MENU_EXPORT = "Export menu item should be handled"
+        private const val MSG_MENU_EXPAND_ALL = "Expand all menu item should be handled"
+        private const val MSG_MENU_COLLAPSE_ALL = "Collapse all menu item should be handled"
+        private const val MSG_MENU_SORT = "Sort menu item should be handled"
         private const val MSG_ACCESS_DENIED_TOAST = "Access denied toast should be shown"
     }
 }

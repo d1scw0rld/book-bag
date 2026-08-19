@@ -405,6 +405,7 @@ class BookListFragment : BaseFragment() {
             }
             R.id.action_sort -> {
                 val menuItemView = requireActivity().findViewById<View>(item.itemId)
+                    ?: binding.toolbar
                 showOrderPopupMenu(menuItemView)
                 true
             }
