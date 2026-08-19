@@ -1,27 +1,43 @@
 package org.d1scw0rld.bookbag.ui
 
 import android.os.Bundle
+import android.os.Looper.getMainLooper
+import androidx.appcompat.R.style
+import androidx.navigation.NavController
+import androidx.navigation.Navigation
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions.scrollTo
+import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withText
+import com.google.android.material.appbar.CollapsingToolbarLayout
+import org.d1scw0rld.bookbag.waitFor
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import org.d1scw0rld.bookbag.DisplayNameRobolectricRunner
 import org.d1scw0rld.bookbag.R
+import org.d1scw0rld.bookbag.data.DbConstants
 import org.d1scw0rld.bookbag.data.dao.BookDao
 import org.d1scw0rld.bookbag.data.entity.BookEntity
 import org.d1scw0rld.bookbag.launchFragmentInHiltContainer
+import org.hamcrest.Matchers.allOf
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.jupiter.api.DisplayName
 import org.junit.runner.RunWith
+import org.mockito.Mockito.mock
+import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertTrue
+import org.d1scw0rld.bookbag.dto.Date
+import org.d1scw0rld.bookbag.dto.Price
+import org.robolectric.RuntimeEnvironment
 
 @HiltAndroidTest
 @RunWith(DisplayNameRobolectricRunner::class)
@@ -37,6 +53,7 @@ class BookDetailFragmentIntegrationTest {
     @Before
     fun init() {
         hiltRule.inject()
+        DbConstants.initFields(RuntimeEnvironment.getApplication().resources)
     }
 
     @DisplayName("On View Created - Fragment Inflates - Categories Layout Visible")
@@ -49,53 +66,102 @@ class BookDetailFragmentIntegrationTest {
         onView(withId(R.id.ll_categories)).check(matches(isDisplayed()))
     }
 
-    @DisplayName("On View Created - Valid Book ID Passed - Records Book ID")
+    @DisplayName("On View Created - All Book Properties - Detail Screen Shows All Populated Fields")
     @Test
-    fun onViewCreated_validBookIdPassed_recordsBookId() = runTest {
-        // Arrange: Insert a book into database
+    @Config(application = HiltTestApplication::class, sdk = [28], qualifiers = "w480dp-h3000dp")
+    fun onViewCreated_allBookProperties_detailScreenShowsAllPopulatedFields() = runTest {
         val book = BookEntity(
-            id = ID_201,
-            title = TITLE_DETAIL,
-            description = DESC_DETAIL,
-            volume = VOL_1,
-            publicationDate = PUB_DATE_2023,
-            pages = PAGES_250,
-            price = PRICE_2500_1,
-            value = PRICE_2500_1,
-            dueDate = DATE_ZERO,
-            readDate = DATE_ZERO,
-            edition = EDITION_2,
-            isbn = ISBN_DETAIL,
-            web = WEB_EXAMPLE
+            id = ID_203,
+            title = TITLE_COMPLETE,
+            description = DESC_COMPLETE,
+            volume = VOL_5,
+            publicationDate = PUB_DATE_2024,
+            pages = PAGES_500,
+            price = PRICE_5000_2,
+            value = VALUE_6000_3,
+            dueDate = DUE_DATE_20240101,
+            readDate = READ_DATE_20231225,
+            edition = EDITION_3,
+            isbn = ISBN_COMPLETE,
+            web = WEB_COMPLETE
         )
         bookDao.insertBook(book)
 
-        // Act: Launch fragment with book ID argument
-        val args = Bundle().apply {
-            putLong(BookDetailFragment.BOOK_ID, ID_201)
+        // Act: Launch BookFragment (the real parent), which embeds BookDetailFragment as a
+        // child fragment. The toolbar title is only set via
+        // parentFragment?.view?.findViewById<CollapsingToolbarLayout>(R.id.toolbar_layout),
+        // so BookDetailFragment must be launched through its real parent for this to work.
+        val mockNavController = mock(NavController::class.java)
+        val args = Bundle().apply { putLong(ARG_BOOK_ID, ID_203) }
+        launchFragmentInHiltContainer<BookFragment>(
+            fragmentArgs = args,
+            themeResId = style.Theme_AppCompat_Light_NoActionBar
+        ) {
+            Navigation.setViewNavController(requireView(), mockNavController)
         }
-        launchFragmentInHiltContainer<BookDetailFragment>(fragmentArgs = args)
+        Shadows.shadowOf(getMainLooper()).idle()
 
-        // Assert: Container layout remains visible (fragment loaded successfully)
-        onView(withId(R.id.ll_categories)).check(matches(isDisplayed()))
-    }
+        // Assert: Wait for the form to finish rendering all rows
+        onView(androidx.test.espresso.matcher.ViewMatchers.isRoot())
+            .perform(waitFor(withText(R.string.fld_publication_date), TIMEOUT_5000))
 
-    @DisplayName("On View Created - Fragment Initialization - Detail Layouts Accessible")
-    @Test
-    fun onViewCreated_fragmentInitialization_detailLayoutsAccessible() = runTest {
-        // Act: Launch fragment
-        launchFragmentInHiltContainer<BookDetailFragment>()
+        // Assert: Book title is set on the CollapsingToolbarLayout
+        onView(withId(R.id.toolbar_layout)).check { view, _ ->
+            assertEquals(TITLE_COMPLETE, (view as CollapsingToolbarLayout).title)
+        }
 
-        // Assert: The linear layout container (ll_categories) is accessible
-        onView(withId(R.id.ll_categories)).check(matches(isDisplayed()))
+        // Assert: Description field label and value are displayed
+        onView(withText(R.string.fld_description)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(DESC_COMPLETE)).perform(scrollTo()).check(matches(isDisplayed()))
+
+        // Assert: Volume field label and value are displayed
+        onView(withText(R.string.fld_volume)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(VOL_5.toString())).perform(scrollTo()).check(matches(isDisplayed()))
+
+        // Assert: Publication date field label and value are displayed
+        onView(withText(R.string.fld_publication_date)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(PUB_DATE_2024.toString())).perform(scrollTo()).check(matches(isDisplayed()))
+
+        // Assert: Pages field label and value are displayed
+        onView(withText(R.string.fld_pages)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(PAGES_500.toString())).perform(scrollTo()).check(matches(isDisplayed()))
+
+        // Assert: Edition field label and value are displayed
+        onView(withText(R.string.fld_edition)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(EDITION_3.toString())).perform(scrollTo()).check(matches(isDisplayed()))
+
+        // Assert: ISBN field label and value are displayed
+        onView(withText(R.string.fld_isbn)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(ISBN_COMPLETE)).perform(scrollTo()).check(matches(isDisplayed()))
+
+        // Assert: Web field label and value are displayed
+        onView(withText(R.string.fld_web)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(WEB_COMPLETE)).perform(scrollTo()).check(matches(isDisplayed()))
+
+        // Assert: Price field label and formatted money value are displayed
+        onView(withText(R.string.fld_price)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(formatPrice(PRICE_5000_2))).perform(scrollTo()).check(matches(isDisplayed()))
+
+        // Assert: Value field label and formatted money value are displayed
+        onView(withText(R.string.fld_value)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(formatPrice(VALUE_6000_3))).perform(scrollTo()).check(matches(isDisplayed()))
+
+        // Assert: Due date field label and formatted date value are displayed
+        onView(withText(R.string.fld_due_date)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(formatDate(DUE_DATE_20240101))).perform(scrollTo()).check(matches(isDisplayed()))
+
+        // Assert: Read date field label and formatted date value are displayed
+        onView(withText(R.string.fld_read_date)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(formatDate(READ_DATE_20231225))).perform(scrollTo()).check(matches(isDisplayed()))
     }
 
     @DisplayName("On View Created - Multiple Books - Fragment Handles Data Loading Properly")
     @Test
+    @Config(application = HiltTestApplication::class, sdk = [28], qualifiers = "w480dp-h3000dp")
     fun onViewCreated_multipleBooks_fragmentHandlesDataLoadingProperly() = runTest {
         // Arrange: Insert multiple books
         val book1 = BookEntity(
-            id = ID_203,
+            id = ID_201,
             title = TITLE_FIRST,
             description = DESC_FIRST,
             volume = VOL_1,
@@ -103,123 +169,159 @@ class BookDetailFragmentIntegrationTest {
             pages = PAGES_100,
             price = PRICE_1000_1,
             value = PRICE_1000_1,
-            dueDate = DATE_ZERO,
-            readDate = DATE_ZERO,
+            dueDate = DUE_DATE_20220101,
+            readDate = READ_DATE_20211225,
             edition = EDITION_1,
             isbn = ISBN_1,
-            web = WEB_EMPTY
+            web = WEB_FIRST
         )
         val book2 = BookEntity(
-            id = ID_204,
+            id = ID_202,
             title = TITLE_SECOND,
             description = DESC_SECOND,
-            volume = VOL_1,
+            volume = VOL_2,
             publicationDate = PUB_DATE_2023,
             pages = PAGES_200,
             price = PRICE_2000_1,
-            value = PRICE_2000_1,
-            dueDate = DATE_ZERO,
-            readDate = DATE_ZERO,
-            edition = EDITION_1,
+            value = VALUE_3000_2,
+            dueDate = DUE_DATE_20230101,
+            readDate = READ_DATE_20221225,
+            edition = EDITION_2,
             isbn = ISBN_2,
-            web = WEB_EMPTY
+            web = WEB_SECOND
         )
         bookDao.insertBook(book1)
         bookDao.insertBook(book2)
 
         // Act: Launch fragment requesting first book
+        val mockNavController = mock(NavController::class.java)
         val args = Bundle().apply {
-            putLong(BookDetailFragment.BOOK_ID, ID_203)
+            putLong(ARG_BOOK_ID, ID_201)
         }
-        launchFragmentInHiltContainer<BookDetailFragment>(fragmentArgs = args)
+        launchFragmentInHiltContainer<BookFragment>(
+            fragmentArgs = args,
+            themeResId = style.Theme_AppCompat_Light_NoActionBar
+        ) {
+            Navigation.setViewNavController(requireView(), mockNavController)
+        }
+        Shadows.shadowOf(getMainLooper()).idle()
 
-        // Assert: Fragment loads without error and layout is accessible
-        onView(withId(R.id.ll_categories)).check(matches(isDisplayed()))
+        // Assert: Wait for the form to finish rendering all rows
+        onView(androidx.test.espresso.matcher.ViewMatchers.isRoot())
+            .perform(waitFor(withText(R.string.fld_publication_date), TIMEOUT_5000))
+
+        // Assert: Book1's title is set on the CollapsingToolbarLayout
+        onView(withId(R.id.toolbar_layout)).check { view, _ ->
+            assertEquals(TITLE_FIRST, (view as CollapsingToolbarLayout).title)
+        }
+
+        // Assert: Book1's own field values are displayed
+        onView(withText(R.string.fld_description)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(DESC_FIRST)).perform(scrollTo()).check(matches(isDisplayed()))
+
+        onView(withText(R.string.fld_volume)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(VOL_1.toString())).perform(scrollTo()).check(matches(isDisplayed()))
+
+        onView(withText(R.string.fld_publication_date)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(PUB_DATE_2022.toString())).perform(scrollTo()).check(matches(isDisplayed()))
+
+        onView(withText(R.string.fld_pages)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(PAGES_100.toString())).perform(scrollTo()).check(matches(isDisplayed()))
+
+        onView(withText(R.string.fld_edition)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(EDITION_1.toString())).perform(scrollTo()).check(matches(isDisplayed()))
+
+        onView(withText(R.string.fld_isbn)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(ISBN_1)).perform(scrollTo()).check(matches(isDisplayed()))
+
+        onView(withText(R.string.fld_web)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(WEB_FIRST)).perform(scrollTo()).check(matches(isDisplayed()))
+
+        onView(withText(R.string.fld_price)).perform(scrollTo()).check(matches(isDisplayed()))
+        // Use allOf(withText(), withId()) or rely on the container to avoid ambiguous matches
+        onView(allOf(
+            withId(R.id.tv_value),
+            withText(formatPrice(PRICE_1000_1))
+        )).perform(scrollTo()).check(matches(isDisplayed()))
+
+        onView(withText(R.string.fld_due_date)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(formatDate(DUE_DATE_20220101))).perform(scrollTo()).check(matches(isDisplayed()))
+
+        onView(withText(R.string.fld_read_date)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(formatDate(READ_DATE_20211225))).perform(scrollTo()).check(matches(isDisplayed()))
+
+        // Assert: Book2's distinct field values are NOT displayed (correct book was loaded)
+        onView(withText(DESC_SECOND)).check(doesNotExist())
+        onView(withText(VOL_2.toString())).check(doesNotExist())
+        onView(withText(PUB_DATE_2023.toString())).check(doesNotExist())
+        onView(withText(PAGES_200.toString())).check(doesNotExist())
+        onView(withText(EDITION_2.toString())).check(doesNotExist())
+        onView(withText(ISBN_2)).check(doesNotExist())
+        onView(withText(WEB_SECOND)).check(doesNotExist())
+        onView(withText(formatPrice(PRICE_2000_1))).check(doesNotExist())
+        onView(withText(formatPrice(VALUE_3000_2))).check(doesNotExist())
+        onView(withText(formatDate(DUE_DATE_20230101))).check(doesNotExist())
+        onView(withText(formatDate(READ_DATE_20221225))).check(doesNotExist())
     }
 
-    @DisplayName("On View Created - Detail Fields Factory - Loads Fields Successfully")
-    @Test
-    fun onViewCreated_detailFieldsFactory_loadsFieldsSuccessfully() = runTest {
-        // Arrange: Insert a book with complete data
-        val book = BookEntity(
-            id = ID_205,
-            title = TITLE_COMPLETE,
-            description = DESC_COMPLETE,
-            volume = VOL_5,
-            publicationDate = PUB_DATE_2021,
-            pages = PAGES_500,
-            price = PRICE_5000_2,
-            value = PRICE_5000_2,
-            dueDate = DATE_ZERO,
-            readDate = DATE_ZERO,
-            edition = EDITION_3,
-            isbn = ISBN_COMPLETE,
-            web = WEB_COMPLETE
-        )
-        bookDao.insertBook(book)
-
-        // Act: Launch fragment requesting the book
-        val args = Bundle().apply {
-            putLong(BookDetailFragment.BOOK_ID, ID_205)
-        }
-        launchFragmentInHiltContainer<BookDetailFragment>(fragmentArgs = args) {
-            // The BookDetailFieldsFactory.addFields() should have been called
-            // in the onViewCreated lifecycle
-            assertTrue(MSG_LOAD_SUCCESS, true)
-        }
-
-        // Assert: Fragment layout is accessible
-        onView(withId(R.id.ll_categories)).check(matches(isDisplayed()))
+    private fun formatPrice(priceString: String): String {
+        return Price(priceString).toFormattedString(null, DbConstants.separator)
     }
+
+    private fun formatDate(dateValue: Int): String = Date(dateValue).toString()
 
     companion object {
-        private const val ID_201 = 201L
-        private const val ID_203 = 203L
-        private const val ID_204 = 204L
-        private const val ID_205 = 205L
+        private const val ARG_BOOK_ID = "bookID"
 
-        private const val TITLE_DETAIL = "Test Detail Book"
+        private const val ID_201 = 201L
+        private const val ID_202 = 202L
+        private const val ID_203 = 203L
+
         private const val TITLE_FIRST = "First Book"
         private const val TITLE_SECOND = "Second Book"
         private const val TITLE_COMPLETE = "Complete Book Data"
 
-        private const val DESC_DETAIL = "A detailed test book"
         private const val DESC_FIRST = "First"
         private const val DESC_SECOND = "Second"
         private const val DESC_COMPLETE = "Full description text"
 
         private const val VOL_1 = 1
+        private const val VOL_2 = 2
         private const val VOL_5 = 5
 
-        private const val PUB_DATE_2021 = 2021
         private const val PUB_DATE_2022 = 2022
         private const val PUB_DATE_2023 = 2023
+        private const val PUB_DATE_2024 = 2024
 
         private const val PAGES_100 = 100
         private const val PAGES_200 = 200
-        private const val PAGES_250 = 250
         private const val PAGES_500 = 500
 
         private const val PRICE_1000_1 = "1000|1"
         private const val PRICE_2000_1 = "2000|1"
-        private const val PRICE_2500_1 = "2500|1"
+        private const val VALUE_3000_2 = "3000|2"
         private const val PRICE_5000_2 = "5000|2"
+        private const val VALUE_6000_3 = "6000|3"
 
-        private const val EDITION_1 = 1
+        private const val DUE_DATE_20220101 = 20220101
+        private const val DUE_DATE_20230101 = 20230101
+        private const val DUE_DATE_20240101 = 20240101
+
+        private const val READ_DATE_20211225 = 20211225
+        private const val READ_DATE_20221225 = 20221225
+        private const val READ_DATE_20231225 = 20231225
+
+        private const val EDITION_1 = 11
         private const val EDITION_2 = 2
         private const val EDITION_3 = 3
 
         private const val ISBN_1 = "1111"
         private const val ISBN_2 = "2222"
-        private const val ISBN_DETAIL = "9876543210"
         private const val ISBN_COMPLETE = "9999999999"
 
-        private const val WEB_EMPTY = ""
-        private const val WEB_EXAMPLE = "https://example.com"
+        private const val WEB_FIRST = "https://first.com"
+        private const val WEB_SECOND = "https://second.com"
         private const val WEB_COMPLETE = "https://completebook.com"
-
-        private const val DATE_ZERO = 0
-
-        private const val MSG_LOAD_SUCCESS = "Fragment should have loaded successfully"
+        private const val TIMEOUT_5000 = 5000L
     }
 }

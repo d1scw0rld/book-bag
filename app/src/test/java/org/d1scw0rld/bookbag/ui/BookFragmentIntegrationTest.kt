@@ -2,6 +2,7 @@ package org.d1scw0rld.bookbag.ui
 
 import android.os.Bundle
 import android.os.Looper.getMainLooper
+import androidx.appcompat.R.*
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.test.espresso.Espresso.onView
@@ -47,11 +48,11 @@ class BookFragmentIntegrationTest {
     fun actionEdit_fabClicked_navigatesToEditBookFragment() = runTest {
         val mockNavController = mock(NavController::class.java)
         
-        val args = Bundle().apply { putLong("bookID", 5L) }
+        val args = Bundle().apply { putLong(ARG_BOOK_ID, TEST_BOOK_ID_1) }
 
         launchFragmentInHiltContainer<BookFragment>(
             fragmentArgs = args,
-            themeResId = androidx.appcompat.R.style.Theme_AppCompat_Light_NoActionBar
+            themeResId = style.Theme_AppCompat_Light_NoActionBar
         ) {
             Navigation.setViewNavController(requireView(), mockNavController)
         }
@@ -61,7 +62,7 @@ class BookFragmentIntegrationTest {
         onView(withId(R.id.fab_edit_book)).perform(click())
 
         val expectedAction = BookFragmentDirections.actionBookFragmentToEditBookFragment()
-        expectedAction.bookID = 5L
+        expectedAction.bookID = TEST_BOOK_ID_1
         expectedAction.isCopy = false
         verify(mockNavController).navigate(expectedAction)
     }
@@ -70,11 +71,11 @@ class BookFragmentIntegrationTest {
     @Test
     fun menuCopy_copyOptionClicked_navigatesToEditBookFragmentAsCopy() = runTest {
         val mockNavController = mock(NavController::class.java)
-        val args = Bundle().apply { putLong("bookID", 10L) }
+        val args = Bundle().apply { putLong(ARG_BOOK_ID, TEST_BOOK_ID_2) }
 
         launchFragmentInHiltContainer<BookFragment>(
             fragmentArgs = args,
-            themeResId = androidx.appcompat.R.style.Theme_AppCompat_Light_NoActionBar
+            themeResId = style.Theme_AppCompat_Light_NoActionBar
         ) {
             Navigation.setViewNavController(requireView(), mockNavController)
         }
@@ -82,14 +83,14 @@ class BookFragmentIntegrationTest {
         Shadows.shadowOf(getMainLooper()).idle()
 
         // Click overflow menu
-        onView(withContentDescription("More options")).perform(click())
+        onView(withContentDescription(CONTENT_DESC_MORE_OPTIONS)).perform(click())
         Shadows.shadowOf(getMainLooper()).idle()
 
         // Click Copy
-        onView(withText("Copy")).perform(click())
+        onView(withText(MENU_ITEM_COPY)).perform(click())
 
         val expectedAction = BookFragmentDirections.actionBookFragmentToEditBookFragment()
-        expectedAction.bookID = 10L
+        expectedAction.bookID = TEST_BOOK_ID_2
         expectedAction.isCopy = true
         verify(mockNavController).navigate(expectedAction)
     }
@@ -98,11 +99,11 @@ class BookFragmentIntegrationTest {
     @Test
     fun menuDelete_deleteOptionClicked_navigatesUp() = runTest {
         val mockNavController = mock(NavController::class.java)
-        val args = Bundle().apply { putLong("bookID", 15L) }
+        val args = Bundle().apply { putLong(ARG_BOOK_ID, TEST_BOOK_ID_3) }
 
         launchFragmentInHiltContainer<BookFragment>(
             fragmentArgs = args,
-            themeResId = androidx.appcompat.R.style.Theme_AppCompat_Light_NoActionBar
+            themeResId = style.Theme_AppCompat_Light_NoActionBar
         ) {
             Navigation.setViewNavController(requireView(), mockNavController)
         }
@@ -110,14 +111,24 @@ class BookFragmentIntegrationTest {
         Shadows.shadowOf(getMainLooper()).idle()
 
         // Click overflow menu
-        onView(withContentDescription("More options")).perform(click())
+        onView(withContentDescription(CONTENT_DESC_MORE_OPTIONS)).perform(click())
         Shadows.shadowOf(getMainLooper()).idle()
 
         // Click Delete
-        onView(withText("Delete")).perform(click())
+        onView(withText(MENU_ITEM_DELETE)).perform(click())
         Shadows.shadowOf(getMainLooper()).idle()
         advanceUntilIdle() // Wait for coroutines to complete (delete operation is launched in lifecycleScope)
 
         verify(mockNavController).navigateUp()
+    }
+
+    companion object {
+        const val ARG_BOOK_ID = "bookID"
+        const val TEST_BOOK_ID_1 = 5L
+        const val TEST_BOOK_ID_2 = 10L
+        const val TEST_BOOK_ID_3 = 15L
+        const val CONTENT_DESC_MORE_OPTIONS = "More options"
+        const val MENU_ITEM_COPY = "Copy"
+        const val MENU_ITEM_DELETE = "Delete"
     }
 }

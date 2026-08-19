@@ -49,6 +49,7 @@ class FieldsFactory(
             DbConstants.FLD_TITLE -> addFieldText(rootView, field, book.title)
             DbConstants.FLD_DESCRIPTION -> addFieldText(rootView, field, book.description)
             DbConstants.FLD_VOLUME -> addFieldText(rootView, field, book.volume)
+            DbConstants.FLD_PUBLICATION_DATE -> addFieldText(rootView, field, book.publicationDate)
             DbConstants.FLD_PAGES -> addFieldText(rootView, field, book.pages)
             DbConstants.FLD_EDITION -> addFieldText(rootView, field, book.edition)
             DbConstants.FLD_ISBN -> addFieldText(rootView, field, book.isbn)
