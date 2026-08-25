@@ -22,6 +22,9 @@ import org.d1scw0rld.bookbag.R
 import org.d1scw0rld.bookbag.data.DbConstants
 import org.d1scw0rld.bookbag.data.dao.BookDao
 import org.d1scw0rld.bookbag.data.entity.BookEntity
+import org.d1scw0rld.bookbag.data.entity.BookFieldCrossRef
+import org.d1scw0rld.bookbag.data.entity.FieldEntity
+import org.d1scw0rld.bookbag.data.relation.BookWithFields
 import org.d1scw0rld.bookbag.dto.Date
 import org.d1scw0rld.bookbag.dto.Price
 import org.d1scw0rld.bookbag.launchFragmentInHiltContainer
@@ -85,6 +88,51 @@ class BookDetailFragmentIntegrationTest {
             web = WEB_COMPLETE
         )
         bookDao.insertBook(book)
+        
+        val authorField = FieldEntity(id = FIELD_ID_AUTHOR_TOLKIEN, typeId = DbConstants.FLD_AUTHOR, name = FIELD_NAME_TOLKIEN)
+        val authorField2 = FieldEntity(id = FIELD_ID_AUTHOR_PRATCHETT, typeId = DbConstants.FLD_AUTHOR, name = FIELD_NAME_PRATCHETT)
+        val seriesField = FieldEntity(id = FIELD_ID_SERIES_LOTR, typeId = DbConstants.FLD_SERIE, name = FIELD_NAME_LOTR)
+        val genreField = FieldEntity(id = FIELD_ID_GENRE_FANTASY, typeId = DbConstants.FLD_GENRE, name = FIELD_NAME_FANTASY)
+        val languageField = FieldEntity(id = FIELD_ID_LANGUAGE_EN, typeId = DbConstants.FLD_LANGUAGE, name = FIELD_NAME_EN)
+        val publisherField = FieldEntity(id = FIELD_ID_PUBLISHER_ALLEN, typeId = DbConstants.FLD_PUBLISHER, name = FIELD_NAME_ALLEN)
+        val publicationLocationField = FieldEntity(id = FIELD_ID_LOCATION_LONDON, typeId = DbConstants.FLD_PUBLICATION_LOCATION, name = FIELD_NAME_LONDON)
+        val statusField = FieldEntity(id = FIELD_ID_STATUS_OWNED, typeId = DbConstants.FLD_STATUS, name = FIELD_NAME_OWNED)
+        val ratingField = FieldEntity(id = FIELD_ID_RATING_5, typeId = DbConstants.FLD_RATING, name = FIELD_NAME_5)
+        val formatField = FieldEntity(id = FIELD_ID_FORMAT_HARDCOVER, typeId = DbConstants.FLD_FORMAT, name = FIELD_NAME_HARDCOVER)
+        val locationField = FieldEntity(id = FIELD_ID_LOC_HOME, typeId = DbConstants.FLD_LOCATION, name = FIELD_NAME_HOME)
+        val conditionField = FieldEntity(id = FIELD_ID_CONDITION_MINT, typeId = DbConstants.FLD_CONDITION, name = FIELD_NAME_MINT)
+        val readField = FieldEntity(id = FIELD_ID_READ_TRUE, typeId = DbConstants.FLD_READ, name = FIELD_NAME_TRUE)
+        val loanedToField = FieldEntity(id = FIELD_ID_LOANED_TO_JOHN, typeId = DbConstants.FLD_LOANED_TO, name = FIELD_NAME_JOHN)
+        
+        bookDao.insertField(authorField)
+        bookDao.insertField(authorField2)
+        bookDao.insertField(seriesField)
+        bookDao.insertField(genreField)
+        bookDao.insertField(languageField)
+        bookDao.insertField(publisherField)
+        bookDao.insertField(publicationLocationField)
+        bookDao.insertField(statusField)
+        bookDao.insertField(ratingField)
+        bookDao.insertField(formatField)
+        bookDao.insertField(locationField)
+        bookDao.insertField(conditionField)
+        bookDao.insertField(readField)
+        bookDao.insertField(loanedToField)
+        
+        bookDao.insertBookFieldCrossRef(BookFieldCrossRef(bookId = ID_203, fieldId = FIELD_ID_AUTHOR_TOLKIEN))
+        bookDao.insertBookFieldCrossRef(BookFieldCrossRef(bookId = ID_203, fieldId = FIELD_ID_AUTHOR_PRATCHETT))
+        bookDao.insertBookFieldCrossRef(BookFieldCrossRef(bookId = ID_203, fieldId = FIELD_ID_SERIES_LOTR))
+        bookDao.insertBookFieldCrossRef(BookFieldCrossRef(bookId = ID_203, fieldId = FIELD_ID_GENRE_FANTASY))
+        bookDao.insertBookFieldCrossRef(BookFieldCrossRef(bookId = ID_203, fieldId = FIELD_ID_LANGUAGE_EN))
+        bookDao.insertBookFieldCrossRef(BookFieldCrossRef(bookId = ID_203, fieldId = FIELD_ID_PUBLISHER_ALLEN))
+        bookDao.insertBookFieldCrossRef(BookFieldCrossRef(bookId = ID_203, fieldId = FIELD_ID_LOCATION_LONDON))
+        bookDao.insertBookFieldCrossRef(BookFieldCrossRef(bookId = ID_203, fieldId = FIELD_ID_STATUS_OWNED))
+        bookDao.insertBookFieldCrossRef(BookFieldCrossRef(bookId = ID_203, fieldId = FIELD_ID_RATING_5))
+        bookDao.insertBookFieldCrossRef(BookFieldCrossRef(bookId = ID_203, fieldId = FIELD_ID_FORMAT_HARDCOVER))
+        bookDao.insertBookFieldCrossRef(BookFieldCrossRef(bookId = ID_203, fieldId = FIELD_ID_LOC_HOME))
+        bookDao.insertBookFieldCrossRef(BookFieldCrossRef(bookId = ID_203, fieldId = FIELD_ID_CONDITION_MINT))
+        bookDao.insertBookFieldCrossRef(BookFieldCrossRef(bookId = ID_203, fieldId = FIELD_ID_READ_TRUE))
+        bookDao.insertBookFieldCrossRef(BookFieldCrossRef(bookId = ID_203, fieldId = FIELD_ID_LOANED_TO_JOHN))
 
         // Act: Launch BookFragment (the real parent), which embeds BookDetailFragment as a
         // child fragment. The toolbar title is only set via
@@ -136,6 +184,58 @@ class BookDetailFragmentIntegrationTest {
         // Assert: Web field label and value are displayed
         onView(withText(R.string.fld_web)).perform(scrollTo()).check(matches(isDisplayed()))
         onView(withText(WEB_COMPLETE)).perform(scrollTo()).check(matches(isDisplayed()))
+        
+        // Assert: Author field label and value are displayed
+        onView(withText("Authors")).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText("$FIELD_NAME_TOLKIEN, $FIELD_NAME_PRATCHETT")).perform(scrollTo()).check(matches(isDisplayed()))
+
+        // Assert: Series field label and value are displayed
+        onView(withText("Series")).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(FIELD_NAME_LOTR)).perform(scrollTo()).check(matches(isDisplayed()))
+        
+        // Assert: Genre field label and value are displayed
+        onView(withText("Genres")).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(FIELD_NAME_FANTASY)).perform(scrollTo()).check(matches(isDisplayed()))
+        
+        // Assert: Language field label and value are displayed
+        onView(withText("Language")).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(FIELD_NAME_EN)).perform(scrollTo()).check(matches(isDisplayed()))
+        
+        // Assert: Publisher field label and value are displayed
+        onView(withText("Publisher")).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(FIELD_NAME_ALLEN)).perform(scrollTo()).check(matches(isDisplayed()))
+        
+        // Assert: Publication location field label and value are displayed
+        onView(withText("Place of publication")).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(FIELD_NAME_LONDON)).perform(scrollTo()).check(matches(isDisplayed()))
+        
+        // Assert: Status field label and value are displayed
+        onView(withText("Status")).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(FIELD_NAME_OWNED)).perform(scrollTo()).check(matches(isDisplayed()))
+        
+        // Assert: Rating field label and value are displayed
+        onView(withText("Rating")).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withId(R.id.rating_bar)).perform(scrollTo()).check(matches(isDisplayed()))
+        
+        // Assert: Format field label and value are displayed
+        onView(withText("Format")).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(FIELD_NAME_HARDCOVER)).perform(scrollTo()).check(matches(isDisplayed()))
+        
+        // Assert: Location field label and value are displayed
+        onView(withText("Location")).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(FIELD_NAME_HOME)).perform(scrollTo()).check(matches(isDisplayed()))
+        
+        // Assert: Condition field label and value are displayed
+        onView(withText("Condition")).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(FIELD_NAME_MINT)).perform(scrollTo()).check(matches(isDisplayed()))
+        
+        // Assert: Read field label and value are displayed
+        onView(withText("Read")).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withId(R.id.check_box)).perform(scrollTo()).check(matches(isDisplayed()))
+        
+        // Assert: Loaned to field label and value are displayed
+        onView(withText("Lent to")).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(FIELD_NAME_JOHN)).perform(scrollTo()).check(matches(isDisplayed()))
 
         // Assert: Price field label and formatted money value are displayed
         onView(withText(R.string.fld_price)).perform(scrollTo()).check(matches(isDisplayed()))
@@ -387,6 +487,36 @@ class BookDetailFragmentIntegrationTest {
         private const val WEB_FIRST = "https://first.com"
         private const val WEB_SECOND = "https://second.com"
         private const val WEB_COMPLETE = "https://completebook.com"
+        
+        private const val FIELD_ID_AUTHOR_TOLKIEN = 501L
+        private const val FIELD_ID_AUTHOR_PRATCHETT = 502L
+        private const val FIELD_ID_SERIES_LOTR = 503L
+        private const val FIELD_ID_GENRE_FANTASY = 504L
+        private const val FIELD_ID_LANGUAGE_EN = 505L
+        private const val FIELD_ID_PUBLISHER_ALLEN = 506L
+        private const val FIELD_ID_LOCATION_LONDON = 507L
+        private const val FIELD_ID_STATUS_OWNED = 508L
+        private const val FIELD_ID_RATING_5 = 509L
+        private const val FIELD_ID_FORMAT_HARDCOVER = 510L
+        private const val FIELD_ID_LOC_HOME = 511L
+        private const val FIELD_ID_CONDITION_MINT = 512L
+        private const val FIELD_ID_READ_TRUE = 513L
+        private const val FIELD_ID_LOANED_TO_JOHN = 514L
+        
+        private const val FIELD_NAME_TOLKIEN = "J.R.R. Tolkien"
+        private const val FIELD_NAME_PRATCHETT = "Terry Pratchett"
+        private const val FIELD_NAME_LOTR = "The Lord of the Rings"
+        private const val FIELD_NAME_FANTASY = "Fantasy"
+        private const val FIELD_NAME_EN = "English"
+        private const val FIELD_NAME_ALLEN = "George Allen & Unwin"
+        private const val FIELD_NAME_LONDON = "London"
+        private const val FIELD_NAME_OWNED = "Owned"
+        private const val FIELD_NAME_5 = "5.0"
+        private const val FIELD_NAME_HARDCOVER = "Hardcover"
+        private const val FIELD_NAME_HOME = "Home Library"
+        private const val FIELD_NAME_MINT = "Mint Condition"
+        private const val FIELD_NAME_TRUE = "true"
+        private const val FIELD_NAME_JOHN = "John Doe"
         
         private const val DATE_ZERO = 0
         
