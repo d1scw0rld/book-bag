@@ -7,11 +7,16 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.isRoot
+import androidx.test.espresso.matcher.ViewMatchers.isChecked
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.espresso.matcher.ViewMatchers.withHint
+import androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility
+import org.hamcrest.Description
+import org.hamcrest.TypeSafeMatcher
 import androidx.core.view.size
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -22,6 +27,8 @@ import org.d1scw0rld.bookbag.R
 import org.d1scw0rld.bookbag.data.DbConstants
 import org.d1scw0rld.bookbag.data.dao.BookDao
 import org.d1scw0rld.bookbag.data.entity.BookEntity
+import org.d1scw0rld.bookbag.data.entity.BookFieldCrossRef
+import org.d1scw0rld.bookbag.data.entity.FieldEntity
 import org.d1scw0rld.bookbag.launchFragmentInHiltContainer
 import org.d1scw0rld.bookbag.waitFor
 import org.junit.Assert.assertEquals
@@ -96,7 +103,7 @@ class EditBookFragmentIntegrationTest {
             publicationDate = PUB_DATE_2023,
             pages = PAGES_300,
             price = PRICE_3000_1,
-            value = PRICE_3000_1,
+            value = PRICE_6000_1,
             dueDate = DATE_ZERO,
             readDate = DATE_ZERO,
             edition = EDITION_1,
@@ -104,6 +111,7 @@ class EditBookFragmentIntegrationTest {
             web = WEB_EDIT
         )
         bookDao.insertBook(book)
+        insertCustomFieldsForBook(ID_301)
 
         // Act: Launch fragment for editing existing book
         val args = Bundle().apply {
@@ -114,6 +122,19 @@ class EditBookFragmentIntegrationTest {
 
         // Assert: Form container is visible
         onView(withId(R.id.book_detail_container)).check(matches(isDisplayed()))
+        assertCustomFieldValuesDisplayed()
+        assertBookEntityFieldsDisplayed(
+            title = TITLE_EDIT,
+            description = DESC_EDIT,
+            volume = VOL_1,
+            publicationDate = PUB_DATE_2023,
+            pages = PAGES_300,
+            price = PRICE_3000_DISPLAY,
+            value = PRICE_6000_DISPLAY,
+            edition = EDITION_1,
+            isbn = ISBN_EDIT,
+            web = WEB_EDIT
+        )
     }
 
     @DisplayName("On View Created - Copy Book - Handles Book Copy Mode")
@@ -128,7 +149,7 @@ class EditBookFragmentIntegrationTest {
             publicationDate = PUB_DATE_2022,
             pages = PAGES_400,
             price = PRICE_4000_1,
-            value = PRICE_4000_1,
+            value = PRICE_7000_1,
             dueDate = DATE_ZERO,
             readDate = DATE_ZERO,
             edition = EDITION_2,
@@ -136,6 +157,7 @@ class EditBookFragmentIntegrationTest {
             web = WEB_COPY
         )
         bookDao.insertBook(book)
+        insertCustomFieldsForBook(ID_302)
 
         // Act: Launch fragment with isCopy=true
         val args = Bundle().apply {
@@ -146,6 +168,19 @@ class EditBookFragmentIntegrationTest {
 
         // Assert: Main layout structure is visible
         onView(withId(R.id.book_detail_container)).check(matches(isDisplayed()))
+        assertCustomFieldValuesDisplayed()
+        assertBookEntityFieldsDisplayed(
+            title = TITLE_COPY,
+            description = DESC_COPY,
+            volume = VOL_2,
+            publicationDate = PUB_DATE_2022,
+            pages = PAGES_400,
+            price = PRICE_4000_DISPLAY,
+            value = PRICE_7000_DISPLAY,
+            edition = EDITION_2,
+            isbn = ISBN_COPY,
+            web = WEB_COPY
+        )
     }
 
     @DisplayName("On View Created - Fully Populated Book - All Properties Are Initialized")
@@ -161,7 +196,7 @@ class EditBookFragmentIntegrationTest {
             publicationDate = PUB_DATE_2024,
             pages = PAGES_500,
             price = PRICE_5000_2,
-            value = PRICE_5000_2,
+            value = PRICE_8000_2,
             dueDate = testDate,
             readDate = testDate,
             edition = EDITION_3,
@@ -169,6 +204,7 @@ class EditBookFragmentIntegrationTest {
             web = WEB_COMPLETE
         )
         bookDao.insertBook(book)
+        insertCustomFieldsForBook(ID_304)
 
         // Act: Launch fragment for editing
         val args = Bundle().apply {
@@ -180,6 +216,19 @@ class EditBookFragmentIntegrationTest {
         // Assert: Form initializes successfully with all data
         onView(withId(R.id.book_detail_container)).check(matches(isDisplayed()))
         onView(withId(R.id.toolbar)).check(matches(isDisplayed()))
+        assertCustomFieldValuesDisplayed()
+        assertBookEntityFieldsDisplayed(
+            title = TITLE_COMPLETE,
+            description = DESC_COMPLETE,
+            volume = VOL_5,
+            publicationDate = PUB_DATE_2024,
+            pages = PAGES_500,
+            price = PRICE_5000_DISPLAY,
+            value = PRICE_8000_DISPLAY,
+            edition = EDITION_3,
+            isbn = ISBN_COMPLETE,
+            web = WEB_COMPLETE
+        )
     }
 
     @DisplayName("On View Created - Form Inflation - Add Field Button Visible")
@@ -319,6 +368,104 @@ class EditBookFragmentIntegrationTest {
         menu.performIdentifierAction(menuItem.itemId, 0)
     }
 
+    private suspend fun insertCustomFieldsForBook(bookId: Long) {
+        val fields = customFieldEntities()
+        fields.forEach { field ->
+            bookDao.insertField(field)
+        }
+
+        fields.map { field ->
+            BookFieldCrossRef(bookId = bookId, fieldId = field.id)
+        }.forEach { crossRef ->
+            bookDao.insertBookFieldCrossRef(crossRef)
+        }
+    }
+
+    private fun assertCustomFieldValuesDisplayed() {
+        val valuesToAssert = listOf(
+            FIELD_NAME_TOLKIEN,
+            FIELD_NAME_PRATCHETT,
+            FIELD_NAME_LOTR,
+            FIELD_NAME_FANTASY,
+            FIELD_NAME_EN,
+            FIELD_NAME_ALLEN,
+            FIELD_NAME_LONDON,
+            FIELD_NAME_OWNED,
+            FIELD_NAME_HARDCOVER,
+            FIELD_NAME_HOME,
+            FIELD_NAME_MINT,
+            FIELD_NAME_JOHN
+        )
+
+        valuesToAssert.forEach { value ->
+            onView(isRoot()).perform(
+                waitFor(allOf(withText(value), withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)), TIMEOUT_5000)
+            )
+        }
+
+        onView(withId(R.id.rating_bar)).check(matches(withRating(RATING_5)))
+        onView(isRoot()).perform(waitFor(allOf(withId(R.id.check_box), isChecked()), TIMEOUT_5000))
+    }
+
+    private fun assertBookEntityFieldsDisplayed(
+        title: String,
+        description: String,
+        volume: Int,
+        publicationDate: Int,
+        pages: Int,
+        price: String,
+        value: String,
+        edition: Int,
+        isbn: String,
+        web: String,
+    ) {
+        val valuesToAssert = listOf(
+            title,
+            description,
+            volume.toString(),
+            publicationDate.toString(),
+            pages.toString(),
+            price,
+            value,
+            edition.toString(),
+            isbn,
+            web
+        )
+
+        valuesToAssert.forEach { valueText ->
+            onView(isRoot()).perform(
+                waitFor(allOf(withText(valueText), withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)), TIMEOUT_5000)
+            )
+        }
+    }
+
+    private fun customFieldEntities(): List<FieldEntity> = listOf(
+        FieldEntity(id = FIELD_ID_AUTHOR_TOLKIEN, typeId = DbConstants.FLD_AUTHOR, name = FIELD_NAME_TOLKIEN),
+        FieldEntity(id = FIELD_ID_AUTHOR_PRATCHETT, typeId = DbConstants.FLD_AUTHOR, name = FIELD_NAME_PRATCHETT),
+        FieldEntity(id = FIELD_ID_SERIES_LOTR, typeId = DbConstants.FLD_SERIE, name = FIELD_NAME_LOTR),
+        FieldEntity(id = FIELD_ID_GENRE_FANTASY, typeId = DbConstants.FLD_GENRE, name = FIELD_NAME_FANTASY),
+        FieldEntity(id = FIELD_ID_LANGUAGE_EN, typeId = DbConstants.FLD_LANGUAGE, name = FIELD_NAME_EN),
+        FieldEntity(id = FIELD_ID_PUBLISHER_ALLEN, typeId = DbConstants.FLD_PUBLISHER, name = FIELD_NAME_ALLEN),
+        FieldEntity(id = FIELD_ID_LOCATION_LONDON, typeId = DbConstants.FLD_PUBLICATION_LOCATION, name = FIELD_NAME_LONDON),
+        FieldEntity(id = FIELD_ID_STATUS_OWNED, typeId = DbConstants.FLD_STATUS, name = FIELD_NAME_OWNED),
+        FieldEntity(id = FIELD_ID_RATING_5, typeId = DbConstants.FLD_RATING, name = FIELD_NAME_5),
+        FieldEntity(id = FIELD_ID_FORMAT_HARDCOVER, typeId = DbConstants.FLD_FORMAT, name = FIELD_NAME_HARDCOVER),
+        FieldEntity(id = FIELD_ID_LOC_HOME, typeId = DbConstants.FLD_LOCATION, name = FIELD_NAME_HOME),
+        FieldEntity(id = FIELD_ID_CONDITION_MINT, typeId = DbConstants.FLD_CONDITION, name = FIELD_NAME_MINT),
+        FieldEntity(id = FIELD_ID_READ_TRUE, typeId = DbConstants.FLD_READ, name = FIELD_NAME_TRUE),
+        FieldEntity(id = FIELD_ID_LOANED_TO_JOHN, typeId = DbConstants.FLD_LOANED_TO, name = FIELD_NAME_JOHN)
+    )
+
+    private fun withRating(expectedRating: Float) = object : TypeSafeMatcher<android.view.View>() {
+        override fun describeTo(description: Description) {
+            description.appendText("RatingBar with rating $expectedRating")
+        }
+
+        override fun matchesSafely(view: android.view.View): Boolean {
+            return view is android.widget.RatingBar && view.rating == expectedRating
+        }
+    }
+
     companion object {
         private const val KEY_BOOK_ID = "bookID"
         private const val KEY_IS_COPY = "isCopy"
@@ -335,9 +482,9 @@ class EditBookFragmentIntegrationTest {
         private const val DESC_EDIT = "Edit this book"
         private const val DESC_COPY = "Copy this"
 
-        private const val VOL_1 = 1
-        private const val VOL_2 = 2
-        private const val VOL_5 = 5
+        private const val VOL_1 = 101
+        private const val VOL_2 = 202
+        private const val VOL_5 = 505
 
         private const val PUB_DATE_2022 = 2022
         private const val PUB_DATE_2023 = 2023
@@ -350,10 +497,20 @@ class EditBookFragmentIntegrationTest {
         private const val PRICE_3000_1 = "3000|1"
         private const val PRICE_4000_1 = "4000|1"
         private const val PRICE_5000_2 = "5000|2"
+        private const val PRICE_6000_1 = "6000|1"
+        private const val PRICE_7000_1 = "7000|1"
+        private const val PRICE_8000_2 = "8000|2"
 
-        private const val EDITION_1 = 1
-        private const val EDITION_2 = 2
-        private const val EDITION_3 = 3
+        private val PRICE_3000_DISPLAY = "30${java.text.DecimalFormatSymbols.getInstance().decimalSeparator}00"
+        private val PRICE_4000_DISPLAY = "40${java.text.DecimalFormatSymbols.getInstance().decimalSeparator}00"
+        private val PRICE_5000_DISPLAY = "50${java.text.DecimalFormatSymbols.getInstance().decimalSeparator}00"
+        private val PRICE_6000_DISPLAY = "60${java.text.DecimalFormatSymbols.getInstance().decimalSeparator}00"
+        private val PRICE_7000_DISPLAY = "70${java.text.DecimalFormatSymbols.getInstance().decimalSeparator}00"
+        private val PRICE_8000_DISPLAY = "80${java.text.DecimalFormatSymbols.getInstance().decimalSeparator}00"
+
+        private const val EDITION_1 = 11
+        private const val EDITION_2 = 22
+        private const val EDITION_3 = 33
 
         private const val ISBN_EDIT = "4444444444"
         private const val ISBN_COPY = "5555555555"
@@ -372,5 +529,36 @@ class EditBookFragmentIntegrationTest {
 
         private const val TITLE_COMPLETE = "Complete Book Data"
         private const val DESC_COMPLETE = "Full description text"
+        
+        private const val FIELD_ID_AUTHOR_TOLKIEN = 501L
+        private const val FIELD_ID_AUTHOR_PRATCHETT = 502L
+        private const val FIELD_ID_SERIES_LOTR = 503L
+        private const val FIELD_ID_GENRE_FANTASY = 504L
+        private const val FIELD_ID_LANGUAGE_EN = 505L
+        private const val FIELD_ID_PUBLISHER_ALLEN = 506L
+        private const val FIELD_ID_LOCATION_LONDON = 507L
+        private const val FIELD_ID_STATUS_OWNED = 508L
+        private const val FIELD_ID_RATING_5 = 509L
+        private const val FIELD_ID_FORMAT_HARDCOVER = 510L
+        private const val FIELD_ID_LOC_HOME = 511L
+        private const val FIELD_ID_CONDITION_MINT = 512L
+        private const val FIELD_ID_READ_TRUE = 513L
+        private const val FIELD_ID_LOANED_TO_JOHN = 514L
+        
+        private const val FIELD_NAME_TOLKIEN = "J.R.R. Tolkien"
+        private const val FIELD_NAME_PRATCHETT = "Terry Pratchett"
+        private const val FIELD_NAME_LOTR = "The Lord of the Rings"
+        private const val FIELD_NAME_FANTASY = "Fantasy"
+        private const val FIELD_NAME_EN = "English"
+        private const val FIELD_NAME_ALLEN = "George Allen & Unwin"
+        private const val FIELD_NAME_LONDON = "London"
+        private const val FIELD_NAME_OWNED = "Owned"
+        private const val FIELD_NAME_5 = "5.0"
+        private const val RATING_5 = 5.0f
+        private const val FIELD_NAME_HARDCOVER = "Hardcover"
+        private const val FIELD_NAME_HOME = "Home Library"
+        private const val FIELD_NAME_MINT = "Mint Condition"
+        private const val FIELD_NAME_TRUE = "true"
+        private const val FIELD_NAME_JOHN = "John Doe"
     }
 }
