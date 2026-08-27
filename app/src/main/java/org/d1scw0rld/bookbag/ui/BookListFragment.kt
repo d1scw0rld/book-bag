@@ -501,7 +501,7 @@ class BookListFragment : BaseFragment() {
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    internal fun showOrderPopupMenu(view: View) {
+    internal fun showOrderPopupMenu(view: View): PopupMenu {
         val popupMenu = PopupMenu(requireContext(), view)
         for (orderItem in viewModel.orderItems) {
             popupMenu.menu
@@ -517,6 +517,7 @@ class BookListFragment : BaseFragment() {
             true
         }
         popupMenu.show()
+        return popupMenu
     }
 
     private fun setupRecyclerView() {

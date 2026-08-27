@@ -5,9 +5,12 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.view.menu.ActionMenuItemView
 import androidx.appcompat.view.menu.MenuBuilder
-import androidx.recyclerview.widget.RecyclerView
+import androidx.appcompat.widget.PopupMenu
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.isRoot
@@ -22,9 +25,9 @@ import org.d1scw0rld.bookbag.R
 import org.d1scw0rld.bookbag.data.dao.BookDao
 import org.d1scw0rld.bookbag.data.entity.BookEntity
 import org.d1scw0rld.bookbag.launchFragmentInHiltContainer
-import org.d1scw0rld.bookbag.ui.adapters.BooksAdapter
 import org.d1scw0rld.bookbag.viewmodel.PendingAction
 import org.d1scw0rld.bookbag.waitFor
+import org.hamcrest.Matchers.allOf
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -69,28 +72,59 @@ class BookListFragmentIntegrationTest {
         bookDao.insertBook(book2)
 
         launchFragmentInHiltContainer<BookListFragment>()
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
         onView(isRoot()).perform(waitFor(withText(COUNT_2_TEXT), TIMEOUT_3000))
         onView(withText(COUNT_2_TEXT)).check(matches(isDisplayed()))
+
+        onView(allOf(withId(R.id.tv_header), withText("A"))).perform(click())
+        onView(allOf(withId(R.id.tv_header), withText("T"))).perform(click())
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+        onView(isRoot()).perform(waitFor(withText(TITLE_1), TIMEOUT_3000))
+        onView(withText(TITLE_1)).check(matches(isDisplayed()))
+        onView(withText(TITLE_2)).check(matches(isDisplayed()))
     }
 
     @DisplayName("On Search Query Changed - Input Query Matches Title - Filters List Adapter")
     @Test
     fun onSearchQueryChanged_inputQueryMatchesTitle_filtersListAdapter() = runTest {
         val book1 = BookEntity(id = ID_1, title = TITLE_SEARCH, description = DESC_EMPTY, volume = VOL_1, publicationDate = PUB_DATE_2023, pages = PAGES_100, price = PRICE_EMPTY, value = VALUE_EMPTY, dueDate = DATE_ZERO, readDate = DATE_ZERO, edition = EDITION_1, isbn = ISBN_EMPTY, web = WEB_EMPTY)
+        val book2 = BookEntity(id = ID_2, title = TITLE_OTHER, description = DESC_EMPTY, volume = VOL_1, publicationDate = PUB_DATE_2023, pages = PAGES_100, price = PRICE_EMPTY, value = VALUE_EMPTY, dueDate = DATE_ZERO, readDate = DATE_ZERO, edition = EDITION_1, isbn = ISBN_EMPTY, web = WEB_EMPTY)
+        val book3 = BookEntity(id = ID_3, title = TITLE_OTHER, description = DESC_EMPTY, volume = VOL_1, publicationDate = PUB_DATE_2023, pages = PAGES_100, price = PRICE_EMPTY, value = VALUE_EMPTY, dueDate = DATE_ZERO, readDate = DATE_ZERO, edition = EDITION_1, isbn = ISBN_EMPTY, web = WEB_EMPTY)
         bookDao.insertBook(book1)
+        bookDao.insertBook(book2)
+        bookDao.insertBook(book3)
 
         launchFragmentInHiltContainer<BookListFragment>()
-        
-        onView(isRoot()).perform(waitFor(withText(org.hamcrest.Matchers.containsString(COUNT_1_TEXT)), TIMEOUT_5000))
+        onView(isRoot()).perform(waitFor(withText(COUNT_3_TEXT), TIMEOUT_5000))
+        setSearchQueryViaSearchView(QUERY_SEARCH)
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
 
-        onView(withId(R.id.book_list)).check { view, _ ->
-            val recyclerView = view as RecyclerView
-            val adapter = recyclerView.adapter as BooksAdapter
-            adapter.expandAll()
-            adapter.filter(QUERY_SEARCH)
-        }
-        
+        onView(isRoot()).perform(waitFor(withText(COUNT_1_TEXT), TIMEOUT_5000))
         onView(withText(TITLE_SEARCH)).check(matches(isDisplayed()))
+        onView(withText(COUNT_1_TEXT)).check(matches(isDisplayed()))
+        onView(withText(TITLE_OTHER)).check(doesNotExistOrNotDisplayed())
+    }
+
+    @DisplayName("On Search Query Changed - Input Query Has No Matches - Filters List Adapter To Empty")
+    @Test
+    fun onSearchQueryChanged_inputQueryHasNoMatches_filtersListAdapterToEmpty() = runTest {
+        val book1 = BookEntity(id = ID_1, title = TITLE_SEARCH, description = DESC_EMPTY, volume = VOL_1, publicationDate = PUB_DATE_2023, pages = PAGES_100, price = PRICE_EMPTY, value = VALUE_EMPTY, dueDate = DATE_ZERO, readDate = DATE_ZERO, edition = EDITION_1, isbn = ISBN_EMPTY, web = WEB_EMPTY)
+        val book2 = BookEntity(id = ID_2, title = TITLE_OTHER, description = DESC_EMPTY, volume = VOL_1, publicationDate = PUB_DATE_2023, pages = PAGES_100, price = PRICE_EMPTY, value = VALUE_EMPTY, dueDate = DATE_ZERO, readDate = DATE_ZERO, edition = EDITION_1, isbn = ISBN_EMPTY, web = WEB_EMPTY)
+        val book3 = BookEntity(id = 103L, title = TITLE_OTHER, description = DESC_EMPTY, volume = VOL_1, publicationDate = PUB_DATE_2023, pages = PAGES_100, price = PRICE_EMPTY, value = VALUE_EMPTY, dueDate = DATE_ZERO, readDate = DATE_ZERO, edition = EDITION_1, isbn = ISBN_EMPTY, web = WEB_EMPTY)
+        bookDao.insertBook(book1)
+        bookDao.insertBook(book2)
+        bookDao.insertBook(book3)
+
+        launchFragmentInHiltContainer<BookListFragment>()
+        onView(isRoot()).perform(waitFor(withText(COUNT_3_TEXT), TIMEOUT_5000))
+        setSearchQueryViaSearchView(QUERY_NO_MATCH)
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+        onView(isRoot()).perform(waitFor(withText(COUNT_0_TEXT), TIMEOUT_5000))
+        onView(withText(COUNT_0_TEXT)).check(matches(isDisplayed()))
+        onView(withText(TITLE_SEARCH)).check(doesNotExistOrNotDisplayed())
+        onView(withText(TITLE_OTHER)).check(doesNotExistOrNotDisplayed())
     }
 
     @DisplayName("On Book Long Clicked - Triggers Action Mode")
@@ -108,10 +142,20 @@ class BookListFragmentIntegrationTest {
     @Test
     fun onSortActionClicked_displaysOrderPopupMenu() {
         launchFragmentInHiltContainer<BookListFragment> {
+            var popupMenu: PopupMenu? = null
             activity?.runOnUiThread {
-                this.showOrderPopupMenu(View(requireContext()))
+                popupMenu = this.showOrderPopupMenu(View(requireContext()))
             }
-            assertTrue(true)
+
+            val menu = popupMenu?.menu
+            assertTrue(MSG_ORDER_MENU_SHOWN, menu != null)
+            assertEquals(MSG_ORDER_MENU_SIZE, this.viewModel.orderItems.size, menu!!.size())
+            this.viewModel.orderItems.forEachIndexed { index, orderItem ->
+                val menuItem = menu.getItem(index)
+                assertEquals(MSG_ORDER_MENU_ITEM_ID, orderItem.id, menuItem.itemId)
+                assertEquals(MSG_ORDER_MENU_ITEM_TITLE, orderItem.title, menuItem.title.toString())
+            }
+            assertTrue(MSG_ORDER_MENU_CHECKED, menu.findItem(this.viewModel.orderId.value).isChecked)
         }
     }
 
@@ -276,14 +320,27 @@ class BookListFragmentIntegrationTest {
         return method.invoke(fragment, item) as Boolean
     }
 
+    private fun setSearchQueryViaSearchView(query: String) {
+        onView(withId(R.id.action_search)).check { view, _ ->
+            val actionMenuItemView = view as ActionMenuItemView
+            val searchView = actionMenuItemView.itemData.actionView as androidx.appcompat.widget.SearchView
+            searchView.setQuery(query, true)
+        }
+    }
+
+    private fun doesNotExistOrNotDisplayed() = doesNotExist()
+
     companion object {
         private const val ID_1 = 101L
         private const val ID_2 = 102L
+        private const val ID_3 = 103L
         private const val TITLE_1 = "Testing Book"
         private const val TITLE_2 = "Another Book"
         private const val TITLE_SEARCH = "Apple"
+        private const val TITLE_OTHER = "Banana"
         private const val QUERY_SEARCH = "Ap"
-        
+        private const val QUERY_NO_MATCH = "zzzz_non_existing_query"
+
         // Book fields
         private const val DESC_EMPTY = ""
         private const val VOL_1 = 1
@@ -299,6 +356,7 @@ class BookListFragmentIntegrationTest {
         private const val COUNT_0_TEXT = "0 books"
         private const val COUNT_1_TEXT = "1 book"
         private const val COUNT_2_TEXT = "2 books"
+        private const val COUNT_3_TEXT = "3 books"
         
         private const val TIMEOUT_2000 = 2000L
         private const val TIMEOUT_3000 = 3000L
@@ -306,6 +364,11 @@ class BookListFragmentIntegrationTest {
         
         private const val MSG_ACTION_MODE_ACTIVE = "ActionMode should be active"
         private const val MSG_ACTION_RESET = "Action should be reset"
+        private const val MSG_ORDER_MENU_SHOWN = "Order popup menu should be created"
+        private const val MSG_ORDER_MENU_SIZE = "Order popup menu should contain all order items"
+        private const val MSG_ORDER_MENU_ITEM_ID = "Order popup menu item id should match order item"
+        private const val MSG_ORDER_MENU_ITEM_TITLE = "Order popup menu item title should match order item"
+        private const val MSG_ORDER_MENU_CHECKED = "Current order item should be checked"
         private const val MSG_ACTION_IMPORT = "Import action should be queued"
         private const val MSG_ACTION_EXPORT = "Export action should be queued"
         private const val MSG_MENU_IMPORT = "Import menu item should be handled"
