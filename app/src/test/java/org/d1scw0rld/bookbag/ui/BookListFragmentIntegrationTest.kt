@@ -1,15 +1,22 @@
 package org.d1scw0rld.bookbag.ui
 
+import android.Manifest
+import android.app.Application
+import android.content.Context
+import android.content.DialogInterface
 import android.os.Looper
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
+import androidx.activity.result.ActivityResultRegistry
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.menu.ActionMenuItemView
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.appcompat.widget.PopupMenu
 import androidx.test.core.app.ActivityScenario
+import androidx.test.core.app.ApplicationProvider
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
@@ -32,7 +39,8 @@ import org.d1scw0rld.bookbag.data.entity.BookEntity
 import org.d1scw0rld.bookbag.data.entity.BookFieldCrossRef
 import org.d1scw0rld.bookbag.data.entity.FieldEntity
 import org.d1scw0rld.bookbag.launchFragmentInHiltContainer
-import org.d1scw0rld.bookbag.viewmodel.PendingAction
+import org.d1scw0rld.bookbag.ui.fileselector.FileOperation
+import org.d1scw0rld.bookbag.ui.fileselector.FileSelectorDialog
 import org.d1scw0rld.bookbag.waitFor
 import org.hamcrest.Matchers.allOf
 import org.junit.Assert.assertEquals
@@ -43,6 +51,8 @@ import org.junit.Test
 import org.junit.jupiter.api.DisplayName
 import org.junit.runner.RunWith
 import org.robolectric.Shadows
+import org.robolectric.shadows.ShadowDialog
+import org.robolectric.shadows.ShadowToast
 import org.robolectric.annotation.Config
 import javax.inject.Inject
 
@@ -62,17 +72,17 @@ class BookListFragmentIntegrationTest {
         hiltRule.inject()
     }
 
-    @DisplayName("On View Created - Initial State - Loads Books From ViewModel")
+    @DisplayName("On View Created - Initial State - Displays Zero Books Count")
     @Test
-    fun onViewCreated_initialState_loadsBooksFromViewModel() = runTest {
+    fun onViewCreated_initialState_displaysZeroBooksCount() = runTest {
         launchFragmentInHiltContainer<BookListFragment>()
         onView(isRoot()).perform(waitFor(withText(COUNT_0_TEXT), TIMEOUT_2000))
         onView(withText(COUNT_0_TEXT)).check(matches(isDisplayed()))
     }
 
-    @DisplayName("On View Created - With Books In Database - Displays Total Count")
+    @DisplayName("On View Created - With Books In Database - Expands Groups And Displays Count And Titles")
     @Test
-    fun onViewCreated_withBooksInDatabase_displaysTotalCount() = runTest {
+    fun onViewCreated_withBooks_expandsGroupsAndDisplaysCountAndTitles() = runTest {
         val book1 = BookEntity(id = ID_1, title = TITLE_1, description = DESC_EMPTY, volume = VOL_1, publicationDate = PUB_DATE_2023, pages = PAGES_100, price = PRICE_EMPTY, value = VALUE_EMPTY, dueDate = DATE_ZERO, readDate = DATE_ZERO, edition = EDITION_1, isbn = ISBN_EMPTY, web = WEB_EMPTY)
         val book2 = BookEntity(id = ID_2, title = TITLE_2, description = DESC_EMPTY, volume = VOL_1, publicationDate = PUB_DATE_2023, pages = PAGES_100, price = PRICE_EMPTY, value = VALUE_EMPTY, dueDate = DATE_ZERO, readDate = DATE_ZERO, edition = EDITION_1, isbn = ISBN_EMPTY, web = WEB_EMPTY)
         bookDao.insertBook(book1)
@@ -92,9 +102,9 @@ class BookListFragmentIntegrationTest {
         onView(withText(TITLE_2)).check(matches(isDisplayed()))
     }
 
-    @DisplayName("On Search Query Changed - Input Query Matches Title - Filters List Adapter")
+    @DisplayName("On Search Query Changed - Displays Matching Books Only")
     @Test
-    fun onSearchQueryChanged_inputQueryMatchesTitle_filtersListAdapter() = runTest {
+    fun onSearchQueryChanged_displaysMatchingBooksOnly() = runTest {
         val book1 = BookEntity(id = ID_1, title = TITLE_SEARCH, description = DESC_EMPTY, volume = VOL_1, publicationDate = PUB_DATE_2023, pages = PAGES_100, price = PRICE_EMPTY, value = VALUE_EMPTY, dueDate = DATE_ZERO, readDate = DATE_ZERO, edition = EDITION_1, isbn = ISBN_EMPTY, web = WEB_EMPTY)
         val book2 = BookEntity(id = ID_2, title = TITLE_OTHER, description = DESC_EMPTY, volume = VOL_1, publicationDate = PUB_DATE_2023, pages = PAGES_100, price = PRICE_EMPTY, value = VALUE_EMPTY, dueDate = DATE_ZERO, readDate = DATE_ZERO, edition = EDITION_1, isbn = ISBN_EMPTY, web = WEB_EMPTY)
         val book3 = BookEntity(id = ID_3, title = TITLE_OTHER, description = DESC_EMPTY, volume = VOL_1, publicationDate = PUB_DATE_2023, pages = PAGES_100, price = PRICE_EMPTY, value = VALUE_EMPTY, dueDate = DATE_ZERO, readDate = DATE_ZERO, edition = EDITION_1, isbn = ISBN_EMPTY, web = WEB_EMPTY)
@@ -113,12 +123,12 @@ class BookListFragmentIntegrationTest {
         onView(withText(TITLE_OTHER)).check(doesNotExistOrNotDisplayed())
     }
 
-    @DisplayName("On Search Query Changed - Input Query Has No Matches - Filters List Adapter To Empty")
+    @DisplayName("On Search Query Changed - With No Matches - Shows No Books")
     @Test
-    fun onSearchQueryChanged_inputQueryHasNoMatches_filtersListAdapterToEmpty() = runTest {
+    fun onSearchQueryChanged_withNoMatches_showsNoBooks() = runTest {
         val book1 = BookEntity(id = ID_1, title = TITLE_SEARCH, description = DESC_EMPTY, volume = VOL_1, publicationDate = PUB_DATE_2023, pages = PAGES_100, price = PRICE_EMPTY, value = VALUE_EMPTY, dueDate = DATE_ZERO, readDate = DATE_ZERO, edition = EDITION_1, isbn = ISBN_EMPTY, web = WEB_EMPTY)
         val book2 = BookEntity(id = ID_2, title = TITLE_OTHER, description = DESC_EMPTY, volume = VOL_1, publicationDate = PUB_DATE_2023, pages = PAGES_100, price = PRICE_EMPTY, value = VALUE_EMPTY, dueDate = DATE_ZERO, readDate = DATE_ZERO, edition = EDITION_1, isbn = ISBN_EMPTY, web = WEB_EMPTY)
-        val book3 = BookEntity(id = 103L, title = TITLE_OTHER, description = DESC_EMPTY, volume = VOL_1, publicationDate = PUB_DATE_2023, pages = PAGES_100, price = PRICE_EMPTY, value = VALUE_EMPTY, dueDate = DATE_ZERO, readDate = DATE_ZERO, edition = EDITION_1, isbn = ISBN_EMPTY, web = WEB_EMPTY)
+        val book3 = BookEntity(id = ID_3, title = TITLE_OTHER, description = DESC_EMPTY, volume = VOL_1, publicationDate = PUB_DATE_2023, pages = PAGES_100, price = PRICE_EMPTY, value = VALUE_EMPTY, dueDate = DATE_ZERO, readDate = DATE_ZERO, edition = EDITION_1, isbn = ISBN_EMPTY, web = WEB_EMPTY)
         bookDao.insertBook(book1)
         bookDao.insertBook(book2)
         bookDao.insertBook(book3)
@@ -134,9 +144,9 @@ class BookListFragmentIntegrationTest {
         onView(withText(TITLE_OTHER)).check(doesNotExistOrNotDisplayed())
     }
 
-    @DisplayName("On Book Long Clicked - Triggers Action Mode")
+    @DisplayName("On Book Long Clicked - Shows Selection Actions")
     @Test
-    fun onBookLongClicked_triggersActionMode() {
+    fun onBookLongClicked_showsSelectionActions() {
         launchFragmentInHiltContainer<BookListFragment> {
             activity?.runOnUiThread {
                 this.actionMode = requireActivity().startActionMode(this.onActionModeCallback)
@@ -156,13 +166,16 @@ class BookListFragmentIntegrationTest {
 
             val menu = popupMenu?.menu
             assertTrue(MSG_ORDER_MENU_SHOWN, menu != null)
-            assertEquals(MSG_ORDER_MENU_SIZE, this.viewModel.orderItems.size, menu!!.size())
-            this.viewModel.orderItems.forEachIndexed { index, orderItem ->
+
+            val expectedItems = expectedOrderItems(requireContext())
+            assertEquals(MSG_ORDER_MENU_SIZE, expectedItems.size, menu!!.size())
+            expectedItems.forEachIndexed { index, (expectedId, expectedTitle) ->
                 val menuItem = menu.getItem(index)
-                assertEquals(MSG_ORDER_MENU_ITEM_ID, orderItem.id, menuItem.itemId)
-                assertEquals(MSG_ORDER_MENU_ITEM_TITLE, orderItem.title, menuItem.title.toString())
+                assertEquals(MSG_ORDER_MENU_ITEM_ID, expectedId, menuItem.itemId)
+                assertEquals(MSG_ORDER_MENU_ITEM_TITLE, expectedTitle, menuItem.title.toString())
+                assertTrue(MSG_ORDER_MENU_CHECKABLE, menuItem.isCheckable)
             }
-            assertTrue(MSG_ORDER_MENU_CHECKED, menu.findItem(this.viewModel.orderId.value).isChecked)
+            assertTrue(MSG_ORDER_MENU_CHECKED, menu.findItem(DbConstants.SRT_TTL).isChecked)
         }
     }
 
@@ -305,26 +318,32 @@ class BookListFragmentIntegrationTest {
         )
     }
 
-    @DisplayName("Menu Import - Import Option Selected - Queues Import Action")
+    @DisplayName("Menu Import - Import Option Selected - Shows Load File Dialog")
     @Test
-    fun menuImport_importOptionSelected_queuesImportAction() {
-        launchFragmentInHiltContainer<BookListFragment> {
-            val result = invokeOptionsItemSelect(this, R.id.action_imp_db)
+    fun menuImport_importOptionSelected_showsLoadFileDialog() {
+        grantStoragePermission()
 
-            assertTrue(MSG_MENU_IMPORT, result)
-            assertEquals(MSG_ACTION_IMPORT, PendingAction.IMPORT, this.viewModel.pendingAction.value)
-        }
+        val scenario = launchFragmentInHiltContainer<BookListFragment>()
+        var result = false
+        scenario.onFragment { result = invokeOptionsItemSelect(this, R.id.action_imp_db) }
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+        assertTrue(MSG_MENU_IMPORT, result)
+        assertEquals(MSG_ACTION_IMPORT, FileOperation.LOAD, shownFileOperation(scenario))
     }
 
-    @DisplayName("Menu Export - Export Option Selected - Queues Export Action")
+    @DisplayName("Menu Export - Export Option Selected - Shows Save File Dialog")
     @Test
-    fun menuExport_exportOptionSelected_queuesExportAction() {
-        launchFragmentInHiltContainer<BookListFragment> {
-            val result = invokeOptionsItemSelect(this, R.id.action_exp_db)
+    fun menuExport_exportOptionSelected_showsSaveFileDialog() {
+        grantStoragePermission()
 
-            assertTrue(MSG_MENU_EXPORT, result)
-            assertEquals(MSG_ACTION_EXPORT, PendingAction.EXPORT, this.viewModel.pendingAction.value)
-        }
+        val scenario = launchFragmentInHiltContainer<BookListFragment>()
+        var result = false
+        scenario.onFragment { result = invokeOptionsItemSelect(this, R.id.action_exp_db) }
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+        assertTrue(MSG_MENU_EXPORT, result)
+        assertEquals(MSG_ACTION_EXPORT, FileOperation.SAVE, shownFileOperation(scenario))
     }
 
     @DisplayName("Menu Expand All - Expand All Option Selected - Displays Book Titles")
@@ -379,30 +398,24 @@ class BookListFragmentIntegrationTest {
         }
     }
 
-    @DisplayName("On Order Item Selected - Different Order Chosen - Updates Order Id And Label")
+    @DisplayName("On Order Item Selected - Different Order Chosen - Updates Displayed Order Label")
     @Test
-    fun onOrderItemSelected_differentOrderChosen_updatesOrderIdAndLabel() = runTest {
+    fun onOrderItemSelected_differentOrderChosen_updatesDisplayedOrderLabel() = runTest {
         insertBooks(TITLE_1, TITLE_2)
 
         val scenario = launchFragmentInHiltContainer<BookListFragment>()
         onView(isRoot()).perform(waitFor(withText(COUNT_2_TEXT), TIMEOUT_3000))
 
-        var newOrderId = 0
-        var newOrderTitle = ""
-        scenario.onFragment {
-            val popupMenu = this.showOrderPopupMenu(View(requireContext()))
-            val target = this.viewModel.orderItems.first { it.id != this.viewModel.orderId.value }
-            newOrderId = target.id
-            newOrderTitle = target.title
-            popupMenu.menu.performIdentifierAction(target.id, 0)
-        }
-        Shadows.shadowOf(Looper.getMainLooper()).idle()
+        val context: Context = ApplicationProvider.getApplicationContext()
+        val defaultOrderTitle = context.getString(R.string.srt_title)
+        val newOrderTitle = context.getString(R.string.srt_author)
+        onView(withText(defaultOrderTitle)).check(matches(isDisplayed()))
 
-        scenario.onFragment {
-            assertEquals(MSG_ORDER_ID_UPDATED, newOrderId, this.viewModel.orderId.value)
-        }
+        applyOrder(scenario, DbConstants.SRT_AUT)
+
         onView(isRoot()).perform(waitFor(withText(newOrderTitle), TIMEOUT_3000))
         onView(withText(newOrderTitle)).check(matches(isDisplayed()))
+        onView(withText(defaultOrderTitle)).check(doesNotExistOrNotDisplayed())
     }
 
     @DisplayName("On View Created - With Single Book In Database - Displays Singular Count")
@@ -434,103 +447,118 @@ class BookListFragmentIntegrationTest {
         onView(withText(TITLE_SEARCH)).check(matches(isDisplayed()))
     }
 
-    @DisplayName("On Request Permission Result - Is Granted - Executes Pending Action")
+    @DisplayName("On Request Permission Result - Is Granted - Shows Load File Dialog")
     @Test
-    fun onRequestPermissionResult_isGranted_executesPendingAction() {
-        launchFragmentInHiltContainer<BookListFragment> {
-            this.viewModel.onActionClicked(PendingAction.IMPORT)
+    fun onRequestPermissionResult_isGranted_showsLoadFileDialog() {
+        val scenario = launchFragmentInHiltContainer<BookListFragment>()
+        scenario.onFragment { invokeOptionsItemSelect(this, R.id.action_imp_db) }
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+        confirmPermissionRationale()
 
-            activity?.runOnUiThread {
-                val registry = this.activityResultRegistry
-                
-                // Find the key associated with our fragment's RequestPermission callback
-                val keyToCallbackField = androidx.activity.result.ActivityResultRegistry::class.java
-                    .getDeclaredFields().first { it.type == Map::class.java && it.name.contains("Callback") }
-                    .apply { isAccessible = true }
-                @Suppress("UNCHECKED_CAST")
-                val keyToCallback = keyToCallbackField.get(registry) as Map<String, Any>
+        grantStoragePermission()
+        dispatchPermissionResult(scenario, isGranted = true)
 
-                val actualKey = keyToCallback.entries.first { entry ->
-                    val callbackAndContract = entry.value
-                    val contractField = callbackAndContract.javaClass.getDeclaredFields().first { it.name.contains("Contract") }
-                        .apply { isAccessible = true }
-                    val contract = contractField.get(callbackAndContract)
-                    contract is ActivityResultContracts.RequestPermission
-                }.key
-
-                val keyToRequestCodeField = androidx.activity.result.ActivityResultRegistry::class.java
-                    .getDeclaredFields().first { field ->
-                        field.type == Map::class.java && 
-                        field.genericType.toString().startsWith("java.util.Map<java.lang.String, java.lang.Integer>")
-                    }.apply { isAccessible = true }
-                @Suppress("UNCHECKED_CAST")
-                val keyToRequestCode = keyToRequestCodeField.get(registry) as Map<String, Int>
-                
-                val requestCode = keyToRequestCode[actualKey]!!
-                
-                val mLaunchedKeysField = androidx.activity.result.ActivityResultRegistry::class.java
-                    .getDeclaredField("mLaunchedKeys").apply { isAccessible = true }
-                @Suppress("UNCHECKED_CAST")
-                val mLaunchedKeys = mLaunchedKeysField.get(registry) as MutableList<String>
-                mLaunchedKeys.add(actualKey)
-
-                registry.dispatchResult(requestCode, true)
-            }
-            Shadows.shadowOf(Looper.getMainLooper()).idle()
-
-            assertEquals(MSG_ACTION_RESET, PendingAction.NONE, this.viewModel.pendingAction.value)
-        }
+        assertEquals(MSG_ACTION_IMPORT, FileOperation.LOAD, shownFileOperation(scenario))
     }
 
-    @DisplayName("On Request Permission Result - Is Denied - Shows Toast")
+    @DisplayName("On Request Permission Result - Is Denied - Shows Toast And No Dialog")
     @Test
-    fun onRequestPermissionResult_isDenied_showsToast() {
-        launchFragmentInHiltContainer<BookListFragment> {
-            this.viewModel.onActionClicked(PendingAction.EXPORT)
+    fun onRequestPermissionResult_isDenied_showsToastAndNoDialog() {
+        val scenario = launchFragmentInHiltContainer<BookListFragment>()
+        scenario.onFragment { invokeOptionsItemSelect(this, R.id.action_exp_db) }
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+        confirmPermissionRationale()
 
-            activity?.runOnUiThread {
-                val registry = this.activityResultRegistry
-                
-                val keyToCallbackField = androidx.activity.result.ActivityResultRegistry::class.java
-                    .getDeclaredFields().first { it.type == Map::class.java && it.name.contains("Callback") }
-                    .apply { isAccessible = true }
-                @Suppress("UNCHECKED_CAST")
-                val keyToCallback = keyToCallbackField.get(registry) as Map<String, Any>
+        dispatchPermissionResult(scenario, isGranted = false)
 
-                val actualKey = keyToCallback.entries.first { entry ->
-                    val callbackAndContract = entry.value
-                    val contractField = callbackAndContract.javaClass.getDeclaredFields().first { it.name.contains("Contract") }
-                        .apply { isAccessible = true }
-                    val contract = contractField.get(callbackAndContract)
-                    contract is ActivityResultContracts.RequestPermission
-                }.key
-
-                val keyToRequestCodeField = androidx.activity.result.ActivityResultRegistry::class.java
-                    .getDeclaredFields().first { field ->
-                        field.type == Map::class.java && 
-                        field.genericType.toString().startsWith("java.util.Map<java.lang.String, java.lang.Integer>")
-                    }.apply { isAccessible = true }
-                @Suppress("UNCHECKED_CAST")
-                val keyToRequestCode = keyToRequestCodeField.get(registry) as Map<String, Int>
-                
-                val requestCode = keyToRequestCode[actualKey]!!
-
-                val mLaunchedKeysField = androidx.activity.result.ActivityResultRegistry::class.java
-                    .getDeclaredField("mLaunchedKeys").apply { isAccessible = true }
-                @Suppress("UNCHECKED_CAST")
-                val mLaunchedKeys = mLaunchedKeysField.get(registry) as MutableList<String>
-                mLaunchedKeys.add(actualKey)
-
-                registry.dispatchResult(requestCode, false)
-            }
-            Shadows.shadowOf(Looper.getMainLooper()).idle()
-
-            // Check the toast by text directly from shadows
-            val latestToastText = org.robolectric.shadows.ShadowToast.getTextOfLatestToast()
-            assertEquals(MSG_ACCESS_DENIED_TOAST, requireContext().getString(R.string.msg_acc_dnd), latestToastText)
-            assertEquals(MSG_ACTION_RESET, PendingAction.NONE, this.viewModel.pendingAction.value)
-        }
+        val context: Context = ApplicationProvider.getApplicationContext()
+        assertEquals(
+            MSG_ACCESS_DENIED_TOAST,
+            context.getString(R.string.msg_acc_dnd),
+            ShadowToast.getTextOfLatestToast()
+        )
+        assertEquals(MSG_NO_FILE_DIALOG, null, shownFileOperation(scenario))
     }
+
+    private fun grantStoragePermission() {
+        Shadows.shadowOf(ApplicationProvider.getApplicationContext<Application>())
+            .grantPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    }
+
+    private fun confirmPermissionRationale() {
+        val dialog = ShadowDialog.getLatestDialog() as? AlertDialog
+        assertTrue(MSG_RATIONALE_DIALOG, dialog != null && dialog.isShowing)
+        dialog!!.getButton(DialogInterface.BUTTON_POSITIVE).performClick()
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+    }
+
+    private fun shownFileOperation(scenario: ActivityScenario<HiltTestActivity>): FileOperation? {
+        var operation: FileOperation? = null
+        scenario.onActivity { activity ->
+            val dialog = activity.supportFragmentManager.fragments
+                .filterIsInstance<FileSelectorDialog>()
+                .firstOrNull { it.isAdded }
+            @Suppress("DEPRECATION")
+            operation = dialog?.arguments?.getSerializable(KEY_OPERATION) as? FileOperation
+        }
+        return operation
+    }
+
+    private fun dispatchPermissionResult(
+        scenario: ActivityScenario<HiltTestActivity>,
+        isGranted: Boolean
+    ) {
+        scenario.onActivity { activity ->
+            val registry = activity.activityResultRegistry
+
+            val keyToCallbackField = ActivityResultRegistry::class.java
+                .declaredFields.first { it.type == Map::class.java && it.name.contains("Callback") }
+                .apply { isAccessible = true }
+            @Suppress("UNCHECKED_CAST")
+            val keyToCallback = keyToCallbackField.get(registry) as Map<String, Any>
+
+            val actualKey = keyToCallback.entries.first { entry ->
+                val contractField = entry.value.javaClass.declaredFields
+                    .first { it.name.contains("Contract") }
+                    .apply { isAccessible = true }
+                contractField.get(entry.value) is ActivityResultContracts.RequestPermission
+            }.key
+
+            val keyToRequestCodeField = ActivityResultRegistry::class.java
+                .declaredFields.first { field ->
+                    field.type == Map::class.java &&
+                        field.genericType.toString()
+                            .startsWith("java.util.Map<java.lang.String, java.lang.Integer>")
+                }.apply { isAccessible = true }
+            @Suppress("UNCHECKED_CAST")
+            val keyToRequestCode = keyToRequestCodeField.get(registry) as Map<String, Int>
+            val requestCode = keyToRequestCode.getValue(actualKey)
+
+            val launchedKeysField = ActivityResultRegistry::class.java
+                .getDeclaredField("mLaunchedKeys").apply { isAccessible = true }
+            @Suppress("UNCHECKED_CAST")
+            val launchedKeys = launchedKeysField.get(registry) as MutableList<String>
+            launchedKeys.add(actualKey)
+
+            registry.dispatchResult(requestCode, isGranted)
+        }
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+    }
+
+    private fun expectedOrderItems(context: Context): List<Pair<Int, String>> = listOf(
+        DbConstants.SRT_TTL to context.getString(R.string.srt_title),
+        DbConstants.SRT_AUT to context.getString(R.string.srt_author),
+        DbConstants.SRT_WNT_PBL_TTL to context.getString(R.string.srt_wanted_pbl_ttl),
+        DbConstants.SRT_WNT_PBL_AUT to context.getString(R.string.srt_wanted_pbl_aut),
+        DbConstants.SRT_RD_AUT to context.getString(R.string.srt_read_aut),
+        DbConstants.SRT_RD_TTL to context.getString(R.string.srt_read_ttl),
+        DbConstants.SRT_NOT_RD_AUT to context.getString(R.string.srt_not_read_aut),
+        DbConstants.SRT_NOT_RD_TTL to context.getString(R.string.srt_not_read_ttl),
+        DbConstants.SRT_PBL_AUT to context.getString(R.string.srt_pbl_aut),
+        DbConstants.SRT_PBL_TTL to context.getString(R.string.srt_pbl_ttl),
+        DbConstants.SRT_LND_TTL to context.getString(R.string.srt_lnd_ttl),
+        DbConstants.SRT_LND_BRW to context.getString(R.string.srt_lnd_brw)
+    )
 
     private fun invokeOptionsItemSelect(fragment: BookListFragment, itemId: Int): Boolean {        val menu = MenuBuilder(fragment.requireContext())
         val item = menu.add(Menu.NONE, itemId, Menu.NONE, itemId.toString())
@@ -614,7 +642,10 @@ class BookListFragmentIntegrationTest {
     }
 
     private fun applyOrder(scenario: ActivityScenario<HiltTestActivity>, orderId: Int) {
-        scenario.onFragment { this.viewModel.updateOrderId(orderId) }
+        scenario.onFragment {
+            val popupMenu = this.showOrderPopupMenu(View(requireContext()))
+            popupMenu.menu.performIdentifierAction(orderId, 0)
+        }
         Shadows.shadowOf(Looper.getMainLooper()).idle()
     }
 
@@ -631,8 +662,8 @@ class BookListFragmentIntegrationTest {
                 val child = recyclerView.getChildAt(i)
                 val position = recyclerView.getChildAdapterPosition(child)
                 val textView = child.findViewById<TextView>(R.id.tv_header)
-                    ?: child.findViewById<TextView>(R.id.tv_item)
-                if (position != RecyclerView.NO_POSITION && textView != null) {
+                    ?: child.findViewById(R.id.tv_item)
+                if (position != RecyclerView.NO_POSITION) {
                     rows.add(position to textView.text.toString())
                 }
             }
@@ -667,6 +698,7 @@ class BookListFragmentIntegrationTest {
         private const val STATUS_IN_BAG = "In Bag"
         private const val STATUS_READ = "Read"
         private const val FRAGMENT_TAG = "tag"
+        private const val KEY_OPERATION = "key_operation"
 
         // Book fields
         private const val DESC_EMPTY = ""
@@ -690,14 +722,15 @@ class BookListFragmentIntegrationTest {
         private const val TIMEOUT_5000 = 5000L
         
         private const val MSG_ACTION_MODE_ACTIVE = "ActionMode should be active"
-        private const val MSG_ACTION_RESET = "Action should be reset"
         private const val MSG_ORDER_MENU_SHOWN = "Order popup menu should be created"
         private const val MSG_ORDER_MENU_SIZE = "Order popup menu should contain all order items"
         private const val MSG_ORDER_MENU_ITEM_ID = "Order popup menu item id should match order item"
         private const val MSG_ORDER_MENU_ITEM_TITLE = "Order popup menu item title should match order item"
         private const val MSG_ORDER_MENU_CHECKED = "Current order item should be checked"
-        private const val MSG_ORDER_ID_UPDATED = "Order id should be updated after selection"
+        private const val MSG_ORDER_MENU_CHECKABLE = "Order menu item should be checkable"
         private const val MSG_ROW_ORDER = "Rows should be displayed in the expected order"
+        private const val MSG_RATIONALE_DIALOG = "Permission rationale dialog should be shown"
+        private const val MSG_NO_FILE_DIALOG = "No file dialog should be shown when permission is denied"
         private const val MSG_ACTION_IMPORT = "Import action should be queued"
         private const val MSG_ACTION_EXPORT = "Export action should be queued"
         private const val MSG_MENU_IMPORT = "Import menu item should be handled"
