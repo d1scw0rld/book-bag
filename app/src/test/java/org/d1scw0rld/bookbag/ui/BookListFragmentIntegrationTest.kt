@@ -4,10 +4,13 @@ import android.os.Looper
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.view.menu.ActionMenuItemView
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.appcompat.widget.PopupMenu
+import androidx.test.core.app.ActivityScenario
+import androidx.recyclerview.widget.RecyclerView
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
@@ -21,9 +24,13 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import kotlinx.coroutines.test.runTest
 import org.d1scw0rld.bookbag.DisplayNameRobolectricRunner
+import org.d1scw0rld.bookbag.HiltTestActivity
 import org.d1scw0rld.bookbag.R
 import org.d1scw0rld.bookbag.data.dao.BookDao
+import org.d1scw0rld.bookbag.data.DbConstants
 import org.d1scw0rld.bookbag.data.entity.BookEntity
+import org.d1scw0rld.bookbag.data.entity.BookFieldCrossRef
+import org.d1scw0rld.bookbag.data.entity.FieldEntity
 import org.d1scw0rld.bookbag.launchFragmentInHiltContainer
 import org.d1scw0rld.bookbag.viewmodel.PendingAction
 import org.d1scw0rld.bookbag.waitFor
@@ -159,6 +166,145 @@ class BookListFragmentIntegrationTest {
         }
     }
 
+    @DisplayName("On Order Changed - Sort By Title - Groups By Title Initial With Authors")
+    @Test
+    fun onOrderChanged_sortByTitle_groupsByTitleInitialWithAuthors() = runTest {
+        insertBookWithFields(ID_1, TITLE_1, author = AUTHOR_1)
+        insertBookWithFields(ID_2, TITLE_2, author = AUTHOR_2)
+
+        val scenario = launchFragmentInHiltContainer<BookListFragment>()
+        applyOrder(scenario, DbConstants.SRT_TTL)
+        onView(isRoot()).perform(waitFor(withText(COUNT_2_TEXT), TIMEOUT_5000))
+
+        onView(withText(HEADER_A)).check(matches(isDisplayed()))
+        onView(withText(HEADER_T)).check(matches(isDisplayed()))
+
+        expandAll(scenario)
+        onView(isRoot()).perform(waitFor(withText("$TITLE_1 - $AUTHOR_1"), TIMEOUT_5000))
+        onView(withText("$TITLE_1 - $AUTHOR_1")).check(matches(isDisplayed()))
+        onView(withText("$TITLE_2 - $AUTHOR_2")).check(matches(isDisplayed()))
+        assertRowOrder(
+            scenario,
+            HEADER_A,
+            "$TITLE_2 - $AUTHOR_2",
+            HEADER_T,
+            "$TITLE_1 - $AUTHOR_1"
+        )
+    }
+
+    @DisplayName("On Order Changed - Sort By Author - Groups By Author With Plain Titles")
+    @Test
+    fun onOrderChanged_sortByAuthor_groupsByAuthorWithPlainTitles() = runTest {
+        insertBookWithFields(ID_1, TITLE_1, author = AUTHOR_1)
+        insertBookWithFields(ID_2, TITLE_2, author = AUTHOR_2)
+
+        val scenario = launchFragmentInHiltContainer<BookListFragment>()
+        applyOrder(scenario, DbConstants.SRT_AUT)
+        onView(isRoot()).perform(waitFor(withText(AUTHOR_1), TIMEOUT_5000))
+
+        onView(withText(AUTHOR_1)).check(matches(isDisplayed()))
+        onView(withText(AUTHOR_2)).check(matches(isDisplayed()))
+        onView(withText(COUNT_2_TEXT)).check(matches(isDisplayed()))
+
+        expandAll(scenario)
+        onView(isRoot()).perform(waitFor(withText(TITLE_1), TIMEOUT_5000))
+        onView(withText(TITLE_1)).check(matches(isDisplayed()))
+        onView(withText(TITLE_2)).check(matches(isDisplayed()))
+        assertRowOrder(scenario, AUTHOR_2, TITLE_2, AUTHOR_1, TITLE_1)
+    }
+
+    @DisplayName("On Order Changed - Sort By Author With Shared Author - Groups Both Books Under One Header")
+    @Test
+    fun onOrderChanged_sortByAuthorWithSharedAuthor_groupsBothBooksUnderOneHeader() = runTest {
+        insertBookWithFields(ID_1, TITLE_1, author = AUTHOR_1)
+        insertBookWithFields(ID_2, TITLE_2, author = AUTHOR_1)
+
+        val scenario = launchFragmentInHiltContainer<BookListFragment>()
+        applyOrder(scenario, DbConstants.SRT_AUT)
+        onView(isRoot()).perform(waitFor(withText(AUTHOR_1), TIMEOUT_5000))
+
+        onView(withText(AUTHOR_1)).check(matches(isDisplayed()))
+        onView(withText(COUNT_2_TEXT)).check(matches(isDisplayed()))
+
+        expandAll(scenario)
+        onView(isRoot()).perform(waitFor(withText(TITLE_2), TIMEOUT_5000))
+        onView(withText(TITLE_1)).check(matches(isDisplayed()))
+        onView(withText(TITLE_2)).check(matches(isDisplayed()))
+        assertRowOrder(scenario, AUTHOR_1, TITLE_2, TITLE_1)
+    }
+
+    @DisplayName("On Order Changed - Sort By Author Without Authors - Groups Under Missing Header")
+    @Test
+    fun onOrderChanged_sortByAuthorWithoutAuthors_groupsUnderMissingHeader() = runTest {
+        insertBooks(TITLE_1, TITLE_2)
+
+        val scenario = launchFragmentInHiltContainer<BookListFragment>()
+        applyOrder(scenario, DbConstants.SRT_AUT)
+        onView(isRoot()).perform(waitFor(withText(HEADER_MISSING), TIMEOUT_5000))
+
+        onView(withText(HEADER_MISSING)).check(matches(isDisplayed()))
+        onView(withText(COUNT_2_TEXT)).check(matches(isDisplayed()))
+        onView(withText(HEADER_T)).check(doesNotExistOrNotDisplayed())
+
+        expandAll(scenario)
+        onView(isRoot()).perform(waitFor(withText(TITLE_2), TIMEOUT_5000))
+        assertRowOrder(scenario, HEADER_MISSING, TITLE_2, TITLE_1)
+    }
+
+    @DisplayName("On Order Changed - Sort By Wanted Title - Excludes Read And In Bag Books")
+    @Test
+    fun onOrderChanged_sortByWantedTitle_excludesReadAndInBagBooks() = runTest {
+        insertBookWithFields(ID_1, TITLE_1, status = STATUS_WANTED)
+        insertBookWithFields(ID_2, TITLE_2, status = STATUS_IN_BAG)
+        insertBookWithFields(ID_3, TITLE_SEARCH, status = STATUS_READ)
+
+        val scenario = launchFragmentInHiltContainer<BookListFragment>()
+        applyOrder(scenario, DbConstants.SRT_WNT_PBL_TTL)
+        onView(isRoot()).perform(waitFor(withText(STATUS_WANTED), TIMEOUT_5000))
+
+        onView(withText(STATUS_WANTED)).check(matches(isDisplayed()))
+        onView(withText(COUNT_1_TEXT)).check(matches(isDisplayed()))
+        onView(withText(STATUS_IN_BAG)).check(doesNotExistOrNotDisplayed())
+        onView(withText(STATUS_READ)).check(doesNotExistOrNotDisplayed())
+
+        expandAll(scenario)
+        onView(isRoot()).perform(waitFor(withText(TITLE_1), TIMEOUT_5000))
+        onView(withText(TITLE_1)).check(matches(isDisplayed()))
+        onView(withText(TITLE_2)).check(doesNotExistOrNotDisplayed())
+        assertRowOrder(scenario, STATUS_WANTED, TITLE_1)
+    }
+
+    @DisplayName("On Order Changed - Sort Order Reapplied - Regroups Existing Books")
+    @Test
+    fun onOrderChanged_sortOrderReapplied_regroupsExistingBooks() = runTest {
+        insertBookWithFields(ID_1, TITLE_1, author = AUTHOR_1)
+        insertBookWithFields(ID_2, TITLE_2, author = AUTHOR_2)
+
+        val scenario = launchFragmentInHiltContainer<BookListFragment>()
+        applyOrder(scenario, DbConstants.SRT_AUT)
+        onView(isRoot()).perform(waitFor(withText(AUTHOR_1), TIMEOUT_5000))
+        onView(withText(AUTHOR_1)).check(matches(isDisplayed()))
+
+        applyOrder(scenario, DbConstants.SRT_TTL)
+        onView(isRoot()).perform(waitFor(withText(HEADER_T), TIMEOUT_5000))
+
+        onView(withText(HEADER_T)).check(matches(isDisplayed()))
+        onView(withText(HEADER_A)).check(matches(isDisplayed()))
+        onView(withText(AUTHOR_1)).check(doesNotExistOrNotDisplayed())
+        onView(withText(AUTHOR_2)).check(doesNotExistOrNotDisplayed())
+        assertRowOrder(scenario, HEADER_A, HEADER_T)
+
+        expandAll(scenario)
+        onView(isRoot()).perform(waitFor(withText("$TITLE_1 - $AUTHOR_1"), TIMEOUT_5000))
+        assertRowOrder(
+            scenario,
+            HEADER_A,
+            "$TITLE_2 - $AUTHOR_2",
+            HEADER_T,
+            "$TITLE_1 - $AUTHOR_1"
+        )
+    }
+
     @DisplayName("Menu Import - Import Option Selected - Queues Import Action")
     @Test
     fun menuImport_importOptionSelected_queuesImportAction() {
@@ -181,30 +327,49 @@ class BookListFragmentIntegrationTest {
         }
     }
 
-    @DisplayName("Menu Expand All - Expand All Option Selected - Returns True")
+    @DisplayName("Menu Expand All - Expand All Option Selected - Displays Book Titles")
     @Test
-    fun menuExpandAll_expandAllOptionSelected_returnsTrue() {
-        launchFragmentInHiltContainer<BookListFragment> {
-            val menuItem = MenuBuilder(requireContext()).add(Menu.NONE, R.id.action_exp_all, Menu.NONE, "expand")
-            val result = invokeOptionsItemSelect(this, menuItem.itemId)
+    fun menuExpandAll_expandAllOptionSelected_displaysBookTitles() = runTest {
+        insertBooks(TITLE_1, TITLE_2)
 
-            assertTrue(MSG_MENU_EXPAND_ALL, result)
-        }
+        val scenario = launchFragmentInHiltContainer<BookListFragment>()
+        onView(isRoot()).perform(waitFor(withText(COUNT_2_TEXT), TIMEOUT_3000))
+        onView(withText(TITLE_1)).check(doesNotExistOrNotDisplayed())
+
+        var result = false
+        scenario.onFragment { result = invokeOptionsItemSelect(this, R.id.action_exp_all) }
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+        assertTrue(MSG_MENU_EXPAND_ALL, result)
+        onView(isRoot()).perform(waitFor(withText(TITLE_1), TIMEOUT_3000))
+        onView(withText(TITLE_1)).check(matches(isDisplayed()))
+        onView(withText(TITLE_2)).check(matches(isDisplayed()))
     }
 
-    @DisplayName("Menu Collapse All - Collapse All Option Selected - Returns True")
+    @DisplayName("Menu Collapse All - Collapse All Option Selected - Hides Book Titles")
     @Test
-    fun menuCollapseAll_collapseAllOptionSelected_returnsTrue() {
-        launchFragmentInHiltContainer<BookListFragment> {
-            val menuItem = MenuBuilder(requireContext()).add(Menu.NONE, R.id.action_clp_all, Menu.NONE, "collapse")
-            val result = invokeOptionsItemSelect(this, menuItem.itemId)
+    fun menuCollapseAll_collapseAllOptionSelected_hidesBookTitles() = runTest {
+        insertBooks(TITLE_1, TITLE_2)
 
-            assertTrue(MSG_MENU_COLLAPSE_ALL, result)
-        }
+        val scenario = launchFragmentInHiltContainer<BookListFragment>()
+        onView(isRoot()).perform(waitFor(withText(COUNT_2_TEXT), TIMEOUT_3000))
+        scenario.onFragment { invokeOptionsItemSelect(this, R.id.action_exp_all) }
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+        onView(isRoot()).perform(waitFor(withText(TITLE_1), TIMEOUT_3000))
+
+        var result = false
+        scenario.onFragment { result = invokeOptionsItemSelect(this, R.id.action_clp_all) }
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+        assertTrue(MSG_MENU_COLLAPSE_ALL, result)
+        onView(withText(TITLE_1)).check(doesNotExistOrNotDisplayed())
+        onView(withText(TITLE_2)).check(doesNotExistOrNotDisplayed())
+        onView(withText(HEADER_T)).check(matches(isDisplayed()))
+        onView(withText(HEADER_A)).check(matches(isDisplayed()))
+        onView(withText(COUNT_2_TEXT)).check(matches(isDisplayed()))
     }
 
-    @DisplayName("Menu Sort - Sort Option Selected - Returns True")
-    @Test
+    @DisplayName("Menu Sort - Sort Option Selected - Returns True")    @Test
     fun menuSort_sortOptionSelected_returnsTrue() {
         launchFragmentInHiltContainer<BookListFragment> {
             val menuItem = MenuBuilder(requireContext()).add(Menu.NONE, R.id.action_sort, Menu.NONE, "sort")
@@ -212,6 +377,61 @@ class BookListFragmentIntegrationTest {
 
             assertTrue(MSG_MENU_SORT, result)
         }
+    }
+
+    @DisplayName("On Order Item Selected - Different Order Chosen - Updates Order Id And Label")
+    @Test
+    fun onOrderItemSelected_differentOrderChosen_updatesOrderIdAndLabel() = runTest {
+        insertBooks(TITLE_1, TITLE_2)
+
+        val scenario = launchFragmentInHiltContainer<BookListFragment>()
+        onView(isRoot()).perform(waitFor(withText(COUNT_2_TEXT), TIMEOUT_3000))
+
+        var newOrderId = 0
+        var newOrderTitle = ""
+        scenario.onFragment {
+            val popupMenu = this.showOrderPopupMenu(View(requireContext()))
+            val target = this.viewModel.orderItems.first { it.id != this.viewModel.orderId.value }
+            newOrderId = target.id
+            newOrderTitle = target.title
+            popupMenu.menu.performIdentifierAction(target.id, 0)
+        }
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+        scenario.onFragment {
+            assertEquals(MSG_ORDER_ID_UPDATED, newOrderId, this.viewModel.orderId.value)
+        }
+        onView(isRoot()).perform(waitFor(withText(newOrderTitle), TIMEOUT_3000))
+        onView(withText(newOrderTitle)).check(matches(isDisplayed()))
+    }
+
+    @DisplayName("On View Created - With Single Book In Database - Displays Singular Count")
+    @Test
+    fun onViewCreated_withSingleBookInDatabase_displaysSingularCount() = runTest {
+        insertBooks(TITLE_1)
+
+        launchFragmentInHiltContainer<BookListFragment>()
+        onView(isRoot()).perform(waitFor(withText(COUNT_1_TEXT), TIMEOUT_3000))
+        onView(withText(COUNT_1_TEXT)).check(matches(isDisplayed()))
+    }
+
+    @DisplayName("On Search Query Changed - Query Cleared - Restores Full List")
+    @Test
+    fun onSearchQueryChanged_queryCleared_restoresFullList() = runTest {
+        insertBooks(TITLE_SEARCH, TITLE_OTHER, TITLE_OTHER)
+
+        launchFragmentInHiltContainer<BookListFragment>()
+        onView(isRoot()).perform(waitFor(withText(COUNT_3_TEXT), TIMEOUT_5000))
+        setSearchQueryViaSearchView(QUERY_SEARCH)
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+        onView(isRoot()).perform(waitFor(withText(COUNT_1_TEXT), TIMEOUT_5000))
+
+        setSearchQueryViaSearchView(QUERY_EMPTY)
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+        onView(isRoot()).perform(waitFor(withText(COUNT_3_TEXT), TIMEOUT_5000))
+        onView(withText(COUNT_3_TEXT)).check(matches(isDisplayed()))
+        onView(withText(TITLE_SEARCH)).check(matches(isDisplayed()))
     }
 
     @DisplayName("On Request Permission Result - Is Granted - Executes Pending Action")
@@ -312,8 +532,7 @@ class BookListFragmentIntegrationTest {
         }
     }
 
-    private fun invokeOptionsItemSelect(fragment: BookListFragment, itemId: Int): Boolean {
-        val menu = MenuBuilder(fragment.requireContext())
+    private fun invokeOptionsItemSelect(fragment: BookListFragment, itemId: Int): Boolean {        val menu = MenuBuilder(fragment.requireContext())
         val item = menu.add(Menu.NONE, itemId, Menu.NONE, itemId.toString())
         val method = BookListFragment::class.java.getDeclaredMethod("optionsItemSelect", MenuItem::class.java)
         method.isAccessible = true
@@ -330,6 +549,104 @@ class BookListFragmentIntegrationTest {
 
     private fun doesNotExistOrNotDisplayed() = doesNotExist()
 
+    private suspend fun insertBooks(vararg titles: String) {
+        titles.forEachIndexed { index, title ->
+            bookDao.insertBook(
+                BookEntity(
+                    id = ID_1 + index,
+                    title = title,
+                    description = DESC_EMPTY,
+                    volume = VOL_1,
+                    publicationDate = PUB_DATE_2023,
+                    pages = PAGES_100,
+                    price = PRICE_EMPTY,
+                    value = VALUE_EMPTY,
+                    dueDate = DATE_ZERO,
+                    readDate = DATE_ZERO,
+                    edition = EDITION_1,
+                    isbn = ISBN_EMPTY,
+                    web = WEB_EMPTY
+                )
+            )
+        }
+    }
+
+    private fun ActivityScenario<HiltTestActivity>.onFragment(action: BookListFragment.() -> Unit) {
+        onActivity { activity ->
+            val fragment = activity.supportFragmentManager
+                .findFragmentByTag(FRAGMENT_TAG) as BookListFragment
+            fragment.action()
+        }
+    }
+
+    private suspend fun insertBookWithFields(
+        id: Long,
+        title: String,
+        author: String? = null,
+        status: String? = null
+    ) {
+        bookDao.insertBook(
+            BookEntity(
+                id = id,
+                title = title,
+                description = DESC_EMPTY,
+                volume = VOL_1,
+                publicationDate = PUB_DATE_2023,
+                pages = PAGES_100,
+                price = PRICE_EMPTY,
+                value = VALUE_EMPTY,
+                dueDate = DATE_ZERO,
+                readDate = DATE_ZERO,
+                edition = EDITION_1,
+                isbn = ISBN_EMPTY,
+                web = WEB_EMPTY
+            )
+        )
+        author?.let { linkField(id, DbConstants.FLD_AUTHOR, it) }
+        status?.let { linkField(id, DbConstants.FLD_STATUS, it) }
+    }
+
+    private suspend fun linkField(bookId: Long, typeId: Int, name: String) {
+        val existing = bookDao.getFieldsByTypeId(typeId).firstOrNull { it.name == name }
+        val fieldId = existing?.id
+            ?: bookDao.insertField(FieldEntity(typeId = typeId, name = name))
+        bookDao.insertBookFieldCrossRef(BookFieldCrossRef(bookId = bookId, fieldId = fieldId))
+    }
+
+    private fun applyOrder(scenario: ActivityScenario<HiltTestActivity>, orderId: Int) {
+        scenario.onFragment { this.viewModel.updateOrderId(orderId) }
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+    }
+
+    private fun expandAll(scenario: ActivityScenario<HiltTestActivity>) {
+        scenario.onFragment { invokeOptionsItemSelect(this, R.id.action_exp_all) }
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+    }
+
+    private fun visibleRowTexts(scenario: ActivityScenario<HiltTestActivity>): List<String> {
+        val rows = mutableListOf<Pair<Int, String>>()
+        scenario.onActivity { activity ->
+            val recyclerView = activity.findViewById<RecyclerView>(R.id.book_list)
+            for (i in 0 until recyclerView.childCount) {
+                val child = recyclerView.getChildAt(i)
+                val position = recyclerView.getChildAdapterPosition(child)
+                val textView = child.findViewById<TextView>(R.id.tv_header)
+                    ?: child.findViewById<TextView>(R.id.tv_item)
+                if (position != RecyclerView.NO_POSITION && textView != null) {
+                    rows.add(position to textView.text.toString())
+                }
+            }
+        }
+        return rows.sortedBy { it.first }.map { it.second }
+    }
+
+    private fun assertRowOrder(
+        scenario: ActivityScenario<HiltTestActivity>,
+        vararg expectedRows: String
+    ) {
+        assertEquals(MSG_ROW_ORDER, expectedRows.toList(), visibleRowTexts(scenario))
+    }
+
     companion object {
         private const val ID_1 = 101L
         private const val ID_2 = 102L
@@ -340,6 +657,16 @@ class BookListFragmentIntegrationTest {
         private const val TITLE_OTHER = "Banana"
         private const val QUERY_SEARCH = "Ap"
         private const val QUERY_NO_MATCH = "zzzz_non_existing_query"
+        private const val QUERY_EMPTY = ""
+        private const val HEADER_T = "T"
+        private const val HEADER_A = "A"
+        private const val HEADER_MISSING = "(missing)"
+        private const val AUTHOR_1 = "Zoe Author"
+        private const val AUTHOR_2 = "Yuri Author"
+        private const val STATUS_WANTED = "Wanted"
+        private const val STATUS_IN_BAG = "In Bag"
+        private const val STATUS_READ = "Read"
+        private const val FRAGMENT_TAG = "tag"
 
         // Book fields
         private const val DESC_EMPTY = ""
@@ -369,6 +696,8 @@ class BookListFragmentIntegrationTest {
         private const val MSG_ORDER_MENU_ITEM_ID = "Order popup menu item id should match order item"
         private const val MSG_ORDER_MENU_ITEM_TITLE = "Order popup menu item title should match order item"
         private const val MSG_ORDER_MENU_CHECKED = "Current order item should be checked"
+        private const val MSG_ORDER_ID_UPDATED = "Order id should be updated after selection"
+        private const val MSG_ROW_ORDER = "Rows should be displayed in the expected order"
         private const val MSG_ACTION_IMPORT = "Import action should be queued"
         private const val MSG_ACTION_EXPORT = "Export action should be queued"
         private const val MSG_MENU_IMPORT = "Import menu item should be handled"
