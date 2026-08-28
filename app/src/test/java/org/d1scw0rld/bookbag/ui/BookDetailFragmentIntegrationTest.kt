@@ -24,7 +24,6 @@ import org.d1scw0rld.bookbag.data.dao.BookDao
 import org.d1scw0rld.bookbag.data.entity.BookEntity
 import org.d1scw0rld.bookbag.data.entity.BookFieldCrossRef
 import org.d1scw0rld.bookbag.data.entity.FieldEntity
-import org.d1scw0rld.bookbag.data.relation.BookWithFields
 import org.d1scw0rld.bookbag.dto.Date
 import org.d1scw0rld.bookbag.dto.Price
 import org.d1scw0rld.bookbag.launchFragmentInHiltContainer
