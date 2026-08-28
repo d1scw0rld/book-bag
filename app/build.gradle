@@ -18,8 +18,29 @@ android {
         targetSdkVersion 37
     }
 
+    signingConfigs {
+        release {
+            def storeFilePath = System.getenv("BOOKBAG_STORE_FILE")
+            if (storeFilePath) {
+                storeFile file(storeFilePath)
+                storePassword System.getenv("BOOKBAG_STORE_PASSWORD")
+                keyAlias System.getenv("BOOKBAG_KEY_ALIAS")
+                keyPassword System.getenv("BOOKBAG_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            def storeFilePath = System.getenv("BOOKBAG_STORE_FILE")
+            if (storeFilePath) {
+                signingConfig signingConfigs.release
+            } else if (gradle.startParameter.taskNames.any {
+                def taskName = it.tokenize(':').last().toLowerCase()
+                taskName == "assemblerelease" || taskName == "bundlerelease"
+            }) {
+                throw new GradleException("Release builds require BOOKBAG_STORE_FILE and related signing environment variables.")
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.txt'
             applicationVariants.all { variant ->
