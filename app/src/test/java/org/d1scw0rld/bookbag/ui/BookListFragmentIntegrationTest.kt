@@ -4,13 +4,12 @@ import android.Manifest
 import android.app.Application
 import android.content.Context
 import android.content.DialogInterface
+import android.content.pm.PackageManager
 import android.os.Looper
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
-import androidx.activity.result.ActivityResultRegistry
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.menu.ActionMenuItemView
 import androidx.appcompat.view.menu.MenuBuilder
@@ -455,7 +454,6 @@ class BookListFragmentIntegrationTest {
         Shadows.shadowOf(Looper.getMainLooper()).idle()
         confirmPermissionRationale()
 
-        grantStoragePermission()
         dispatchPermissionResult(scenario, isGranted = true)
 
         assertEquals(MSG_ACTION_IMPORT, FileOperation.LOAD, shownFileOperation(scenario))
@@ -509,38 +507,20 @@ class BookListFragmentIntegrationTest {
         isGranted: Boolean
     ) {
         scenario.onActivity { activity ->
-            val registry = activity.activityResultRegistry
+            val request = Shadows.shadowOf(activity).lastRequestedPermission
+            assertTrue(MSG_PERMISSION_REQUESTED, request != null)
+            assertTrue(
+                MSG_STORAGE_PERMISSION_REQUESTED,
+                request.requestedPermissions.contains(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            )
 
-            val keyToCallbackField = ActivityResultRegistry::class.java
-                .declaredFields.first { it.type == Map::class.java && it.name.contains("Callback") }
-                .apply { isAccessible = true }
-            @Suppress("UNCHECKED_CAST")
-            val keyToCallback = keyToCallbackField.get(registry) as Map<String, Any>
-
-            val actualKey = keyToCallback.entries.first { entry ->
-                val contractField = entry.value.javaClass.declaredFields
-                    .first { it.name.contains("Contract") }
-                    .apply { isAccessible = true }
-                contractField.get(entry.value) is ActivityResultContracts.RequestPermission
-            }.key
-
-            val keyToRequestCodeField = ActivityResultRegistry::class.java
-                .declaredFields.first { field ->
-                    field.type == Map::class.java &&
-                        field.genericType.toString()
-                            .startsWith("java.util.Map<java.lang.String, java.lang.Integer>")
-                }.apply { isAccessible = true }
-            @Suppress("UNCHECKED_CAST")
-            val keyToRequestCode = keyToRequestCodeField.get(registry) as Map<String, Int>
-            val requestCode = keyToRequestCode.getValue(actualKey)
-
-            val launchedKeysField = ActivityResultRegistry::class.java
-                .getDeclaredField("mLaunchedKeys").apply { isAccessible = true }
-            @Suppress("UNCHECKED_CAST")
-            val launchedKeys = launchedKeysField.get(registry) as MutableList<String>
-            launchedKeys.add(actualKey)
-
-            registry.dispatchResult(requestCode, isGranted)
+            val grantResult =
+                if (isGranted) PackageManager.PERMISSION_GRANTED else PackageManager.PERMISSION_DENIED
+            activity.onRequestPermissionsResult(
+                request.requestCode,
+                request.requestedPermissions,
+                IntArray(request.requestedPermissions.size) { grantResult }
+            )
         }
         Shadows.shadowOf(Looper.getMainLooper()).idle()
     }
@@ -730,6 +710,8 @@ class BookListFragmentIntegrationTest {
         private const val MSG_ORDER_MENU_CHECKABLE = "Order menu item should be checkable"
         private const val MSG_ROW_ORDER = "Rows should be displayed in the expected order"
         private const val MSG_RATIONALE_DIALOG = "Permission rationale dialog should be shown"
+        private const val MSG_PERMISSION_REQUESTED = "A runtime permission should have been requested"
+        private const val MSG_STORAGE_PERMISSION_REQUESTED = "Write external storage permission should have been requested"
         private const val MSG_NO_FILE_DIALOG = "No file dialog should be shown when permission is denied"
         private const val MSG_ACTION_IMPORT = "Import action should be queued"
         private const val MSG_ACTION_EXPORT = "Export action should be queued"
