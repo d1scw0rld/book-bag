@@ -1,11 +1,7 @@
 name: CI
 
 on:
-  push:
-    branches: ['**']
-    tags-ignore: ['**']
   pull_request:
-  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
