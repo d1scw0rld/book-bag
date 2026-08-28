@@ -1,11 +1,11 @@
 import java.util.regex.Pattern
 
 plugins {
-    id 'com.android.application'
-    id 'kotlin-android'
-    id 'androidx.navigation.safeargs'
-    id 'com.google.devtools.ksp'
-    id 'com.google.dagger.hilt.android'
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.navigation.safeargs)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt.android)
 }
 
 android {
@@ -83,67 +83,64 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.test.espresso:espresso-contrib:3.7.0'
-    implementation 'com.google.android.material:material:1.14.0'
-    implementation "androidx.preference:preference:1.2.1"
+    implementation libs.androidx.legacy.support.v4
+    implementation libs.androidx.espresso.contrib
+    implementation libs.material
+    implementation libs.androidx.preference
     // Keep this lower version, because of ugly preferences screen look
-    implementation 'com.wdullaer:materialdatetimepicker:3.6.4'
-//    implementation 'com.wdullaer:materialdatetimepicker:4.2.3'
+    implementation libs.materialdatetimepicker
 
+    implementation libs.androidx.navigation.fragment
+    implementation libs.androidx.navigation.ui
 
-    implementation 'androidx.navigation:navigation-fragment:2.9.8'
-    implementation 'androidx.navigation:navigation-ui:2.9.8'
-
-    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
-    implementation 'org.jetbrains:annotations:26.1.0'
-    implementation 'androidx.core:core:1.19.0'
+    implementation libs.androidx.constraintlayout
+    implementation libs.jetbrains.annotations
+    implementation libs.androidx.core
 
     // Room Database
-    def room_version = "2.8.4"
-    implementation "androidx.room:room-runtime:$room_version"
-    implementation "androidx.room:room-ktx:$room_version"
-    ksp "androidx.room:room-compiler:$room_version"
+    implementation libs.androidx.room.runtime
+    implementation libs.androidx.room.ktx
+    ksp libs.androidx.room.compiler
 
     // Hilt DI
-    implementation "com.google.dagger:hilt-android:2.60"
-    ksp "com.google.dagger:hilt-compiler:2.60"
+    implementation libs.hilt.android
+    ksp libs.hilt.compiler
 
     // ViewModel & Lifecycle KTX
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.11.0"
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.11.0"
+    implementation libs.androidx.lifecycle.viewmodel.ktx
+    implementation libs.androidx.lifecycle.runtime.ktx
 
     // Unit Testing
-    testImplementation 'junit:junit:4.13.2'
-    testImplementation 'androidx.test:core-ktx:1.7.0'
-    
+    testImplementation libs.junit
+    testImplementation libs.androidx.test.core.ktx
+
     // JUnit 5 (Jupiter) API & Engines
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:6.1.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:6.1.0'
-    testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:6.1.0'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:6.1.0'
-    
+    testImplementation libs.junit.jupiter.api
+    testRuntimeOnly libs.junit.jupiter.engine
+    testRuntimeOnly libs.junit.vintage.engine
+    testRuntimeOnly libs.junit.platform.launcher
+
     // Mockito for clean, decoupled dependency mocking
-    testImplementation 'org.mockito:mockito-core:5.23.0'
-    testImplementation 'org.mockito.kotlin:mockito-kotlin:6.3.0'
-    
+    testImplementation libs.mockito.core
+    testImplementation libs.mockito.kotlin
+
     // Coroutine testing tools (TestDispatcher, runTest)
-    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0'
-    androidTestImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0'
-    
+    testImplementation libs.kotlinx.coroutines.test
+    androidTestImplementation libs.kotlinx.coroutines.test
+
     // Robolectric to mock the Android framework (Context, Resources, Database) on the local JVM
-    testImplementation 'org.robolectric:robolectric:4.16.1'
-    
+    testImplementation libs.robolectric
+
     // Espresso and UI/Integration Testing on local JVM
-    testImplementation 'androidx.test.espresso:espresso-core:3.7.0'
-    testImplementation 'androidx.test.ext:junit:1.3.0'
-    testImplementation 'androidx.fragment:fragment-testing:1.8.9'
-    
+    testImplementation libs.androidx.espresso.core
+    testImplementation libs.androidx.test.ext.junit
+    testImplementation libs.androidx.fragment.testing
+
     // Hilt Testing
-    testImplementation 'com.google.dagger:hilt-android-testing:2.60'
-    kspTest 'com.google.dagger:hilt-compiler:2.60'
-    
+    testImplementation libs.hilt.android.testing
+    kspTest libs.hilt.compiler
+
     // Room Test Helpers
-    testImplementation "androidx.room:room-testing:2.8.4"
-    androidTestImplementation "androidx.room:room-testing:2.8.4"
+    testImplementation libs.androidx.room.testing
+    androidTestImplementation libs.androidx.room.testing
 }
