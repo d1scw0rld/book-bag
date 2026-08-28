@@ -32,8 +32,14 @@ android {
 
     buildTypes {
         release {
-            if (System.getenv("BOOKBAG_STORE_FILE")) {
+            def storeFilePath = System.getenv("BOOKBAG_STORE_FILE")
+            if (storeFilePath) {
                 signingConfig signingConfigs.release
+            } else if (gradle.startParameter.taskNames.any {
+                def taskName = it.tokenize(':').last().toLowerCase()
+                taskName == "assemblerelease" || taskName == "bundlerelease"
+            }) {
+                throw new GradleException("Release builds require BOOKBAG_STORE_FILE and related signing environment variables.")
             }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.txt'
