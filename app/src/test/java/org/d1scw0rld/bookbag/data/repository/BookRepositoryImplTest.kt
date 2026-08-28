@@ -56,17 +56,17 @@ class BookRepositoryImplTest {
         return Book(
             id = id,
             title = Changeable(title),
-            description = Changeable("Test Description"),
-            volume = Changeable(1),
-            publicationDate = Changeable(2023),
-            pages = Changeable(350),
-            price = Changeable("1500|1"),
-            value = Changeable("2000|1"),
-            dueDate = Changeable(0),
-            readDate = Changeable(0),
-            edition = Changeable(1),
-            isbn = Changeable("1234567890"),
-            web = Changeable("http://test.com"),
+            description = Changeable(DEFAULT_DESCRIPTION),
+            volume = Changeable(DEFAULT_VOLUME),
+            publicationDate = Changeable(DEFAULT_PUBLICATION_DATE),
+            pages = Changeable(DEFAULT_PAGES),
+            price = Changeable(DEFAULT_PRICE),
+            value = Changeable(DEFAULT_VALUE),
+            dueDate = Changeable(DEFAULT_DUE_DATE),
+            readDate = Changeable(DEFAULT_READ_DATE),
+            edition = Changeable(DEFAULT_EDITION),
+            isbn = Changeable(DEFAULT_ISBN),
+            web = Changeable(DEFAULT_WEB),
             properties = ArrayList()
         )
     }
@@ -75,17 +75,17 @@ class BookRepositoryImplTest {
         return BookEntity(
             id = id,
             title = title,
-            description = "Test Description",
-            volume = 1,
-            publicationDate = 2023,
-            pages = 350,
-            price = "1500|1",
-            value = "2000|1",
-            dueDate = 0,
-            readDate = 0,
-            edition = 1,
-            isbn = "1234567890",
-            web = "http://test.com"
+            description = DEFAULT_DESCRIPTION,
+            volume = DEFAULT_VOLUME,
+            publicationDate = DEFAULT_PUBLICATION_DATE,
+            pages = DEFAULT_PAGES,
+            price = DEFAULT_PRICE,
+            value = DEFAULT_VALUE,
+            dueDate = DEFAULT_DUE_DATE,
+            readDate = DEFAULT_READ_DATE,
+            edition = DEFAULT_EDITION,
+            isbn = DEFAULT_ISBN,
+            web = DEFAULT_WEB
         )
     }
 
@@ -93,52 +93,51 @@ class BookRepositoryImplTest {
     @Test
     fun getBookWithFields_validBookId_returnsCorrectRelation() = runTest {
         // Arrange
-        val bookId = 1L
-        val book = createBookEntity(bookId, "Refactoring")
+        val book = createBookEntity(TEST_BOOK_ID_1, TITLE_REFACTORING)
         bookDao.insertBook(book)
 
-        val field = FieldEntity(id = 10L, typeId = DbConstants.FLD_AUTHOR, name = "Martin Fowler")
+        val field = FieldEntity(id = TEST_FIELD_ID_10, typeId = DbConstants.FLD_AUTHOR, name = AUTHOR_MARTIN_FOWLER)
         bookDao.insertField(field)
 
-        bookDao.insertBookFieldCrossRef(BookFieldCrossRef(bookId, 10L))
+        bookDao.insertBookFieldCrossRef(BookFieldCrossRef(TEST_BOOK_ID_1, TEST_FIELD_ID_10))
 
         // Act
-        val result = repository.getBookWithFields(bookId)
+        val result = repository.getBookWithFields(TEST_BOOK_ID_1)
 
         // Assert
         assertNotNull(result)
-        assertEquals("Refactoring", result?.book?.title)
+        assertEquals(TITLE_REFACTORING, result?.book?.title)
         assertEquals(1, result?.fields?.size)
-        assertEquals("Martin Fowler", result?.fields?.get(0)?.name)
+        assertEquals(AUTHOR_MARTIN_FOWLER, result?.fields?.get(0)?.name)
     }
 
     @DisplayName("Get Book With Fields Flow - Valid Book ID - Emits Correct Relation")
     @Test
     fun getBookWithFieldsFlow_validBookId_emitsCorrectRelation() = runTest {
         // Arrange
-        val bookId = 2L
-        val book = createBookEntity(bookId, "Clean Code")
+        val bookId = TEST_BOOK_ID_2
+        val book = createBookEntity(bookId, TITLE_CLEAN_CODE)
         bookDao.insertBook(book)
 
-        val field = FieldEntity(id = 20L, typeId = DbConstants.FLD_AUTHOR, name = "Robert C. Martin")
+        val field = FieldEntity(id = TEST_FIELD_ID_20, typeId = DbConstants.FLD_AUTHOR, name = AUTHOR_ROBERT_MARTIN)
         bookDao.insertField(field)
 
-        bookDao.insertBookFieldCrossRef(BookFieldCrossRef(bookId, 20L))
+        bookDao.insertBookFieldCrossRef(BookFieldCrossRef(bookId, TEST_FIELD_ID_20))
 
         // Act & Assert
         val emission = repository.getBookWithFieldsFlow(bookId).first()
         assertNotNull(emission)
-        assertEquals("Clean Code", emission?.book?.title)
+        assertEquals(TITLE_CLEAN_CODE, emission?.book?.title)
         assertEquals(1, emission?.fields?.size)
-        assertEquals("Robert C. Martin", emission?.fields?.get(0)?.name)
+        assertEquals(AUTHOR_ROBERT_MARTIN, emission?.fields?.get(0)?.name)
     }
 
     @DisplayName("Get All Books With Fields - Multiple Books Exist - Returns All Items")
     @Test
     fun getAllBooksWithFields_multipleBooksExist_returnsAllItems() = runTest {
         // Arrange
-        val b1 = createBookEntity(1L, "Book One")
-        val b2 = createBookEntity(2L, "Book Two")
+        val b1 = createBookEntity(TEST_BOOK_ID_1, TITLE_BOOK_ONE)
+        val b2 = createBookEntity(TEST_BOOK_ID_2, TITLE_BOOK_TWO)
         bookDao.insertBook(b1)
         bookDao.insertBook(b2)
 
@@ -147,29 +146,29 @@ class BookRepositoryImplTest {
 
         // Assert
         assertEquals(2, list.size)
-        assertTrue(list.any { it.book.title == "Book One" })
-        assertTrue(list.any { it.book.title == "Book Two" })
+        assertTrue(list.any { it.book.title == TITLE_BOOK_ONE })
+        assertTrue(list.any { it.book.title == TITLE_BOOK_TWO })
     }
 
     @DisplayName("Get All Books With Fields Flow - Multiple Books Exist - Emits All Items")
     @Test
     fun getAllBooksWithFieldsFlow_multipleBooksExist_emitsAllItems() = runTest {
         // Arrange
-        val b1 = createBookEntity(1L, "Book One")
+        val b1 = createBookEntity(TEST_BOOK_ID_1, TITLE_BOOK_ONE)
         bookDao.insertBook(b1)
 
         // Act & Assert
         val list = repository.getAllBooksWithFieldsFlow().first()
         assertEquals(1, list.size)
-        assertEquals("Book One", list[0].book.title)
+        assertEquals(TITLE_BOOK_ONE, list[0].book.title)
     }
 
     @DisplayName("Save Book With Fields - New Book With Properties - Inserts Book and Fields and Updates IDs")
     @Test
     fun saveBookWithFields_newBookWithProperties_insertsBookAndFieldsAndUpdatesIds() = runTest {
         // Arrange
-        val bookDto = createBookDto(0L, "New Book")
-        val prop = Property(fieldTypeId = DbConstants.FLD_AUTHOR, value = "New Author", id = 0L)
+        val bookDto = createBookDto(TEST_BOOK_ID_NEW, TITLE_NEW_BOOK)
+        val prop = Property(fieldTypeId = DbConstants.FLD_AUTHOR, value = AUTHOR_NEW_AUTHOR, id = TEST_FIELD_ID_NEW)
         bookDto.properties.add(prop)
 
         // Act
@@ -179,12 +178,12 @@ class BookRepositoryImplTest {
         val booksInDb = repository.getAllBooksWithFields()
         assertEquals(1, booksInDb.size)
         val savedBookWithFields = booksInDb[0]
-        assertEquals("New Book", savedBookWithFields.book.title)
+        assertEquals(TITLE_NEW_BOOK, savedBookWithFields.book.title)
         assertEquals(1, savedBookWithFields.fields.size)
-        assertEquals("New Author", savedBookWithFields.fields[0].name)
+        assertEquals(AUTHOR_NEW_AUTHOR, savedBookWithFields.fields[0].name)
         
         // Check that the returned property ID was updated with generated DB field ID
-        assertNotEquals(0L, prop.id)
+        assertNotEquals(TEST_FIELD_ID_NEW, prop.id)
     }
 
     @DisplayName("Save Book With Fields - Existing Book and Modified Properties - Updates Book and Cleans Old Relations")
@@ -192,8 +191,8 @@ class BookRepositoryImplTest {
     fun saveBookWithFields_existingBookAndModifiedProperties_updatesBookAndCleansOldRelations() = runTest {
         // Arrange
         // First save a book
-        val bookDto = createBookDto(0L, "Original Title")
-        val prop1 = Property(fieldTypeId = DbConstants.FLD_AUTHOR, value = "Author One", id = 0L)
+        val bookDto = createBookDto(TEST_BOOK_ID_NEW, TITLE_ORIGINAL)
+        val prop1 = Property(fieldTypeId = DbConstants.FLD_AUTHOR, value = AUTHOR_ONE, id = TEST_FIELD_ID_NEW)
         bookDto.properties.add(prop1)
         repository.saveBookWithFields(bookDto)
 
@@ -202,12 +201,12 @@ class BookRepositoryImplTest {
         val bookId = savedList[0].book.id
 
         // Modify DTO
-        val updatedBookDto = createBookDto(bookId, "Updated Title")
+        val updatedBookDto = createBookDto(bookId, TITLE_UPDATED)
         // Update the property's ID and keep it
         prop1.id = savedList[0].fields[0].id
         updatedBookDto.properties.add(prop1)
         // Add a brand new property
-        val prop2 = Property(fieldTypeId = DbConstants.FLD_GENRE, value = "Computer Science", id = 0L)
+        val prop2 = Property(fieldTypeId = DbConstants.FLD_GENRE, value = GENRE_CS, id = TEST_FIELD_ID_NEW)
         updatedBookDto.properties.add(prop2)
 
         // Act
@@ -217,19 +216,19 @@ class BookRepositoryImplTest {
         val updatedList = repository.getAllBooksWithFields()
         assertEquals(1, updatedList.size)
         val savedBook = updatedList[0]
-        assertEquals("Updated Title", savedBook.book.title)
+        assertEquals(TITLE_UPDATED, savedBook.book.title)
         assertEquals(2, savedBook.fields.size)
-        assertTrue(savedBook.fields.any { it.name == "Author One" })
-        assertTrue(savedBook.fields.any { it.name == "Computer Science" })
-        assertNotEquals(0L, prop2.id)
+        assertTrue(savedBook.fields.any { it.name == AUTHOR_ONE })
+        assertTrue(savedBook.fields.any { it.name == GENRE_CS })
+        assertNotEquals(TEST_FIELD_ID_NEW, prop2.id)
     }
 
     @DisplayName("Delete Book And Relations - Valid Book ID - Removes Book and Cross References But Retains Global Fields")
     @Test
     fun deleteBookAndRelations_validBookId_removesBookAndCrossReferencesButRetainsGlobalFields() = runTest {
         // Arrange
-        val bookDto = createBookDto(0L, "Book to Delete")
-        val prop = Property(fieldTypeId = DbConstants.FLD_AUTHOR, value = "Some Author", id = 0L)
+        val bookDto = createBookDto(TEST_BOOK_ID_NEW, TITLE_DELETE)
+        val prop = Property(fieldTypeId = DbConstants.FLD_AUTHOR, value = AUTHOR_SOME_AUTHOR, id = TEST_FIELD_ID_NEW)
         bookDto.properties.add(prop)
         repository.saveBookWithFields(bookDto)
 
@@ -247,15 +246,15 @@ class BookRepositoryImplTest {
         // Assert that the fields table still holds the global FieldEntity (it's not cascade-deleted)
         val fields = repository.getFieldsByType(DbConstants.FLD_AUTHOR)
         assertEquals(1, fields.size)
-        assertEquals("Some Author", fields[0].name)
+        assertEquals(AUTHOR_SOME_AUTHOR, fields[0].name)
     }
 
     @DisplayName("Get Fields By Type - Valid Type ID - Returns Only Requested Types")
     @Test
     fun getFieldsByType_validTypeId_returnsOnlyRequestedTypes() = runTest {
         // Arrange
-        val f1 = FieldEntity(id = 100L, typeId = DbConstants.FLD_AUTHOR, name = "Author")
-        val f2 = FieldEntity(id = 101L, typeId = DbConstants.FLD_GENRE, name = "Genre")
+        val f1 = FieldEntity(id = TEST_FIELD_ID_100, typeId = DbConstants.FLD_AUTHOR, name = AUTHOR_GENERIC)
+        val f2 = FieldEntity(id = TEST_FIELD_ID_101, typeId = DbConstants.FLD_GENRE, name = GENRE_GENERIC)
         bookDao.insertField(f1)
         bookDao.insertField(f2)
 
@@ -264,7 +263,7 @@ class BookRepositoryImplTest {
 
         // Assert
         assertEquals(1, authorFields.size)
-        assertEquals("Author", authorFields[0].name)
+        assertEquals(AUTHOR_GENERIC, authorFields[0].name)
     }
 
     @DisplayName("Export And Import Database - Valid Database and Target Files - Delegates Correctly and Restores Schema")
@@ -272,15 +271,15 @@ class BookRepositoryImplTest {
     fun exportAndImportDatabase_validDatabaseAndTargetFiles_delegatesCorrectlyAndRestoresSchema() = runTest {
         // To test import/export, we'll perform a basic check using temporary files
         // We initialize a valid SQLite database file so AppDatabase functions have something valid to sanitize and copy from/to
-        val dbFile = context.getDatabasePath("book_bag.db")
+        val dbFile = context.getDatabasePath(DB_FILE_NAME)
         dbFile.parentFile?.mkdirs()
         if (dbFile.exists()) dbFile.delete()
         
         val sqliteDb = android.database.sqlite.SQLiteDatabase.openOrCreateDatabase(dbFile, null)
-        sqliteDb.execSQL("CREATE TABLE books (_id INTEGER PRIMARY KEY, title TEXT)")
+        sqliteDb.execSQL(SQL_CREATE_BOOKS)
         sqliteDb.close()
 
-        val targetExportFile = File(context.cacheDir, "temp_export.db")
+        val targetExportFile = File(context.cacheDir, TEMP_EXPORT_FILE_NAME)
         if (targetExportFile.exists()) targetExportFile.delete()
 
         // Act - Export
@@ -304,5 +303,52 @@ class BookRepositoryImplTest {
         // Clean up
         targetExportFile.delete()
         if (dbFile.exists()) dbFile.delete()
+    }
+
+    companion object {
+        const val DEFAULT_DESCRIPTION = "Test Description"
+        const val DEFAULT_VOLUME = 1
+        const val DEFAULT_PUBLICATION_DATE = 2023
+        const val DEFAULT_PAGES = 350
+        const val DEFAULT_PRICE = "1500|1"
+        const val DEFAULT_VALUE = "2000|1"
+        const val DEFAULT_DUE_DATE = 0
+        const val DEFAULT_READ_DATE = 0
+        const val DEFAULT_EDITION = 1
+        const val DEFAULT_ISBN = "1234567890"
+        const val DEFAULT_WEB = "http://test.com"
+
+        const val TEST_BOOK_ID_NEW = 0L
+        const val TEST_BOOK_ID_1 = 1L
+        const val TEST_BOOK_ID_2 = 2L
+
+        const val TEST_FIELD_ID_NEW = 0L
+        const val TEST_FIELD_ID_10 = 10L
+        const val TEST_FIELD_ID_20 = 20L
+        const val TEST_FIELD_ID_100 = 100L
+        const val TEST_FIELD_ID_101 = 101L
+
+        const val TITLE_REFACTORING = "Refactoring"
+        const val TITLE_CLEAN_CODE = "Clean Code"
+        const val TITLE_BOOK_ONE = "Book One"
+        const val TITLE_BOOK_TWO = "Book Two"
+        const val TITLE_NEW_BOOK = "New Book"
+        const val TITLE_ORIGINAL = "Original Title"
+        const val TITLE_UPDATED = "Updated Title"
+        const val TITLE_DELETE = "Book to Delete"
+
+        const val AUTHOR_MARTIN_FOWLER = "Martin Fowler"
+        const val AUTHOR_ROBERT_MARTIN = "Robert C. Martin"
+        const val AUTHOR_NEW_AUTHOR = "New Author"
+        const val AUTHOR_ONE = "Author One"
+        const val AUTHOR_SOME_AUTHOR = "Some Author"
+        const val AUTHOR_GENERIC = "Author"
+
+        const val GENRE_CS = "Computer Science"
+        const val GENRE_GENERIC = "Genre"
+
+        const val DB_FILE_NAME = "book_bag.db"
+        const val TEMP_EXPORT_FILE_NAME = "temp_export.db"
+        const val SQL_CREATE_BOOKS = "CREATE TABLE books (_id INTEGER PRIMARY KEY, title TEXT)"
     }
 }

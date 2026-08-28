@@ -36,17 +36,17 @@ class BookDaoTest {
         return BookEntity(
             id = id,
             title = title,
-            description = "Test Description",
-            volume = 1,
-            publicationDate = 2023,
-            pages = 350,
-            price = "1500|1",
-            value = "2000|1",
-            dueDate = 0,
-            readDate = 0,
-            edition = 1,
-            isbn = "1234567890",
-            web = "http://test.com"
+            description = DEFAULT_DESCRIPTION,
+            volume = DEFAULT_VOLUME,
+            publicationDate = DEFAULT_PUBLICATION_DATE,
+            pages = DEFAULT_PAGES,
+            price = DEFAULT_PRICE,
+            value = DEFAULT_VALUE,
+            dueDate = DEFAULT_DUE_DATE,
+            readDate = DEFAULT_READ_DATE,
+            edition = DEFAULT_EDITION,
+            isbn = DEFAULT_ISBN,
+            web = DEFAULT_WEB
         )
     }
 
@@ -70,78 +70,78 @@ class BookDaoTest {
     @Test
     fun insertBook_validBookEntity_insertsBookAndCanBeLoadedWithFields() = runTest {
         // Arrange
-        val book = createBookEntity(1L, "Kotlin in Action")
+        val book = createBookEntity(TEST_BOOK_ID_1, TITLE_KOTLIN)
 
         // Act
         val insertedId = bookDao.insertBook(book)
-        val loadedBook = bookDao.getBookWithFields(1L)
+        val loadedBook = bookDao.getBookWithFields(TEST_BOOK_ID_1)
 
         // Assert
-        assertEquals(1L, insertedId)
+        assertEquals(TEST_BOOK_ID_1, insertedId)
         assertNotNull(loadedBook)
-        assertEquals("Kotlin in Action", loadedBook?.book?.title)
+        assertEquals(TITLE_KOTLIN, loadedBook?.book?.title)
     }
 
     @DisplayName("Insert Book - Conflict Replace Scenario - Replaces Existing Book")
     @Test
     fun insertBook_conflictReplaceScenario_replacesExistingBook() = runTest {
         // Arrange
-        val book = createBookEntity(1L, "Original")
+        val book = createBookEntity(TEST_BOOK_ID_1, TITLE_ORIGINAL)
         bookDao.insertBook(book)
 
         // Act: Insert same ID with different title should replace
-        val replacedBook = createBookEntity(1L, "Replaced")
+        val replacedBook = createBookEntity(TEST_BOOK_ID_1, TITLE_REPLACED)
         bookDao.insertBook(replacedBook)
 
         // Assert
-        val loaded = bookDao.getBookWithFields(1L)
-        assertEquals("Replaced", loaded?.book?.title)
+        val loaded = bookDao.getBookWithFields(TEST_BOOK_ID_1)
+        assertEquals(TITLE_REPLACED, loaded?.book?.title)
     }
 
     @DisplayName("Upsert Book - Existing Book ID Provided - Updates Existing Book Title")
     @Test
     fun upsertBook_existingBookIdProvided_updatesExistingBookTitle() = runTest {
         // Arrange: Insert initial book
-        val book = createBookEntity(1L, "Original Title")
+        val book = createBookEntity(TEST_BOOK_ID_1, TITLE_ORIGINAL_TITLE)
         bookDao.insertBook(book)
 
         // Act: Upsert update on the same primary key
-        val updatedBook = createBookEntity(1L, "Updated Title")
+        val updatedBook = createBookEntity(TEST_BOOK_ID_1, TITLE_UPDATED)
         bookDao.upsertBook(updatedBook)
 
         // Assert
-        val loadedBook = bookDao.getBookWithFields(1L)
-        assertEquals("Updated Title", loadedBook?.book?.title)
+        val loadedBook = bookDao.getBookWithFields(TEST_BOOK_ID_1)
+        assertEquals(TITLE_UPDATED, loadedBook?.book?.title)
     }
 
     @DisplayName("Update Book - Existing Book ID Provided - Updates Existing Book Title")
     @Test
     fun updateBook_existingBookIdProvided_updatesExistingBookTitle() = runTest {
         // Arrange: Insert initial book
-        val book = createBookEntity(1L, "Draft Title")
+        val book = createBookEntity(TEST_BOOK_ID_1, TITLE_DRAFT)
         bookDao.insertBook(book)
 
         // Act: Update
-        val updatedBook = createBookEntity(1L, "Final Title")
+        val updatedBook = createBookEntity(TEST_BOOK_ID_1, TITLE_FINAL)
         bookDao.updateBook(updatedBook)
 
         // Assert
-        val loaded = bookDao.getBookWithFields(1L)
-        assertEquals("Final Title", loaded?.book?.title)
+        val loaded = bookDao.getBookWithFields(TEST_BOOK_ID_1)
+        assertEquals(TITLE_FINAL, loaded?.book?.title)
     }
 
     @DisplayName("Delete Book - Valid Book ID Provided - Removes Book From Database")
     @Test
     fun deleteBook_validBookIdProvided_removesBookFromDatabase() = runTest {
         // Arrange
-        val book = createBookEntity(1L, "Book to Delete")
+        val book = createBookEntity(TEST_BOOK_ID_1, TITLE_DELETE)
         bookDao.insertBook(book)
 
         // Act
-        bookDao.deleteBook(1L)
+        bookDao.deleteBook(TEST_BOOK_ID_1)
 
         // Assert
-        val loaded = bookDao.getBookWithFields(1L)
+        val loaded = bookDao.getBookWithFields(TEST_BOOK_ID_1)
         assertNull(loaded)
     }
 
@@ -149,62 +149,62 @@ class BookDaoTest {
     @Test
     fun insertField_multipleFieldsProvided_retrievesOnlyFieldsOfRequestedTypeId() = runTest {
         // Arrange
-        val field1 = FieldEntity(id = 101L, typeId = 1, name = "Author")
-        val field2 = FieldEntity(id = 102L, typeId = 1, name = "Publisher")
-        val field3 = FieldEntity(id = 103L, typeId = 2, name = "Genre")
+        val field1 = FieldEntity(id = TEST_FIELD_ID_1, typeId = TEST_FIELD_TYPE_1, name = FIELD_NAME_AUTHOR)
+        val field2 = FieldEntity(id = TEST_FIELD_ID_2, typeId = TEST_FIELD_TYPE_1, name = FIELD_NAME_PUBLISHER)
+        val field3 = FieldEntity(id = TEST_FIELD_ID_3, typeId = TEST_FIELD_TYPE_2, name = FIELD_NAME_GENRE)
 
         // Act
         bookDao.insertField(field1)
         bookDao.insertField(field2)
         bookDao.insertField(field3)
 
-        val retrievedFields = bookDao.getFieldsByTypeId(1)
+        val retrievedFields = bookDao.getFieldsByTypeId(TEST_FIELD_TYPE_1)
 
         // Assert: should only retrieve fields of typeId 1
         assertEquals(2, retrievedFields.size)
-        assertTrue(retrievedFields.any { it.name == "Author" })
-        assertTrue(retrievedFields.any { it.name == "Publisher" })
+        assertTrue(retrievedFields.any { it.name == FIELD_NAME_AUTHOR })
+        assertTrue(retrievedFields.any { it.name == FIELD_NAME_PUBLISHER })
     }
 
     @DisplayName("Insert Field - Conflict Replace Scenario - Replaces Existing Field")
     @Test
     fun insertField_conflictReplaceScenario_replacesExistingField() = runTest {
         // Arrange
-        val field = FieldEntity(id = 101L, typeId = 1, name = "Initial")
+        val field = FieldEntity(id = TEST_FIELD_ID_1, typeId = TEST_FIELD_TYPE_1, name = FIELD_NAME_INITIAL)
         bookDao.insertField(field)
 
         // Act: Insert with same ID should replace
-        val replacedField = FieldEntity(id = 101L, typeId = 1, name = "Replaced")
+        val replacedField = FieldEntity(id = TEST_FIELD_ID_1, typeId = TEST_FIELD_TYPE_1, name = FIELD_NAME_REPLACED)
         bookDao.insertField(replacedField)
 
         // Assert
-        val fields = bookDao.getFieldsByTypeId(1)
+        val fields = bookDao.getFieldsByTypeId(TEST_FIELD_TYPE_1)
         assertEquals(1, fields.size)
-        assertEquals("Replaced", fields[0].name)
+        assertEquals(FIELD_NAME_REPLACED, fields[0].name)
     }
 
     @DisplayName("Insert Book Field Cross Ref - Valid Relation - Maps Book To Fields Correctly")
     @Test
     fun insertBookFieldCrossRef_validRelation_mapsBookToFieldsCorrectly() = runTest {
         // Arrange: Insert a book and a field definition
-        val book = createBookEntity(5L, "Refactoring")
-        val field = FieldEntity(id = 201L, typeId = DbConstants.FLD_AUTHOR, name = "Martin Fowler")
+        val book = createBookEntity(TEST_BOOK_ID_3, TITLE_REFACTORING)
+        val field = FieldEntity(id = TEST_FIELD_ID_4, typeId = DbConstants.FLD_AUTHOR, name = FIELD_NAME_MARTIN_FOWLER)
         
         bookDao.insertBook(book)
         bookDao.insertField(field)
 
         // Create cross reference association
-        val crossRef = BookFieldCrossRef(bookId = 5L, fieldId = 201L)
+        val crossRef = BookFieldCrossRef(bookId = TEST_BOOK_ID_3, fieldId = TEST_FIELD_ID_4)
 
         // Act
         bookDao.insertBookFieldCrossRef(crossRef)
-        val result = bookDao.getBookWithFields(5L)
+        val result = bookDao.getBookWithFields(TEST_BOOK_ID_3)
 
         // Assert
         assertNotNull(result)
-        assertEquals("Refactoring", result?.book?.title)
+        assertEquals(TITLE_REFACTORING, result?.book?.title)
         assertEquals(1, result?.fields?.size)
-        assertEquals("Martin Fowler", result?.fields?.get(0)?.name)
+        assertEquals(FIELD_NAME_MARTIN_FOWLER, result?.fields?.get(0)?.name)
         assertEquals(DbConstants.FLD_AUTHOR, result?.fields?.get(0)?.typeId)
     }
 
@@ -212,18 +212,18 @@ class BookDaoTest {
     @Test
     fun insertBookFieldCrossRef_conflictIgnoreScenario_ignoresDuplicateRelation() = runTest {
         // Arrange
-        val book = createBookEntity(1L, "Book")
-        val field = FieldEntity(id = 101L, typeId = 1, name = "Field")
+        val book = createBookEntity(TEST_BOOK_ID_1, TITLE_GENERIC)
+        val field = FieldEntity(id = TEST_FIELD_ID_1, typeId = TEST_FIELD_TYPE_1, name = FIELD_NAME_GENERIC)
         bookDao.insertBook(book)
         bookDao.insertField(field)
-        val crossRef = BookFieldCrossRef(1L, 101L)
+        val crossRef = BookFieldCrossRef(TEST_BOOK_ID_1, TEST_FIELD_ID_1)
         bookDao.insertBookFieldCrossRef(crossRef)
 
         // Act: Insert same crossRef should be ignored
         bookDao.insertBookFieldCrossRef(crossRef)
 
         // Assert: Still exactly one relation
-        val result = bookDao.getBookWithFields(1L)
+        val result = bookDao.getBookWithFields(TEST_BOOK_ID_1)
         assertEquals(1, result?.fields?.size)
     }
 
@@ -231,17 +231,17 @@ class BookDaoTest {
     @Test
     fun deleteBookFields_validBookIdProvided_removesStandaloneCrossReferences() = runTest {
         // Arrange
-        val book = createBookEntity(1L, "Book")
-        val field = FieldEntity(id = 101L, typeId = 1, name = "Field")
+        val book = createBookEntity(TEST_BOOK_ID_1, TITLE_GENERIC)
+        val field = FieldEntity(id = TEST_FIELD_ID_1, typeId = TEST_FIELD_TYPE_1, name = FIELD_NAME_GENERIC)
         bookDao.insertBook(book)
         bookDao.insertField(field)
-        bookDao.insertBookFieldCrossRef(BookFieldCrossRef(1L, 101L))
+        bookDao.insertBookFieldCrossRef(BookFieldCrossRef(TEST_BOOK_ID_1, TEST_FIELD_ID_1))
 
         // Act
-        bookDao.deleteBookFields(1L)
+        bookDao.deleteBookFields(TEST_BOOK_ID_1)
 
         // Assert
-        val result = bookDao.getBookWithFields(1L)
+        val result = bookDao.getBookWithFields(TEST_BOOK_ID_1)
         assertTrue(result?.fields?.isEmpty() ?: false)
     }
 
@@ -249,19 +249,19 @@ class BookDaoTest {
     @Test
     fun deleteBookAndFields_validBookIdProvided_atomicallyRemovesBookAndCrossReferences() = runTest {
         // Arrange
-        val book = createBookEntity(10L, "1984")
-        val field = FieldEntity(id = 301L, typeId = DbConstants.FLD_AUTHOR, name = "George Orwell")
-        val crossRef = BookFieldCrossRef(bookId = 10L, fieldId = 301L)
+        val book = createBookEntity(TEST_BOOK_ID_4, TITLE_1984)
+        val field = FieldEntity(id = TEST_FIELD_ID_5, typeId = DbConstants.FLD_AUTHOR, name = FIELD_NAME_GEORGE_ORWELL)
+        val crossRef = BookFieldCrossRef(bookId = TEST_BOOK_ID_4, fieldId = TEST_FIELD_ID_5)
 
         bookDao.insertBook(book)
         bookDao.insertField(field)
         bookDao.insertBookFieldCrossRef(crossRef)
 
         // Act: Delete book and fields atomically using custom SQL transaction
-        bookDao.deleteBookAndFields(10L)
+        bookDao.deleteBookAndFields(TEST_BOOK_ID_4)
 
         // Assert
-        val loadedBook = bookDao.getBookWithFields(10L)
+        val loadedBook = bookDao.getBookWithFields(TEST_BOOK_ID_4)
         assertNull(loadedBook)
     }
 
@@ -269,22 +269,22 @@ class BookDaoTest {
     @Test
     fun getBookWithFieldsFlow_validBookId_emitsUpdatesInRealTime() = runTest {
         // Arrange
-        val bookId = 15L
-        val book = createBookEntity(bookId, "Initial Book")
+        val bookId = TEST_BOOK_ID_5
+        val book = createBookEntity(bookId, TITLE_INITIAL)
         bookDao.insertBook(book)
 
         // Act & Assert: Get Flow and collect first emission
         val firstEmission = bookDao.getBookWithFieldsFlow(bookId).first()
         assertNotNull(firstEmission)
-        assertEquals("Initial Book", firstEmission?.book?.title)
+        assertEquals(TITLE_INITIAL, firstEmission?.book?.title)
     }
 
     @DisplayName("Get All Books With Fields - Multiple Books Exist - Retrieves Multiple Relations")
     @Test
     fun getAllBooksWithFields_multipleBooksExist_retrievesMultipleRelations() = runTest {
         // Arrange
-        val book1 = createBookEntity(1L, "Book One")
-        val book2 = createBookEntity(2L, "Book Two")
+        val book1 = createBookEntity(TEST_BOOK_ID_1, TITLE_BOOK_ONE)
+        val book2 = createBookEntity(TEST_BOOK_ID_2, TITLE_BOOK_TWO)
         bookDao.insertBook(book1)
         bookDao.insertBook(book2)
 
@@ -293,20 +293,73 @@ class BookDaoTest {
 
         // Assert
         assertEquals(2, allBooks.size)
-        assertTrue(allBooks.any { it.book.title == "Book One" })
-        assertTrue(allBooks.any { it.book.title == "Book Two" })
+        assertTrue(allBooks.any { it.book.title == TITLE_BOOK_ONE })
+        assertTrue(allBooks.any { it.book.title == TITLE_BOOK_TWO })
     }
 
     @DisplayName("Get All Books With Fields Flow - Multiple Books Exist - Emits All Updates")
     @Test
     fun getAllBooksWithFieldsFlow_multipleBooksExist_emitsAllUpdates() = runTest {
         // Arrange
-        val book1 = createBookEntity(1L, "Book One")
+        val book1 = createBookEntity(TEST_BOOK_ID_1, TITLE_BOOK_ONE)
         bookDao.insertBook(book1)
 
         // Act & Assert
         val emission = bookDao.getAllBooksWithFieldsFlow().first()
         assertEquals(1, emission.size)
-        assertEquals("Book One", emission[0].book.title)
+        assertEquals(TITLE_BOOK_ONE, emission[0].book.title)
+    }
+
+    companion object {
+        const val DEFAULT_DESCRIPTION = "Test Description"
+        const val DEFAULT_VOLUME = 1
+        const val DEFAULT_PUBLICATION_DATE = 2023
+        const val DEFAULT_PAGES = 350
+        const val DEFAULT_PRICE = "1500|1"
+        const val DEFAULT_VALUE = "2000|1"
+        const val DEFAULT_DUE_DATE = 0
+        const val DEFAULT_READ_DATE = 0
+        const val DEFAULT_EDITION = 1
+        const val DEFAULT_ISBN = "1234567890"
+        const val DEFAULT_WEB = "http://test.com"
+
+        const val TEST_BOOK_ID_1 = 1L
+        const val TEST_BOOK_ID_2 = 2L
+        const val TEST_BOOK_ID_3 = 5L
+        const val TEST_BOOK_ID_4 = 10L
+        const val TEST_BOOK_ID_5 = 15L
+
+        const val TITLE_KOTLIN = "Kotlin in Action"
+        const val TITLE_ORIGINAL = "Original"
+        const val TITLE_REPLACED = "Replaced"
+        const val TITLE_ORIGINAL_TITLE = "Original Title"
+        const val TITLE_UPDATED = "Updated Title"
+        const val TITLE_DRAFT = "Draft Title"
+        const val TITLE_FINAL = "Final Title"
+        const val TITLE_DELETE = "Book to Delete"
+        const val TITLE_GENERIC = "Book"
+        const val TITLE_REFACTORING = "Refactoring"
+        const val TITLE_1984 = "1984"
+        const val TITLE_INITIAL = "Initial Book"
+        const val TITLE_BOOK_ONE = "Book One"
+        const val TITLE_BOOK_TWO = "Book Two"
+
+        const val TEST_FIELD_ID_1 = 101L
+        const val TEST_FIELD_ID_2 = 102L
+        const val TEST_FIELD_ID_3 = 103L
+        const val TEST_FIELD_ID_4 = 201L
+        const val TEST_FIELD_ID_5 = 301L
+
+        const val TEST_FIELD_TYPE_1 = 1
+        const val TEST_FIELD_TYPE_2 = 2
+
+        const val FIELD_NAME_AUTHOR = "Author"
+        const val FIELD_NAME_PUBLISHER = "Publisher"
+        const val FIELD_NAME_GENRE = "Genre"
+        const val FIELD_NAME_INITIAL = "Initial"
+        const val FIELD_NAME_REPLACED = "Replaced"
+        const val FIELD_NAME_MARTIN_FOWLER = "Martin Fowler"
+        const val FIELD_NAME_GENERIC = "Field"
+        const val FIELD_NAME_GEORGE_ORWELL = "George Orwell"
     }
 }

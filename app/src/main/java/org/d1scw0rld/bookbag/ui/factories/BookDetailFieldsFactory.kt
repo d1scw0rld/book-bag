@@ -42,6 +42,7 @@ class BookDetailFieldsFactory(
                             DbConstants.FLD_TITLE -> book.title.value
                             DbConstants.FLD_DESCRIPTION -> book.description.value
                             DbConstants.FLD_VOLUME -> if (book.volume.value != 0) book.volume.value.toString() else ""
+                            DbConstants.FLD_PUBLICATION_DATE -> if (book.publicationDate.value != 0) book.publicationDate.value.toString() else ""
                             DbConstants.FLD_PAGES -> if (book.pages.value != 0) book.pages.value.toString() else ""
                             DbConstants.FLD_EDITION -> if (book.edition.value != 0) book.edition.value.toString() else ""
                             DbConstants.FLD_ISBN -> book.isbn.value
@@ -59,22 +60,7 @@ class BookDetailFieldsFactory(
 
                         if ((price != null) && (price.value != 0)) {
                             val fieldCurrency = currencies.firstOrNull { it.id == price.currencyId }
-                            val formattedValue = if (fieldCurrency == null) {
-                                String.format(
-                                    context.resources.getString(R.string.amn_vl),
-                                    price.value / 100,
-                                    DbConstants.separator,
-                                    price.value % 100
-                                )
-                            } else {
-                                String.format(
-                                    context.resources.getString(R.string.amn_vl_crn),
-                                    price.value / 100,
-                                    DbConstants.separator,
-                                    price.value % 100,
-                                    fieldCurrency.value
-                                )
-                            }
+                            val formattedValue = price.toFormattedString(fieldCurrency?.value, DbConstants.separator)
                             valueBuilder.append(formattedValue)
                         }
                     }

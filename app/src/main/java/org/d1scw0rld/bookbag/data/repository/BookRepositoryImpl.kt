@@ -18,7 +18,7 @@ import javax.inject.Singleton
 @Singleton
 class BookRepositoryImpl @Inject constructor(
     private val bookDao: BookDao,
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
 ) : BookRepository {
 
     override fun getBookWithFieldsFlow(bookId: Long): Flow<BookWithFields?> {

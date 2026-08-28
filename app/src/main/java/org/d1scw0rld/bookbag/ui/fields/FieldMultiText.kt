@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
+import android.widget.AutoCompleteTextView
 import android.widget.EditText
 import android.widget.LinearLayout
 import org.d1scw0rld.bookbag.ui.adapters.FilteredArrayAdapter
@@ -118,7 +119,11 @@ class FieldMultiText(
             valueEditText.id = R.id.et_author_1
         }
 
-        valueEditText.setText(property.value)
+        if (valueEditText is AutoCompleteTextView) {
+            valueEditText.setText(property.value, false)
+        } else {
+            valueEditText.setText(property.value)
+        }
         rowView.tag = property
     }
 

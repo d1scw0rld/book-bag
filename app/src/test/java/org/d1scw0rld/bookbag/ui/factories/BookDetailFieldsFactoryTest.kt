@@ -30,13 +30,13 @@ class BookDetailFieldsFactoryTest {
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
         DbConstants.initFields(context.resources)
-        currencies = listOf(Property(DbConstants.FLD_CURRENCY, "USD", 1L))
+        currencies = listOf(Property(DbConstants.FLD_CURRENCY, CURRENCY_USD, 1L))
         book = Book(
             id = 10L,
-            title = Changeable("My Book Title"),
-            description = Changeable("Excellent reads"),
-            pages = Changeable(320),
-            price = Changeable("2999|1"), // $29.99
+            title = Changeable(BOOK_TITLE),
+            description = Changeable(BOOK_DESC),
+            pages = Changeable(BOOK_PAGES),
+            price = Changeable(BOOK_PRICE), // $29.99
             properties = ArrayList(),
         )
     }
@@ -67,17 +67,17 @@ class BookDetailFieldsFactoryTest {
 
             if (titleText == context.resources.getString(R.string.fld_description)) {
                 hasDesc = true
-                assertEquals("Excellent reads", valueText)
+                assertEquals(BOOK_DESC, valueText)
             }
             if (titleText == context.resources.getString(R.string.fld_pages)) {
                 hasPages = true
-                assertEquals("320", valueText)
+                assertEquals(BOOK_PAGES.toString(), valueText)
             }
             if (titleText == context.resources.getString(R.string.fld_price)) {
                 hasPrice = true
                 assertTrue(valueText?.contains("29") == true)
                 assertTrue(valueText?.contains("99") == true)
-                assertTrue(valueText?.contains("USD") == true)
+                assertTrue(valueText?.contains(CURRENCY_USD) == true)
             }
         }
 
@@ -106,8 +106,8 @@ class BookDetailFieldsFactoryTest {
     @Test
     fun addFields_ratingAndCheckboxPropertiesProvided_createsRatingAndCheckBoxCategoryRows() {
         // Add rating and checkbox properties
-        val ratingProperty = Property(DbConstants.FLD_RATING, "4.0")
-        val readProperty = Property(DbConstants.FLD_READ, "true")
+        val ratingProperty = Property(DbConstants.FLD_RATING, RATING_VALUE)
+        val readProperty = Property(DbConstants.FLD_READ, READ_STATE)
         book.properties.add(ratingProperty)
         book.properties.add(readProperty)
 
@@ -132,7 +132,7 @@ class BookDetailFieldsFactoryTest {
                 hasRating = true
                 val ratingBar = child.findViewById<RatingBar>(R.id.rating_bar)
                 assertNotNull(ratingBar)
-                assertEquals(4f, ratingBar.rating)
+                assertEquals(RATING_VALUE.toFloat(), ratingBar.rating)
             }
             if (titleText == context.resources.getString(R.string.fld_read)) {
                 hasRead = true
@@ -144,5 +144,16 @@ class BookDetailFieldsFactoryTest {
 
         assertTrue(hasRating)
         assertTrue(hasRead)
+    }
+
+    companion object {
+        private const val BOOK_TITLE = "My Book Title"
+        private const val BOOK_DESC = "Excellent reads"
+        private const val BOOK_PAGES = 320
+        private const val BOOK_PRICE = "2999|1"
+
+        private const val CURRENCY_USD = "USD"
+        private const val RATING_VALUE = "4.0"
+        private const val READ_STATE = "true"
     }
 }

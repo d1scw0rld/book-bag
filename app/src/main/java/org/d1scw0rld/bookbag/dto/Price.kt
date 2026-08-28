@@ -1,5 +1,7 @@
 package org.d1scw0rld.bookbag.dto
 
+import kotlin.math.abs
+
 /**
  * Data Transfer Object representing a Price.
  */
@@ -22,5 +24,13 @@ data class Price(
      */
     override fun toString(): String {
         return if (value == 0) "" else "$value|$currencyId"
+    }
+
+    fun toFormattedString(currencyValue: String? = null, separator: Char): String {
+        val wholePart = value / 100
+        val fractionalPart = abs(value % 100).toString().padStart(2, '0')
+        val amount = "$wholePart$separator$fractionalPart"
+
+        return currencyValue?.let { "$amount $it" } ?: amount
     }
 }

@@ -21,6 +21,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.runner.RunWith
 import org.d1scw0rld.bookbag.DisplayNameRobolectricRunner
 import org.robolectric.Robolectric
+import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.shadows.ShadowLooper
@@ -49,17 +50,17 @@ class FileSelectorDialogTest {
         activity.setTheme(R.style.AppTheme)
 
         // Setup temporary directories & files
-        tempDir = File.createTempFile("temp_dir", "")
+        tempDir = File.createTempFile(DIR_TEMP_PREFIX, "")
         tempDir.delete()
         tempDir.mkdir()
 
-        subDir = File(tempDir, "SubFolder")
+        subDir = File(tempDir, DIR_SUBFOLDER)
         subDir.mkdir()
 
-        file1 = File(tempDir, "data.db")
+        file1 = File(tempDir, FILE_DATA_DB)
         file1.createNewFile()
 
-        file2 = File(tempDir, "info.txt")
+        file2 = File(tempDir, FILE_INFO_TXT)
         file2.createNewFile()
 
         handledFilePath = null
@@ -81,13 +82,13 @@ class FileSelectorDialogTest {
             currentFile = file1,
             operation = FileOperation.SAVE,
             onHandleFileListener = handleFileListener,
-            fileFilters = arrayOf(".db"),
+            fileFilters = arrayOf(FILTER_DB),
         )
 
         val args = dialog.arguments
         assertNotNull(args)
-        assertEquals(tempDir.absolutePath, args?.getString("key_current_location"))
-        assertEquals("data.db", args?.getString("key_current_file_name"))
+        assertEquals(tempDir.absolutePath, args?.getString(KEY_LOCATION))
+        assertEquals(FILE_DATA_DB, args?.getString(KEY_FILE_NAME))
     }
 
     @DisplayName("New Instance - With Directory Provided - Sets Current Location to Directory")
@@ -102,8 +103,8 @@ class FileSelectorDialogTest {
 
         val args = dialog.arguments
         assertNotNull(args)
-        assertEquals(tempDir.absolutePath, args?.getString("key_current_location"))
-        assertNull(args?.getString("key_current_file_name"))
+        assertEquals(tempDir.absolutePath, args?.getString(KEY_LOCATION))
+        assertNull(args?.getString(KEY_FILE_NAME))
     }
 
     @DisplayName("OnCreateDialog - Save Operation Mode - Inflates Views and Populates Fields and Filters")
@@ -113,10 +114,10 @@ class FileSelectorDialogTest {
             currentFile = file1,
             operation = FileOperation.SAVE,
             onHandleFileListener = handleFileListener,
-            fileFilters = arrayOf(".db", "*.*")
+            fileFilters = arrayOf(FILTER_DB, FILTER_ALL)
         )
 
-        dialog.show(activity.supportFragmentManager, "file_selector")
+        dialog.show(activity.supportFragmentManager, TAG_DIALOG)
         activity.supportFragmentManager.executePendingTransactions()
 
         val createdDialog = dialog.dialog as? AlertDialog
@@ -133,7 +134,7 @@ class FileSelectorDialogTest {
         // Check FileName EditText is populated in SAVE mode
         val fileNameEditText = dialogView?.findViewById<EditText>(R.id.fileName)
         assertNotNull(fileNameEditText)
-        assertEquals("data.db", fileNameEditText?.text.toString())
+        assertEquals(FILE_DATA_DB, fileNameEditText?.text.toString())
         assertTrue(fileNameEditText?.isEnabled == true)
 
         // Check spinner is prepared
@@ -148,9 +149,9 @@ class FileSelectorDialogTest {
         assertNotNull(adapter)
         // fileList contains "../", "SubFolder", "data.db"
         assertEquals(3, adapter?.count)
-        assertEquals("../", adapter?.getItem(0)?.fileName)
-        assertEquals("SubFolder", adapter?.getItem(1)?.fileName)
-        assertEquals("data.db", adapter?.getItem(2)?.fileName)
+        assertEquals(PARENT_DIR_NAME, adapter?.getItem(0)?.fileName)
+        assertEquals(DIR_SUBFOLDER, adapter?.getItem(1)?.fileName)
+        assertEquals(FILE_DATA_DB, adapter?.getItem(2)?.fileName)
 
         dialog.dismiss()
     }
@@ -165,7 +166,7 @@ class FileSelectorDialogTest {
             fileFilters = null
         )
 
-        dialog.show(activity.supportFragmentManager, "file_selector")
+        dialog.show(activity.supportFragmentManager, TAG_DIALOG)
         activity.supportFragmentManager.executePendingTransactions()
 
         val createdDialog = dialog.dialog as? AlertDialog
@@ -189,7 +190,7 @@ class FileSelectorDialogTest {
             fileFilters = null
         )
 
-        dialog.show(activity.supportFragmentManager, "file_selector")
+        dialog.show(activity.supportFragmentManager, TAG_DIALOG)
         activity.supportFragmentManager.executePendingTransactions()
 
         val createdDialog = dialog.dialog as? AlertDialog
@@ -215,7 +216,7 @@ class FileSelectorDialogTest {
             fileFilters = null
         )
 
-        dialog.show(activity.supportFragmentManager, "file_selector")
+        dialog.show(activity.supportFragmentManager, TAG_DIALOG)
         activity.supportFragmentManager.executePendingTransactions()
 
         val createdDialog = dialog.dialog as? AlertDialog
@@ -231,7 +232,7 @@ class FileSelectorDialogTest {
         fileListView?.performItemClick(fileListView, 2, 2L)
 
         // Should update EditText text to selected file name
-        assertEquals("data.db", fileNameEditText?.text.toString())
+        assertEquals(FILE_DATA_DB, fileNameEditText?.text.toString())
 
         dialog.dismiss()
     }
@@ -246,7 +247,7 @@ class FileSelectorDialogTest {
             fileFilters = null
         )
 
-        dialog.show(activity.supportFragmentManager, "file_selector")
+        dialog.show(activity.supportFragmentManager, TAG_DIALOG)
         activity.supportFragmentManager.executePendingTransactions()
 
         val createdDialog = dialog.dialog as? AlertDialog
@@ -261,7 +262,7 @@ class FileSelectorDialogTest {
         // Assert warning AlertDialog is shown
         val shadowDialog = ShadowAlertDialog.getLatestAlertDialog()
         assertNotNull(shadowDialog)
-        val shadow = org.robolectric.Shadows.shadowOf(shadowDialog)
+        val shadow = Shadows.shadowOf(shadowDialog)
         assertEquals(activity.getString(R.string.msg_fl_nm_frs), shadow.message)
 
         dialog.dismiss()
@@ -277,17 +278,17 @@ class FileSelectorDialogTest {
             fileFilters = null
         )
 
-        dialog.show(activity.supportFragmentManager, "file_selector")
+        dialog.show(activity.supportFragmentManager, TAG_DIALOG)
         activity.supportFragmentManager.executePendingTransactions()
 
-        val activeFragment = activity.supportFragmentManager.findFragmentByTag("file_selector") as FileSelectorDialog
+        val activeFragment = activity.supportFragmentManager.findFragmentByTag(TAG_DIALOG) as FileSelectorDialog
         setListener(activeFragment, handleFileListener)
 
         val createdDialog = activeFragment.dialog as? AlertDialog
         val dialogView = activeFragment.view ?: createdDialog?.findViewById(R.id.saveFileDialog)
         val fileNameEditText = dialogView?.findViewById<EditText>(R.id.fileName)
 
-        fileNameEditText?.setText("out.db")
+        fileNameEditText?.setText(FILE_OUT_DB)
 
         val textValue = activeFragment.getSelectedFileName()
         val listenerVal = FileSelectorDialog::class.java.getDeclaredField("onHandleFileListener").apply { isAccessible = true }.get(activeFragment)
@@ -299,7 +300,7 @@ class FileSelectorDialogTest {
         handleSaveOrLoadMethod.invoke(activeFragment)
 
         // Verify listener was called with correct absolute file path
-        val expectedPath = File(tempDir, "out.db").absolutePath
+        val expectedPath = File(tempDir, FILE_OUT_DB).absolutePath
         assertEquals(expectedPath, handledFilePath)
 
         // Force execution of dismiss transition
@@ -319,10 +320,10 @@ class FileSelectorDialogTest {
             fileFilters = null
         )
 
-        dialog.show(activity.supportFragmentManager, "file_selector")
+        dialog.show(activity.supportFragmentManager, TAG_DIALOG)
         activity.supportFragmentManager.executePendingTransactions()
 
-        val activeFragment = activity.supportFragmentManager.findFragmentByTag("file_selector") as FileSelectorDialog
+        val activeFragment = activity.supportFragmentManager.findFragmentByTag(TAG_DIALOG) as FileSelectorDialog
         setListener(activeFragment, handleFileListener)
 
         val createdDialog = activeFragment.dialog as? AlertDialog
@@ -331,7 +332,7 @@ class FileSelectorDialogTest {
 
         // Load mode enables getting selected file. Let's type a non-existent file name in the edit text via reflection
         // because it's disabled in UI, but we can set it
-        val editable = android.text.SpannableStringBuilder("non_existent.db")
+        val editable = android.text.SpannableStringBuilder(FILE_NON_EXISTENT)
         fileNameEditText?.text = editable
 
         // Invoke handleSaveOrLoad directly via reflection to execute loading
@@ -359,10 +360,10 @@ class FileSelectorDialogTest {
             fileFilters = null
         )
 
-        dialog.show(activity.supportFragmentManager, "file_selector")
+        dialog.show(activity.supportFragmentManager, TAG_DIALOG)
         activity.supportFragmentManager.executePendingTransactions()
 
-        val activeFragment = activity.supportFragmentManager.findFragmentByTag("file_selector") as FileSelectorDialog
+        val activeFragment = activity.supportFragmentManager.findFragmentByTag(TAG_DIALOG) as FileSelectorDialog
         setListener(activeFragment, handleFileListener)
 
         // Invoke openNewFolderDialog directly via reflection to display prompt
@@ -373,7 +374,7 @@ class FileSelectorDialogTest {
         // New folder creation prompt displays an AlertDialog
         val shadowDialog = ShadowAlertDialog.getLatestAlertDialog()
         assertNotNull(shadowDialog)
-        val shadow = org.robolectric.Shadows.shadowOf(shadowDialog)
+        val shadow = Shadows.shadowOf(shadowDialog)
         assertEquals(activity.getString(R.string.btn_new_fld), shadow.title)
 
         // Find EditText inside shadowDialog and input folder name "NewAutoCreatedFolder"
@@ -381,14 +382,14 @@ class FileSelectorDialogTest {
         assertNotNull(decorView)
         val inputEditText = findEditText(decorView!!)
         assertNotNull(inputEditText)
-        inputEditText?.setText("NewAutoCreatedFolder")
+        inputEditText?.setText(FOLDER_NEW)
 
         // Click create button (positive button)
         shadowDialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick()
         ShadowLooper.idleMainLooper()
 
         // Verify folder was actually created in currentLocation
-        val autoFolder = File(tempDir, "NewAutoCreatedFolder")
+        val autoFolder = File(tempDir, FOLDER_NEW)
         assertTrue(autoFolder.exists() && autoFolder.isDirectory)
 
         // Clean up created folder
@@ -420,17 +421,35 @@ class FileSelectorDialogTest {
             currentFile = file1,
             operation = FileOperation.SAVE,
             onHandleFileListener = handleFileListener,
-            fileFilters = arrayOf(".db")
+            fileFilters = arrayOf(FILTER_DB)
         )
 
-        dialog.show(activity.supportFragmentManager, "file_selector")
+        dialog.show(activity.supportFragmentManager, TAG_DIALOG)
         activity.supportFragmentManager.executePendingTransactions()
 
         val bundle = Bundle()
         dialog.onSaveInstanceState(bundle)
 
         assertNotNull(bundle)
-        assertEquals(tempDir.absolutePath, bundle.getString("key_current_location"))
+        assertEquals(tempDir.absolutePath, bundle.getString(KEY_LOCATION))
         dialog.dismiss()
+    }
+
+    companion object {
+        private const val KEY_LOCATION = "key_current_location"
+        private const val KEY_FILE_NAME = "key_current_file_name"
+        private const val TAG_DIALOG = "file_selector"
+
+        private const val DIR_TEMP_PREFIX = "temp_dir"
+        private const val DIR_SUBFOLDER = "SubFolder"
+        private const val FILE_DATA_DB = "data.db"
+        private const val FILE_INFO_TXT = "info.txt"
+        private const val FILE_OUT_DB = "out.db"
+        private const val FILE_NON_EXISTENT = "non_existent.db"
+        private const val FOLDER_NEW = "NewAutoCreatedFolder"
+        private const val PARENT_DIR_NAME = "../"
+
+        private const val FILTER_DB = ".db"
+        private const val FILTER_ALL = "*.*"
     }
 }

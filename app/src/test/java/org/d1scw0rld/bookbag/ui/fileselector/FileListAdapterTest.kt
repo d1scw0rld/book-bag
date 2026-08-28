@@ -26,9 +26,9 @@ class FileListAdapterTest {
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
         files = listOf(
-            FileData("../", FileType.UP_FOLDER),
-            FileData("Documents", FileType.FOLDER),
-            FileData("backup.db", FileType.FILE)
+            FileData(UP_FOLDER_NAME, FileType.UP_FOLDER),
+            FileData(FOLDER_NAME, FileType.FOLDER),
+            FileData(FILE_NAME, FileType.FILE)
         )
         adapter = FileListAdapter(context, files)
     }
@@ -36,9 +36,9 @@ class FileListAdapterTest {
     @DisplayName("Basic Methods - Query Counts and Items - Returns Correct Sizes and IDs")
     @Test
     fun basicMethods_queryCountsAndItems_returnsCorrectSizesAndIds() {
-        assertEquals(3, adapter.count)
-        assertEquals("Documents", adapter.getItem(1).fileName)
-        assertEquals(1L, adapter.getItemId(1))
+        assertEquals(EXPECTED_COUNT_INITIAL, adapter.count)
+        assertEquals(FOLDER_NAME, adapter.getItem(INDEX_1).fileName)
+        assertEquals(EXPECTED_ID_1, adapter.getItemId(INDEX_1))
     }
 
     @DisplayName("Get View - Request Views at Indices - Binds Correct Data and Type Icons")
@@ -47,34 +47,49 @@ class FileListAdapterTest {
         val parentView = LinearLayout(context)
 
         // View 0: UP_FOLDER -> R.drawable.ic_folder_open
-        val view0 = adapter.getView(0, null, parentView)
+        val view0 = adapter.getView(INDEX_0, null, parentView)
         val nameTv0 = view0.findViewById<TextView>(R.id.tv_file_name)
         val typeIv0 = view0.findViewById<ImageView>(R.id.iv_file_type)
-        assertEquals("../", nameTv0.text.toString())
+        assertEquals(UP_FOLDER_NAME, nameTv0.text.toString())
         assertNotNull(typeIv0.drawable)
 
         // View 1: FOLDER -> R.drawable.ic_folder
-        val view1 = adapter.getView(1, null, parentView)
+        val view1 = adapter.getView(INDEX_1, null, parentView)
         val nameTv1 = view1.findViewById<TextView>(R.id.tv_file_name)
-        assertEquals("Documents", nameTv1.text.toString())
+        assertEquals(FOLDER_NAME, nameTv1.text.toString())
 
         // View 2: FILE -> R.drawable.ic_file
-        val view2 = adapter.getView(2, null, parentView)
+        val view2 = adapter.getView(INDEX_2, null, parentView)
         val nameTv2 = view2.findViewById<TextView>(R.id.tv_file_name)
-        assertEquals("backup.db", nameTv2.text.toString())
+        assertEquals(FILE_NAME, nameTv2.text.toString())
     }
 
     @DisplayName("Update Data - New Files List Provided - Updates Dataset Count and Data")
     @Test
     fun updateData_newFilesListProvided_updatesDatasetCountAndData() {
-        assertEquals(3, adapter.count)
+        assertEquals(EXPECTED_COUNT_INITIAL, adapter.count)
 
         val newFiles = listOf(
-            FileData("new_file.db", FileType.FILE)
+            FileData(NEW_FILE_NAME, FileType.FILE)
         )
         adapter.updateData(newFiles)
 
-        assertEquals(1, adapter.count)
-        assertEquals("new_file.db", adapter.getItem(0).fileName)
+        assertEquals(EXPECTED_COUNT_NEW, adapter.count)
+        assertEquals(NEW_FILE_NAME, adapter.getItem(INDEX_0).fileName)
+    }
+
+    companion object {
+        const val UP_FOLDER_NAME = "../"
+        const val FOLDER_NAME = "Documents"
+        const val FILE_NAME = "backup.db"
+        const val NEW_FILE_NAME = "new_file.db"
+
+        const val EXPECTED_COUNT_INITIAL = 3
+        const val EXPECTED_COUNT_NEW = 1
+        const val EXPECTED_ID_1 = 1L
+
+        const val INDEX_0 = 0
+        const val INDEX_1 = 1
+        const val INDEX_2 = 2
     }
 }

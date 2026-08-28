@@ -16,24 +16,24 @@ class BookWithFieldsTest {
     fun toDto_validRelation_mapsBookAndFieldsToBookDto() {
         // Arrange
         val entity = BookEntity(
-            id = 5L,
-            title = "Test Book",
-            description = "Some Description",
-            volume = 3,
-            publicationDate = 2020,
-            pages = 320,
-            price = "1500|1",
-            value = "2000|1",
-            dueDate = 20231231,
-            readDate = 20231015,
-            edition = 2,
-            isbn = "1234567890",
-            web = "http://test.com"
+            id = TEST_BOOK_ID,
+            title = TEST_TITLE,
+            description = TEST_DESCRIPTION,
+            volume = TEST_VOLUME,
+            publicationDate = TEST_PUBLICATION_DATE,
+            pages = TEST_PAGES,
+            price = TEST_PRICE,
+            value = TEST_VALUE,
+            dueDate = TEST_DUE_DATE,
+            readDate = TEST_READ_DATE,
+            edition = TEST_EDITION,
+            isbn = TEST_ISBN,
+            web = TEST_WEB
         )
         
         val fields = listOf(
-            FieldEntity(id = 101L, typeId = 1, name = "Author One"),
-            FieldEntity(id = 102L, typeId = 3, name = "Fiction")
+            FieldEntity(id = TEST_FIELD_ID_1, typeId = TEST_FIELD_TYPE_1, name = TEST_FIELD_NAME_1),
+            FieldEntity(id = TEST_FIELD_ID_2, typeId = TEST_FIELD_TYPE_2, name = TEST_FIELD_NAME_2)
         )
         
         val relation = BookWithFields(entity, fields)
@@ -42,28 +42,52 @@ class BookWithFieldsTest {
         val dto = relation.toDto()
 
         // Assert core book attributes
-        assertEquals(5L, dto.id)
-        assertEquals("Test Book", dto.title.value)
-        assertEquals("Some Description", dto.description.value)
-        assertEquals(3, dto.volume.value)
-        assertEquals(2020, dto.publicationDate.value)
-        assertEquals(320, dto.pages.value)
-        assertEquals("1500|1", dto.price.value)
-        assertEquals("2000|1", dto.value.value)
-        assertEquals(20231231, dto.dueDate.value)
-        assertEquals(20231015, dto.readDate.value)
-        assertEquals(2, dto.edition.value)
-        assertEquals("1234567890", dto.isbn.value)
-        assertEquals("http://test.com", dto.web.value)
+        assertEquals(TEST_BOOK_ID, dto.id)
+        assertEquals(TEST_TITLE, dto.title.value)
+        assertEquals(TEST_DESCRIPTION, dto.description.value)
+        assertEquals(TEST_VOLUME, dto.volume.value)
+        assertEquals(TEST_PUBLICATION_DATE, dto.publicationDate.value)
+        assertEquals(TEST_PAGES, dto.pages.value)
+        assertEquals(TEST_PRICE, dto.price.value)
+        assertEquals(TEST_VALUE, dto.value.value)
+        assertEquals(TEST_DUE_DATE, dto.dueDate.value)
+        assertEquals(TEST_READ_DATE, dto.readDate.value)
+        assertEquals(TEST_EDITION, dto.edition.value)
+        assertEquals(TEST_ISBN, dto.isbn.value)
+        assertEquals(TEST_WEB, dto.web.value)
 
         // Assert properties / custom fields list size and values
         assertEquals(2, dto.properties.size)
-        assertEquals(1, dto.properties[0].fieldTypeId)
-        assertEquals("Author One", dto.properties[0].value)
-        assertEquals(101L, dto.properties[0].id)
+        assertEquals(TEST_FIELD_TYPE_1, dto.properties[0].fieldTypeId)
+        assertEquals(TEST_FIELD_NAME_1, dto.properties[0].value)
+        assertEquals(TEST_FIELD_ID_1, dto.properties[0].id)
 
-        assertEquals(3, dto.properties[1].fieldTypeId)
-        assertEquals("Fiction", dto.properties[1].value)
-        assertEquals(102L, dto.properties[1].id)
+        assertEquals(TEST_FIELD_TYPE_2, dto.properties[1].fieldTypeId)
+        assertEquals(TEST_FIELD_NAME_2, dto.properties[1].value)
+        assertEquals(TEST_FIELD_ID_2, dto.properties[1].id)
+    }
+
+    companion object {
+        const val TEST_BOOK_ID = 5L
+        const val TEST_TITLE = "Test Book"
+        const val TEST_DESCRIPTION = "Some Description"
+        const val TEST_VOLUME = 3
+        const val TEST_PUBLICATION_DATE = 2020
+        const val TEST_PAGES = 320
+        const val TEST_PRICE = "1500|1"
+        const val TEST_VALUE = "2000|1"
+        const val TEST_DUE_DATE = 20231231
+        const val TEST_READ_DATE = 20231015
+        const val TEST_EDITION = 2
+        const val TEST_ISBN = "1234567890"
+        const val TEST_WEB = "http://test.com"
+
+        const val TEST_FIELD_ID_1 = 101L
+        const val TEST_FIELD_TYPE_1 = 1
+        const val TEST_FIELD_NAME_1 = "Author One"
+
+        const val TEST_FIELD_ID_2 = 102L
+        const val TEST_FIELD_TYPE_2 = 3
+        const val TEST_FIELD_NAME_2 = "Fiction"
     }
 }

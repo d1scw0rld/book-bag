@@ -9,6 +9,7 @@ import android.view.Menu
 import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
+import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.appcompat.widget.PopupMenu
@@ -27,6 +28,10 @@ class FieldMultiSpinner(
     private var hint: String = ""
     private var items = ArrayList<Item>()
     private var onUpdateListener: OnUpdateListener? = null
+
+    @VisibleForTesting
+    var popupMenu: PopupMenu? = null
+        private set
 
     init {
         initialize(context)
@@ -88,10 +93,11 @@ class FieldMultiSpinner(
 
     private fun displayPopupWindow(anchorView: View, itemsList: ArrayList<Item>?) {
         if (itemsList == null) return
-        val popupMenu = PopupMenu(context, anchorView)
-        initPopupMenu(popupMenu, itemsList)
+        val menu = PopupMenu(context, anchorView)
+        popupMenu = menu
+        initPopupMenu(menu, itemsList)
 
-        popupMenu.setOnMenuItemClickListener { menuItem ->
+        menu.setOnMenuItemClickListener { menuItem ->
             if (menuItem.order < itemsList.size) {
                 menuItem.isChecked = !menuItem.isChecked
                 val item = itemsList[menuItem.order]
@@ -100,7 +106,7 @@ class FieldMultiSpinner(
                 setButtonText(anchorView as Button, itemsList)
                 onUpdateListener?.onUpdate(item)
 
-                popupMenu.show()
+                popupMenu?.show()
             } else {
                 val builder = AlertDialog.Builder(context, R.style.AppCompatAlertDialogStyle)
                 builder.setTitle(R.string.add_new)
@@ -114,14 +120,15 @@ class FieldMultiSpinner(
                     itemsList.add(item)
                     setButtonText(anchorView as Button, itemsList)
                     onUpdateListener?.onUpdate(item)
-                    popupMenu.dismiss()
-                    initPopupMenu(popupMenu, itemsList)
+                    menu.dismiss()
+                    initPopupMenu(menu, itemsList)
 
                     context.findActivity()?.let { activity ->
                         WindowCompat.getInsetsController(activity.window, anchorView).hide(WindowInsetsCompat.Type.ime())
                     }
                     dialog.cancel()
-                    popupMenu.show()
+                    // Re-shown through the property so it is a no-op once the field is detached
+                    popupMenu?.show()
                 }
 
                 builder.setNegativeButton(android.R.string.cancel) { dialog, _ ->
@@ -129,7 +136,7 @@ class FieldMultiSpinner(
                         WindowCompat.getInsetsController(activity.window, anchorView).hide(WindowInsetsCompat.Type.ime())
                     }
                     dialog.cancel()
-                    popupMenu.show()
+                    popupMenu?.show()
                 }
 
                 builder.show()
@@ -137,7 +144,7 @@ class FieldMultiSpinner(
             true
         }
 
-        popupMenu.show()
+        menu.show()
     }
 
     private fun initPopupMenu(popupMenu: PopupMenu, itemsList: ArrayList<Item>) {
@@ -149,6 +156,13 @@ class FieldMultiSpinner(
                 .setChecked(itemsList[i].isSelected)
         }
         popupMenu.menu.add(Menu.NONE, 0, itemsList.size, "<add>")
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        // Close the popup and release it so its callbacks cannot re-show it on a detached anchor
+        popupMenu?.dismiss()
+        popupMenu = null
     }
 
     override fun setTitle(text: String) {

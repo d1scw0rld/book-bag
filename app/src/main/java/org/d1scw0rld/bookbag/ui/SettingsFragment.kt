@@ -8,6 +8,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.navigation.Navigation
 import androidx.preference.PreferenceFragmentCompat
 import org.d1scw0rld.bookbag.R
+import androidx.navigation.findNavController
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
@@ -30,7 +31,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     @Suppress("DEPRECATION")
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
-            Navigation.findNavController(requireView()).navigateUp()
+            requireView().findNavController().navigateUp()
             return true
         }
         return super.onOptionsItemSelected(item)
