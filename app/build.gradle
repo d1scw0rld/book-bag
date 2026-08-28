@@ -14,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId "org.d1scw0rld.bookbag"
-        minSdkVersion 23
+        minSdkVersion 24
         targetSdkVersion 37
     }
 
