@@ -340,7 +340,7 @@ class EditBookFragmentIntegrationTest {
         }
 
         onView(isRoot()).perform(waitFor(withHint(R.string.fld_title), TIMEOUT_5000))
-        assertEquals(hiddenFieldLabels(), fragment!!.hiddenFieldsPopupMenu().hiddenFieldsPopupMenuLabels())
+        assertEquals(hiddenFieldLabels(), fragment?.hiddenFieldsPopupMenu()?.hiddenFieldsPopupMenuLabels())
     }
 
     @DisplayName("On Missing Field Selected - Adds Every Hidden DB Constants Field To Form")
@@ -355,7 +355,7 @@ class EditBookFragmentIntegrationTest {
                     fragment = this
                 }
                 onView(isRoot()).perform(waitFor(withHint(R.string.fld_title), TIMEOUT_5000))
-                fragment!!.hiddenFieldsPopupMenu().performFieldSelection(fieldLabel)
+                fragment?.hiddenFieldsPopupMenu()?.performFieldSelection(fieldLabel)
                 Shadows.shadowOf(getMainLooper()).idle()
 
                 onView(isRoot()).perform(waitFor(allOf(withId(R.id.tv_title), withText(fieldLabel)), TIMEOUT_5000))
@@ -376,7 +376,7 @@ class EditBookFragmentIntegrationTest {
         }
         onView(isRoot()).perform(waitFor(withHint(R.string.fld_title), TIMEOUT_5000))
 
-        val form = fragment!!
+        val form = requireNotNull(fragment) { "EditBookFragment should be launched before filling the form." }
         form.revealAllHiddenFields()
 
         form.fillText(DbConstants.FLD_TITLE, TITLE_ALL)
@@ -573,7 +573,8 @@ class EditBookFragmentIntegrationTest {
         val selectButton = multiSpinner.findViewById<Button>(R.id.action_select_type)
         selectButton.performClick()
 
-        val menu = multiSpinner.popupMenu!!.menu as MenuBuilder
+        val menu = (multiSpinner.popupMenu?.menu as? MenuBuilder)
+            ?: error("MultiSpinner popup menu should be available after click.")
         values.forEach { value ->
             val item = (0 until menu.size)
                 .map { menu.getItem(it) }
@@ -607,14 +608,27 @@ class EditBookFragmentIntegrationTest {
         }
     }
 
-    private fun EditBookFragment.pickDate(fieldId: Int, year: Int, month: Int, day: Int) {
+    private fun EditBookFragment.pickDate(fieldId: Int,
+                                          year: Int,
+                                          month: Int,
+                                          day: Int) {
         val fieldDate = fieldView<FieldDate>(fieldId)
-        fieldDate.findViewById<Button>(R.id.action_select_type).performClick()
+
+        fieldDate.findViewById<Button>(R.id.action_select_type)
+            .performClick()
+
         val picker = fieldDate.datePickerDialog
         assertTrue(MSG_DATE_PICKER_SHOWN, picker != null)
-        fieldDate.onDateSet(picker, year, month - 1, day)
-        // Dismiss so the picker window does not shadow the form for later interactions
-        picker!!.dismiss()
+
+        fieldDate.onDateSet(picker,
+            year,
+            month - 1,
+            day)
+
+        // Required in the Robolectric test so the dialog doesn't cover the form.
+        @Suppress("DEPRECATION")
+        picker?.dismiss()
+
         Shadows.shadowOf(getMainLooper()).idle()
     }
 
