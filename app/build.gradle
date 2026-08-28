@@ -18,8 +18,23 @@ android {
         targetSdkVersion 37
     }
 
+    signingConfigs {
+        release {
+            def storeFilePath = System.getenv("BOOKBAG_STORE_FILE")
+            if (storeFilePath) {
+                storeFile file(storeFilePath)
+                storePassword System.getenv("BOOKBAG_STORE_PASSWORD")
+                keyAlias System.getenv("BOOKBAG_KEY_ALIAS")
+                keyPassword System.getenv("BOOKBAG_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            if (System.getenv("BOOKBAG_STORE_FILE")) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.txt'
             applicationVariants.all { variant ->
