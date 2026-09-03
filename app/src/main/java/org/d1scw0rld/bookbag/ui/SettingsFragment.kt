@@ -28,6 +28,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
     }
 
+    @Deprecated("Deprecated in Java")
     @Suppress("DEPRECATION")
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
