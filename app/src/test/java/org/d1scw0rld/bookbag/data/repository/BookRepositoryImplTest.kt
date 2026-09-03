@@ -9,6 +9,9 @@ import kotlinx.coroutines.test.runTest
 import org.d1scw0rld.bookbag.data.AppDatabase
 import org.d1scw0rld.bookbag.data.DbConstants
 import org.d1scw0rld.bookbag.data.dao.BookDao
+import org.d1scw0rld.bookbag.data.dao.BookDaoProvider
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import org.d1scw0rld.bookbag.data.entity.BookEntity
 import org.d1scw0rld.bookbag.data.entity.BookFieldCrossRef
 import org.d1scw0rld.bookbag.data.entity.FieldEntity
@@ -305,7 +308,70 @@ class BookRepositoryImplTest {
         if (dbFile.exists()) dbFile.delete()
     }
 
+    @DisplayName("Import Database - Backup Restored Into Live Repository - Reads Data From Newly Imported File")
+    @Test
+    fun importDatabase_backupRestoredIntoLiveRepository_readsDataFromNewlyImportedFile() = runTest {
+        val dbFile = context.getDatabasePath(DB_FILE_NAME)
+        dbFile.parentFile?.mkdirs()
+        AppDatabase.closeAndReset()
+        if (dbFile.exists()) dbFile.delete()
+        File(dbFile.path + WAL_SUFFIX).delete()
+        File(dbFile.path + SHM_SUFFIX).delete()
+
+        val scope = CoroutineScope(SupervisorJob())
+        // Mirrors the production wiring: the DAO is resolved from the current AppDatabase instance.
+        val liveRepository = BookRepositoryImpl(
+            BookDaoProvider { AppDatabase.getDatabase(context, scope).bookDao() },
+            context
+        )
+
+        // 1. Seed the live database and take a backup of it.
+        liveRepository.saveBookWithFields(createBookDto(TEST_BOOK_ID_NEW, TITLE_IN_BACKUP))
+        val backupFile = File(context.cacheDir, TEMP_EXPORT_FILE_NAME)
+        if (backupFile.exists()) backupFile.delete()
+        assertTrue(EXPORT_TRUE_MSG, liveRepository.exportDatabase(backupFile.absolutePath))
+
+        // 2. Diverge the live database so the imported content is distinguishable.
+        liveRepository.saveBookWithFields(createBookDto(TEST_BOOK_ID_NEW, TITLE_AFTER_BACKUP))
+        assertEquals(TWO_BOOKS_MSG, 2, liveRepository.getAllBooksWithFields().size)
+
+        // 3. Import the backup, replacing the database file underneath the app.
+        assertTrue(IMPORT_TRUE_MSG, liveRepository.importDatabase(backupFile.absolutePath))
+
+        // 4. The repository must now read the imported file, not the discarded instance.
+        val restoredBooks = liveRepository.getAllBooksWithFields()
+        assertEquals(RESTORED_COUNT_MSG, 1, restoredBooks.size)
+        assertEquals(TITLE_IN_BACKUP, restoredBooks.first().book.title)
+
+        // 5. Book details must resolve too, which is what appeared blank before the fix.
+        val restoredId = restoredBooks.first().book.id
+        val detail = liveRepository.getBookWithFields(restoredId)
+        assertNotNull(DETAIL_READABLE_MSG, detail)
+        assertEquals(TITLE_IN_BACKUP, detail!!.book.title)
+        assertEquals(DEFAULT_ISBN, detail.book.isbn)
+        assertEquals(DEFAULT_PAGES, detail.book.pages)
+
+        // 6. Freshly opened flows must be bound to the imported database as well.
+        assertEquals(TITLE_IN_BACKUP, liveRepository.getAllBooksWithFieldsFlow().first().first().book.title)
+
+        backupFile.delete()
+        AppDatabase.closeAndReset()
+        if (dbFile.exists()) dbFile.delete()
+    }
+
     companion object {
+        const val TITLE_IN_BACKUP = "Book Captured In Backup"
+        const val TITLE_AFTER_BACKUP = "Book Added After Backup"
+
+        const val WAL_SUFFIX = "-wal"
+        const val SHM_SUFFIX = "-shm"
+
+        const val EXPORT_TRUE_MSG = "Export should succeed"
+        const val IMPORT_TRUE_MSG = "Import should succeed"
+        const val TWO_BOOKS_MSG = "Live database should hold both books before import"
+        const val RESTORED_COUNT_MSG = "Only the backed-up book should remain after import"
+        const val DETAIL_READABLE_MSG = "Book details must be readable after import"
+
         const val DEFAULT_DESCRIPTION = "Test Description"
         const val DEFAULT_VOLUME = 1
         const val DEFAULT_PUBLICATION_DATE = 2023

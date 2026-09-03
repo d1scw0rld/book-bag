@@ -11,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import org.d1scw0rld.bookbag.data.AppDatabase
 import org.d1scw0rld.bookbag.data.dao.BookDao
+import org.d1scw0rld.bookbag.data.dao.BookDaoProvider
 import javax.inject.Singleton
 
 @Module
@@ -35,4 +36,15 @@ object DatabaseModule {
     fun provideBookDao(database: AppDatabase): BookDao {
         return database.bookDao()
     }
+
+    /**
+     * Resolves the DAO from the current [AppDatabase] on every call so that consumers keep
+     * working after an import swaps the underlying database file.
+     */
+    @Provides
+    @Singleton
+    fun provideBookDaoProvider(
+        @ApplicationContext context: Context,
+        scope: CoroutineScope
+    ): BookDaoProvider = BookDaoProvider { AppDatabase.getDatabase(context, scope).bookDao() }
 }

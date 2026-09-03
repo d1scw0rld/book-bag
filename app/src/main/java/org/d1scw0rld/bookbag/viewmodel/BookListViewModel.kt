@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.d1scw0rld.bookbag.R
 import org.d1scw0rld.bookbag.data.DbConstants
@@ -168,8 +169,13 @@ class BookListViewModel @Inject constructor(
         _pendingAction.value = PendingAction.NONE
     }
 
+    private var loadBooksJob: Job? = null
+
     fun loadBooks() {
-        viewModelScope.launch {
+        // Cancel any previous collection; after an import the old flow is bound to the closed
+        // database and would otherwise emit an error over the freshly loaded state.
+        loadBooksJob?.cancel()
+        loadBooksJob = viewModelScope.launch {
             _uiState.value = UiState.Loading
             repository.getAllBooksWithFieldsFlow()
                 .catch { e -> _uiState.value = UiState.Error(e) }

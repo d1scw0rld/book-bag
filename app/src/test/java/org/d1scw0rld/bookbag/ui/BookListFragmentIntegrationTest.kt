@@ -5,15 +5,18 @@ import android.app.Application
 import android.content.Context
 import android.content.DialogInterface
 import android.content.pm.PackageManager
+import android.os.Bundle
 import android.os.Looper
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.menu.ActionMenuItemView
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.appcompat.widget.PopupMenu
+import androidx.appcompat.widget.Toolbar
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.recyclerview.widget.RecyclerView
@@ -25,23 +28,36 @@ import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.isRoot
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
+import dagger.hilt.android.testing.UninstallModules
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.test.runTest
 import org.d1scw0rld.bookbag.DisplayNameRobolectricRunner
 import org.d1scw0rld.bookbag.HiltTestActivity
 import org.d1scw0rld.bookbag.R
+import org.d1scw0rld.bookbag.data.AppDatabase
 import org.d1scw0rld.bookbag.data.dao.BookDao
+import org.d1scw0rld.bookbag.data.dao.BookDaoProvider
 import org.d1scw0rld.bookbag.data.DbConstants
 import org.d1scw0rld.bookbag.data.entity.BookEntity
 import org.d1scw0rld.bookbag.data.entity.BookFieldCrossRef
 import org.d1scw0rld.bookbag.data.entity.FieldEntity
+import org.d1scw0rld.bookbag.data.repository.BookRepository
+import org.d1scw0rld.bookbag.data.repository.BookRepositoryImpl
+import org.d1scw0rld.bookbag.di.RepositoryModule
+import org.d1scw0rld.bookbag.dto.Book
+import org.d1scw0rld.bookbag.dto.Changeable
+import org.d1scw0rld.bookbag.dto.Property
 import org.d1scw0rld.bookbag.launchFragmentInHiltContainer
 import org.d1scw0rld.bookbag.ui.fileselector.FileOperation
 import org.d1scw0rld.bookbag.ui.fileselector.FileSelectorDialog
 import org.d1scw0rld.bookbag.waitFor
 import org.hamcrest.Matchers.allOf
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -49,13 +65,15 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.jupiter.api.DisplayName
 import org.junit.runner.RunWith
+import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows
 import org.robolectric.shadows.ShadowDialog
 import org.robolectric.shadows.ShadowToast
 import org.robolectric.annotation.Config
-import javax.inject.Inject
+import java.io.File
 
 @HiltAndroidTest
+@UninstallModules(RepositoryModule::class)
 @RunWith(DisplayNameRobolectricRunner::class)
 @Config(application = HiltTestApplication::class, sdk = [28])
 class BookListFragmentIntegrationTest {
@@ -63,12 +81,37 @@ class BookListFragmentIntegrationTest {
     @get:Rule
     var hiltRule = HiltAndroidRule(this)
 
-    @Inject
-    lateinit var bookDao: BookDao
+    /**
+     * The shared test module backs the app with an in-memory database, which never exercises the
+     * file swap performed by an import. This class therefore replaces the repository binding with
+     * a file-backed one wired exactly like production, so `book_bag.db` is genuinely closed and
+     * replaced behind the fragment.
+     */
+    @BindValue
+    @JvmField
+    var repository: BookRepository = createFileBackedRepository()
+
+    private val appScope = CoroutineScope(SupervisorJob())
+
+    private val context: Context get() = ApplicationProvider.getApplicationContext()
+
+    /** Backup created through the file selector dialog, cleaned up after each test. */
+    private var backupFile: File? = null
+
+    /** Resolved from the same file-backed database the bound repository reads. */
+    private val bookDao: BookDao get() = AppDatabase.getDatabase(context, appScope).bookDao()
 
     @Before
     fun init() {
         hiltRule.inject()
+        DbConstants.initFields(RuntimeEnvironment.getApplication().resources)
+    }
+
+    @After
+    fun tearDownDatabase() {
+        AppDatabase.closeAndReset()
+        deleteDatabaseFiles(context)
+        backupFile?.delete()
     }
 
     @DisplayName("On View Created - Initial State - Displays Zero Books Count")
@@ -163,11 +206,10 @@ class BookListFragmentIntegrationTest {
                 popupMenu = this.showOrderPopupMenu(View(requireContext()))
             }
 
-            val menu = popupMenu?.menu
-            assertTrue(MSG_ORDER_MENU_SHOWN, menu != null)
+            val menu = requireNotNull(popupMenu?.menu) { MSG_ORDER_MENU_SHOWN }
 
             val expectedItems = expectedOrderItems(requireContext())
-            assertEquals(MSG_ORDER_MENU_SIZE, expectedItems.size, menu!!.size())
+            assertEquals(MSG_ORDER_MENU_SIZE, expectedItems.size, menu.size())
             expectedItems.forEachIndexed { index, (expectedId, expectedTitle) ->
                 val menuItem = menu.getItem(index)
                 assertEquals(MSG_ORDER_MENU_ITEM_ID, expectedId, menuItem.itemId)
@@ -484,9 +526,11 @@ class BookListFragmentIntegrationTest {
     }
 
     private fun confirmPermissionRationale() {
-        val dialog = ShadowDialog.getLatestDialog() as? AlertDialog
-        assertTrue(MSG_RATIONALE_DIALOG, dialog != null && dialog.isShowing)
-        dialog!!.getButton(DialogInterface.BUTTON_POSITIVE).performClick()
+        val dialog = requireNotNull(ShadowDialog.getLatestDialog() as? AlertDialog) {
+            MSG_RATIONALE_DIALOG
+        }
+        assertTrue(MSG_RATIONALE_DIALOG, dialog.isShowing)
+        dialog.getButton(DialogInterface.BUTTON_POSITIVE).performClick()
         Shadows.shadowOf(Looper.getMainLooper()).idle()
     }
 
@@ -658,7 +702,188 @@ class BookListFragmentIntegrationTest {
         assertEquals(MSG_ROW_ORDER, expectedRows.toList(), visibleRowTexts(scenario))
     }
 
+    @DisplayName("Import Backup - Book List Displayed - List Reloads From Imported Database")
+    @Test
+    fun importBackup_bookListDisplayed_listReloadsFromImportedDatabase() = runTest {
+        grantStoragePermission()
+        repository.saveBookWithFields(importBookDto(TITLE_IN_BACKUP))
+
+        val scenario = launchFragmentInHiltContainer<BookListFragment>()
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+        awaitText(COUNT_1_TEXT)
+
+        // Take a backup through the export menu and the real file selector dialog.
+        val backupFile = exportBackupViaUi(scenario)
+        awaitCondition { backupFile.exists() }
+
+        // Diverge the live database so the imported content is distinguishable on screen.
+        repository.saveBookWithFields(importBookDto(TITLE_AFTER_BACKUP))
+        awaitText(COUNT_2_TEXT)
+
+        // Act: import replaces book_bag.db underneath the running fragment.
+        importBackupViaUi(scenario)
+
+        // Assert: the list repopulates from the imported file instead of going blank.
+        awaitText(COUNT_1_TEXT)
+        onView(withText(COUNT_1_TEXT)).check(matches(isDisplayed()))
+        assertEquals(
+            MSG_RESTORED_TITLE,
+            TITLE_IN_BACKUP,
+            repository.getAllBooksWithFields().single().book.title
+        )
+    }
+
+    @DisplayName("Import Backup - Book Detail Opened - Detail Screen Renders Imported Fields")
+    @Test
+    @Config(application = HiltTestApplication::class, sdk = [28], qualifiers = "w480dp-h3000dp")
+    fun importBackup_bookDetailOpened_detailScreenRendersImportedFields() = runTest {
+        grantStoragePermission()
+        repository.saveBookWithFields(importBookDto(TITLE_IN_BACKUP))
+
+        val scenario = launchFragmentInHiltContainer<BookListFragment>()
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+        awaitText(COUNT_1_TEXT)
+
+        val backupFile = exportBackupViaUi(scenario)
+        awaitCondition { backupFile.exists() }
+
+        repository.saveBookWithFields(importBookDto(TITLE_AFTER_BACKUP))
+        awaitText(COUNT_2_TEXT)
+
+        importBackupViaUi(scenario)
+        awaitText(COUNT_1_TEXT)
+
+        // Act: open details for the book restored from the backup.
+        val restoredId = repository.getAllBooksWithFields().single().book.id
+        launchFragmentInHiltContainer<BookDetailFragment>(
+            Bundle().apply { putLong(BookDetailFragment.BOOK_ID, restoredId) }
+        )
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+        // Assert: fields render rather than the blank screen seen before the fix.
+        awaitText(AUTHOR_NAME)
+        onView(withText(AUTHOR_NAME)).check(matches(isDisplayed()))
+        onView(withText(ISBN_VALUE)).check(matches(isDisplayed()))
+    }
+
+    /** Drives the export menu item and the file selector dialog exactly as a user would. */
+    private fun exportBackupViaUi(scenario: ActivityScenario<HiltTestActivity>): File {
+        scenario.onFragment { invokeOptionsItemSelect(this, R.id.action_exp_db) }
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+        return confirmFileDialog(scenario, R.id.action_save)
+    }
+
+    /** Drives the import menu item and the file selector dialog exactly as a user would. */
+    private fun importBackupViaUi(scenario: ActivityScenario<HiltTestActivity>): File {
+        scenario.onFragment { invokeOptionsItemSelect(this, R.id.action_imp_db) }
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+        return confirmFileDialog(scenario, R.id.action_load)
+    }
+
+    /**
+     * Types the backup file name into the shown [FileSelectorDialog] and triggers its toolbar
+     * action, which invokes the fragment's own file listener.
+     */
+    private fun confirmFileDialog(
+        scenario: ActivityScenario<HiltTestActivity>,
+        actionId: Int
+    ): File {
+        var selectedFile: File? = null
+        scenario.onActivity { activity ->
+            val dialog = activity.supportFragmentManager.fragments
+                .filterIsInstance<FileSelectorDialog>()
+                .firstOrNull { it.isAdded }
+            val decorView = dialog?.dialog?.window?.decorView
+            val nameField = decorView?.findViewById<EditText>(R.id.fileName)
+            nameField?.setText(BACKUP_FILE_NAME)
+            selectedFile = dialog?.getCurrentLocation()?.let { File(it, BACKUP_FILE_NAME) }
+            decorView?.findViewById<Toolbar>(R.id.dlg_toolbar)
+                ?.menu
+                ?.performIdentifierAction(actionId, 0)
+        }
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+        val file = requireNotNull(selectedFile) { MSG_NO_FILE_DIALOG_SHOWN }
+        backupFile = file
+        return file
+    }
+
+    private fun awaitText(text: String) {
+        onView(isRoot()).perform(waitFor(withText(text), TIMEOUT_5000))
+    }
+
+    private fun awaitCondition(condition: () -> Boolean) {
+        val deadline = System.currentTimeMillis() + TIMEOUT_5000
+        while (System.currentTimeMillis() < deadline) {
+            Shadows.shadowOf(Looper.getMainLooper()).idle()
+            if (condition()) return
+            Thread.sleep(POLL_INTERVAL_MS)
+        }
+        throw AssertionError(MSG_CONDITION_TIMEOUT)
+    }
+
+    private fun importBookDto(title: String) = Book(
+        id = NEW_BOOK_ID,
+        title = Changeable(title),
+        description = Changeable(DESC_EMPTY),
+        price = Changeable(PRICE_EMPTY),
+        value = Changeable(VALUE_EMPTY),
+        isbn = Changeable(ISBN_VALUE),
+        web = Changeable(WEB_EMPTY),
+        volume = Changeable(VOL_1),
+        pages = Changeable(PAGES_100),
+        publicationDate = Changeable(PUB_DATE_2023),
+        edition = Changeable(EDITION_1),
+        readDate = Changeable(DATE_ZERO),
+        dueDate = Changeable(DATE_ZERO),
+        properties = arrayListOf(
+            Property(fieldTypeId = DbConstants.FLD_AUTHOR, value = AUTHOR_NAME, id = NEW_FIELD_ID)
+        )
+    )
+
     companion object {
+        private const val DB_NAME = "book_bag.db"
+        private const val WAL_SUFFIX = "-wal"
+        private const val SHM_SUFFIX = "-shm"
+        private const val BACKUP_FILE_NAME = "e2e_backup.db"
+
+        private const val TITLE_IN_BACKUP = "Backup Title"
+        private const val TITLE_AFTER_BACKUP = "Post Backup Title"
+        private const val AUTHOR_NAME = "Ursula Le Guin"
+        private const val ISBN_VALUE = "9780441013593"
+
+        private const val NEW_BOOK_ID = 0L
+        private const val NEW_FIELD_ID = 0L
+
+        private const val POLL_INTERVAL_MS = 25L
+
+        private const val MSG_RESTORED_TITLE = "Only the backed-up book should remain"
+        private const val MSG_CONDITION_TIMEOUT = "Condition not met within timeout"
+        private const val MSG_NO_FILE_DIALOG_SHOWN = "File selector dialog was not shown"
+
+        private fun deleteDatabaseFiles(context: Context) {
+            val dbFile = context.getDatabasePath(DB_NAME)
+            if (dbFile.exists()) dbFile.delete()
+            File(dbFile.path + WAL_SUFFIX).delete()
+            File(dbFile.path + SHM_SUFFIX).delete()
+        }
+
+        /**
+         * Mirrors the production [org.d1scw0rld.bookbag.di.DatabaseModule] wiring: the DAO is
+         * resolved from the current database instance on every call, and each test starts from a
+         * freshly created database file.
+         */
+        private fun createFileBackedRepository(): BookRepository {
+            val appContext = ApplicationProvider.getApplicationContext<Context>()
+            AppDatabase.closeAndReset()
+            deleteDatabaseFiles(appContext)
+
+            val scope = CoroutineScope(SupervisorJob())
+            return BookRepositoryImpl(
+                BookDaoProvider { AppDatabase.getDatabase(appContext, scope).bookDao() },
+                appContext
+            )
+        }
+
         private const val ID_1 = 101L
         private const val ID_2 = 102L
         private const val ID_3 = 103L
