@@ -5,7 +5,6 @@ import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.navigation.Navigation
 import androidx.preference.PreferenceFragmentCompat
 import org.d1scw0rld.bookbag.R
 import androidx.navigation.findNavController
@@ -28,6 +27,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
     }
 
+    @Deprecated("Deprecated in Java")
     @Suppress("DEPRECATION")
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {

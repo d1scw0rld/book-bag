@@ -1,8 +1,5 @@
-import java.util.regex.Pattern
-
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.navigation.safeargs)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.android)
@@ -43,30 +40,23 @@ android {
             }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.txt'
-            applicationVariants.all { variant ->
-                variant.outputs.all {
-                    println("new filename" + outputFileName )
+        }
+    }
+    androidComponents {
+        onVariants(selector().all()) { variant ->
+            if (variant.buildType == "release") {
+                variant.outputs.forEach { output ->
                     def projectName = 'BookBag'
-                    def newName = outputFileName
-                    newName = newName.replace("app-", projectName + '-')
-                    def manifestFile = file("src/main/AndroidManifest.xml")
-                    def patternVersionNumber = Pattern.compile("versionName=\"(\\d+)\\.(\\d+)\\.(\\d+)\"")
-                    def manifestText = manifestFile.getText()
-                    def matcherVersionNumber = patternVersionNumber.matcher(manifestText)
-                    matcherVersionNumber.find()
-
-                    newName = newName.replace("-release", '-' + matcherVersionNumber.group(1) + '.' + matcherVersionNumber.group(2) + '.' + matcherVersionNumber.group(3))
-                    outputFileName = newName
+                    def versionName = output.versionName.get()
+                    output.outputFileName.set("${projectName}-${versionName}.apk")
                 }
             }
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = '17'
     }
     buildFeatures {
         viewBinding true

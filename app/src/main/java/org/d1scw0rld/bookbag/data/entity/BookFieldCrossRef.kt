@@ -3,10 +3,15 @@ package org.d1scw0rld.bookbag.data.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 
 @Entity(
     tableName = "book_fields",
     primaryKeys = ["book_id", "field_id"],
+    indices = [
+        Index(value = ["book_id"]),
+        Index(value = ["field_id"])
+    ],
     foreignKeys = [
         ForeignKey(
             entity = BookEntity::class,
