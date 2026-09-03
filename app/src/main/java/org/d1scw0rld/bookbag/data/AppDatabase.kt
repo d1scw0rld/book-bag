@@ -30,6 +30,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
         private const val TAG = "AppDatabase"
+        private const val WAL_CHECKPOINT_SQL = "PRAGMA wal_checkpoint(FULL)"
 
         @Volatile
         private var INSTANCE: AppDatabase? = null
@@ -105,10 +106,12 @@ abstract class AppDatabase : RoomDatabase() {
 
         @JvmStatic
         fun exportDatabase(context: Context, dbPath: String): Boolean {
-            closeAndReset()
             val newDb = File(dbPath)
             val oldDb = context.getDatabasePath("book_bag.db")
             return try {
+                // Checkpoint WAL to flush all pending writes into the main db file before copying.
+                // The cursor must be stepped, otherwise the PRAGMA is never executed.
+                INSTANCE?.openHelper?.writableDatabase?.query(WAL_CHECKPOINT_SQL)?.use { it.moveToFirst() }
                 oldDb.copyTo(newDb, overwrite = true)
                 true
             } catch (e: Exception) {

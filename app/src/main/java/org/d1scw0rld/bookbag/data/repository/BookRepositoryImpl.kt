@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
 import org.d1scw0rld.bookbag.data.dao.BookDao
+import org.d1scw0rld.bookbag.data.dao.BookDaoProvider
 import org.d1scw0rld.bookbag.data.entity.BookEntity
 import org.d1scw0rld.bookbag.data.entity.BookFieldCrossRef
 import org.d1scw0rld.bookbag.data.entity.FieldEntity
@@ -17,9 +18,17 @@ import javax.inject.Singleton
 
 @Singleton
 class BookRepositoryImpl @Inject constructor(
-    private val bookDao: BookDao,
+    private val bookDaoProvider: BookDaoProvider,
     @param:ApplicationContext private val context: Context,
 ) : BookRepository {
+
+    /**
+     * Always resolved from the current database instance; importing a backup replaces the
+     * database file and invalidates any previously captured DAO.
+     */
+    private val bookDao: BookDao get() = bookDaoProvider.get()
+
+    constructor(bookDao: BookDao, context: Context) : this(BookDaoProvider { bookDao }, context)
 
     override fun getBookWithFieldsFlow(bookId: Long): Flow<BookWithFields?> {
         return bookDao.getBookWithFieldsFlow(bookId)

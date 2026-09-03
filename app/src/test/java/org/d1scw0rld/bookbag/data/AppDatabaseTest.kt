@@ -6,10 +6,16 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.core.app.ApplicationProvider
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.job
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
+import org.d1scw0rld.bookbag.data.entity.BookEntity
+import org.d1scw0rld.bookbag.data.entity.BookFieldCrossRef
 import org.d1scw0rld.bookbag.data.entity.FieldEntity
 import org.junit.After
 import org.junit.Assert.*
@@ -89,6 +95,78 @@ class AppDatabaseTest {
         assertTrue(result)
         assertTrue(targetFile.exists())
     }
+
+    @DisplayName("Export Database - After Successful Export - Keeps Singleton Open So Book Data Remains Readable")
+    @Test
+    fun exportDatabase_afterSuccessfulExport_keepsSingletonOpenSoBookDataRemainsReadable() = runTest {
+        val db = AppDatabase.getDatabase(context, scope)
+        val bookId = db.bookDao().insertBook(buildBookEntity())
+        val fieldId = db.bookDao().insertField(FieldEntity(typeId = FIELD_TYPE_AUTHOR, name = FIELD_AUTHOR_NAME))
+        db.bookDao().insertBookFieldCrossRef(BookFieldCrossRef(bookId = bookId, fieldId = fieldId))
+
+        val targetFile = File(context.cacheDir, EXPORTED_DB_NAME)
+        if (targetFile.exists()) targetFile.delete()
+
+        val result = AppDatabase.exportDatabase(context, targetFile.absolutePath)
+
+        assertTrue(EXPORT_TRUE_MSG, result)
+        assertSame(SAME_INSTANCE_AFTER_EXPORT_MSG, db, AppDatabase.getDatabase(context, scope))
+        assertTrue(DB_STILL_OPEN_MSG, db.isOpen)
+
+        val bookWithFields = db.bookDao().getBookWithFields(bookId)
+        assertNotNull(BOOK_READABLE_AFTER_EXPORT_MSG, bookWithFields)
+        assertEquals(BOOK_TITLE, bookWithFields!!.book.title)
+        assertEquals(BOOK_ISBN, bookWithFields.book.isbn)
+        assertEquals(BOOK_PAGES, bookWithFields.book.pages)
+        assertEquals(FIELDS_PRESERVED_MSG, 1, bookWithFields.fields.size)
+        assertEquals(FIELD_AUTHOR_NAME, bookWithFields.fields.first().name)
+
+        assertFalse(ALL_BOOKS_NOT_EMPTY_MSG, db.bookDao().getAllBooksWithFields().isEmpty())
+    }
+
+    @DisplayName("Export Database - Pending Writes Present - Exported File Contains Book Data")
+    @Test
+    fun exportDatabase_pendingWritesPresent_exportedFileContainsBookData() = runTest {
+        val db = AppDatabase.getDatabase(context, scope)
+        db.bookDao().insertBook(buildBookEntity())
+
+        val targetFile = File(context.cacheDir, EXPORTED_DB_NAME)
+        if (targetFile.exists()) targetFile.delete()
+
+        val result = AppDatabase.exportDatabase(context, targetFile.absolutePath)
+
+        assertTrue(EXPORT_TRUE_MSG, result)
+        assertTrue(EXPORTED_FILE_EXISTS_MSG, targetFile.exists())
+
+        val exportedDb = android.database.sqlite.SQLiteDatabase.openDatabase(
+            targetFile.absolutePath,
+            null,
+            android.database.sqlite.SQLiteDatabase.OPEN_READONLY
+        )
+        try {
+            exportedDb.rawQuery(SELECT_BOOK_TITLES, null).use { cursor ->
+                assertTrue(EXPORTED_BOOK_ROW_MSG, cursor.moveToFirst())
+                assertEquals(BOOK_TITLE, cursor.getString(cursor.getColumnIndex(COL_TITLE)))
+            }
+        } finally {
+            exportedDb.close()
+        }
+    }
+
+    private fun buildBookEntity() = BookEntity(
+        title = BOOK_TITLE,
+        description = BOOK_DESCRIPTION,
+        volume = BOOK_VOLUME,
+        publicationDate = BOOK_PUBLICATION_DATE,
+        pages = BOOK_PAGES,
+        price = BOOK_PRICE,
+        value = BOOK_VALUE,
+        dueDate = BOOK_DUE_DATE,
+        readDate = BOOK_READ_DATE,
+        edition = BOOK_EDITION,
+        isbn = BOOK_ISBN,
+        web = BOOK_WEB
+    )
 
     @DisplayName("Import Database - Valid Backup File - Restores Database and Cleans Up Journal Files")
     @Test
@@ -315,10 +393,17 @@ class AppDatabaseTest {
         assertNotNull(callbackClass)
         val constructor = callbackClass!!.getDeclaredConstructor(Context::class.java, CoroutineScope::class.java)
         constructor.isAccessible = true
-        val callback = constructor.newInstance(mockAppContext, scope) as RoomDatabase.Callback
+        // Isolate the callback's coroutine so its failure is captured here instead of
+        // leaking to the global uncaught-exception handler and polluting other tests.
+        val capturedErrors = mutableListOf<Throwable>()
+        val isolatedScope = CoroutineScope(
+            SupervisorJob() + CoroutineExceptionHandler { _, throwable -> capturedErrors.add(throwable) }
+        )
+        val callback = constructor.newInstance(mockAppContext, isolatedScope) as RoomDatabase.Callback
         
         // This should not throw even though obtainTypedArray throws
         callback.onCreate(mockDb)
+        isolatedScope.coroutineContext.job.children.toList().joinAll()
         
         // Reaching here means it handled the exception
         assertTrue(true)
@@ -450,5 +535,32 @@ class AppDatabaseTest {
         const val CREATE_TABLE_BOOKS_MIGRATION = "CREATE TABLE books (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT)"
         const val CREATE_TABLE_FIELDS_MIGRATION = "CREATE TABLE fields (_id INTEGER PRIMARY KEY AUTOINCREMENT, type_id INTEGER, name TEXT)"
         const val CREATE_TABLE_BOOK_FIELDS_MIGRATION = "CREATE TABLE book_fields (book_id INTEGER, field_id INTEGER)"
+
+        const val SELECT_BOOK_TITLES = "SELECT title FROM books"
+
+        const val BOOK_TITLE = "The Silent Archive"
+        const val BOOK_DESCRIPTION = "A study of forgotten libraries"
+        const val BOOK_PRICE = "24.50"
+        const val BOOK_VALUE = "30.00"
+        const val BOOK_ISBN = "978-3-16-148410-0"
+        const val BOOK_WEB = "https://example.org/silent-archive"
+        const val BOOK_VOLUME = 2
+        const val BOOK_PAGES = 412
+        const val BOOK_PUBLICATION_DATE = 20180314
+        const val BOOK_DUE_DATE = 20240101
+        const val BOOK_READ_DATE = 20230715
+        const val BOOK_EDITION = 3
+
+        const val FIELD_TYPE_AUTHOR = 1
+        const val FIELD_AUTHOR_NAME = "Marguerite Vance"
+
+        const val EXPORT_TRUE_MSG = "Export should return true"
+        const val EXPORTED_FILE_EXISTS_MSG = "Exported database file should exist"
+        const val EXPORTED_BOOK_ROW_MSG = "Exported database should contain the book row"
+        const val SAME_INSTANCE_AFTER_EXPORT_MSG = "Export must not reset the database singleton"
+        const val DB_STILL_OPEN_MSG = "Database must remain open after export"
+        const val BOOK_READABLE_AFTER_EXPORT_MSG = "Book must still be readable after export"
+        const val FIELDS_PRESERVED_MSG = "Book fields must be preserved after export"
+        const val ALL_BOOKS_NOT_EMPTY_MSG = "Book list must not be empty after export"
     }
 }
