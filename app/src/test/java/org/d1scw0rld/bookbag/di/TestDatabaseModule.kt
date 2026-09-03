@@ -8,6 +8,7 @@ import dagger.hilt.components.SingletonComponent
 import dagger.hilt.testing.TestInstallIn
 import org.d1scw0rld.bookbag.data.AppDatabase
 import org.d1scw0rld.bookbag.data.dao.BookDao
+import org.d1scw0rld.bookbag.data.dao.BookDaoProvider
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -27,8 +28,7 @@ object TestDatabaseModule {
     @Provides
     @Singleton
     fun provideDatabase(
-        @ApplicationContext context: Context,
-        scope: CoroutineScope
+        @ApplicationContext context: Context
     ): AppDatabase {
         // Return a fresh in-memory database for every test
         return Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java)
@@ -41,4 +41,9 @@ object TestDatabaseModule {
     fun provideBookDao(database: AppDatabase): BookDao {
         return database.bookDao()
     }
+
+    @Provides
+    @Singleton
+    fun provideBookDaoProvider(database: AppDatabase): BookDaoProvider =
+        BookDaoProvider { database.bookDao() }
 }

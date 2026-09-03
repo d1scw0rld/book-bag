@@ -4,6 +4,7 @@ import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
@@ -94,6 +95,40 @@ class BookListViewModelTest {
         assertTrue(viewModel.uiState.value is UiState.Error)
         val errorException = (viewModel.uiState.value as UiState.Error).exception
         assertEquals(ERROR_DB_MESSAGE, errorException.message)
+    }
+
+    @DisplayName("Load Books - Reloaded After Import - Cancels Stale Collection So Dead Flow Cannot Overwrite State")
+    @Test
+    fun loadBooks_reloadedAfterImport_cancelsStaleCollectionSoDeadFlowCannotOverwriteState() = runTest(testDispatcher) {
+        // Arrange: the first flow represents the pre-import database, the second the imported one.
+        val staleFlow = MutableSharedFlow<List<BookWithFields>>()
+        val importedFlow = MutableSharedFlow<List<BookWithFields>>()
+        whenever(repository.getAllBooksWithFieldsFlow()).thenReturn(staleFlow, importedFlow)
+
+        viewModel = BookListViewModel(repository, preferences, permissionsManager, context)
+        staleFlow.emit(listOf(bookRelation(TEST_BOOK_ID_1, TITLE_CLEAN_CODE)))
+        assertEquals(TITLE_CLEAN_CODE, singleBookTitle())
+
+        // Act: an import triggers a reload, which must abandon the stale collection.
+        viewModel.loadBooks()
+        importedFlow.emit(listOf(bookRelation(TEST_BOOK_ID_2, TITLE_REFACTORING)))
+        assertEquals(TITLE_REFACTORING, singleBookTitle())
+
+        // Assert: the stale flow is no longer collected and cannot clobber the imported state.
+        assertEquals(NO_STALE_SUBSCRIBERS_MSG, 0, staleFlow.subscriptionCount.value)
+        staleFlow.emit(listOf(bookRelation(TEST_BOOK_ID_1, TITLE_CLEAN_CODE)))
+        assertEquals(STALE_MUST_NOT_OVERWRITE_MSG, TITLE_REFACTORING, singleBookTitle())
+    }
+
+    private fun bookRelation(id: Long, title: String) = BookWithFields(
+        book = BookEntity(id = id, title = title, description = null, volume = null, publicationDate = null, pages = null, price = null, value = null, dueDate = null, readDate = null, edition = null, isbn = null, web = null),
+        fields = emptyList()
+    )
+
+    private fun singleBookTitle(): String {
+        val state = viewModel.uiState.value
+        assertTrue(EXPECTED_SUCCESS_STATE_MSG, state is UiState.Success)
+        return (state as UiState.Success).data.single().book.title
     }
 
     @DisplayName("Delete Book - Valid Book ID Provided - Invokes Repository Delete")
@@ -396,6 +431,13 @@ class BookListViewModelTest {
         const val TEST_ORDER_ID = 5
 
         const val TITLE_CLEAN_CODE = "Clean Code"
+        const val TITLE_REFACTORING = "Refactoring"
+
+        const val TEST_BOOK_ID_2 = 2L
+
+        const val EXPECTED_SUCCESS_STATE_MSG = "UI state should be Success"
+        const val NO_STALE_SUBSCRIBERS_MSG = "Stale flow must have no collectors after reload"
+        const val STALE_MUST_NOT_OVERWRITE_MSG = "Stale flow must not overwrite imported state"
 
         const val ERROR_DB_MESSAGE = "Database error"
         const val ERROR_IMPORT_FAILED = "Import failed"
